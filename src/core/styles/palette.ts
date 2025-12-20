@@ -1,0 +1,18 @@
+export const palette = {
+  WHITE: "#FFFFFF",
+  BLACK: "#000000",
+  RED: "#CF0018",
+  RED2: "#FF7578",
+  RED3: "#E7243B",
+  PINK: "#EC6B82",
+  BLUE: "#155DFC",
+  GREEN: "#538059",
+  YELLOW: "#F8D84B",
+  SATURATED_RED: "rgba(207, 0, 24, 0.15)",
+  INPUT_TEXT: "#1E1E1E",
+  TEXT_COLOR: "#545454",
+  GREY: "rgba(30, 30, 30, 0.08)",
+  GREY2: "#262626",
+  LIGHT_GREY: "#D9D9D9",
+  PURPLE: "#8B50FF",
+};

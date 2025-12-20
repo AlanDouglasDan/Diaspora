@@ -1,0 +1,39 @@
+import React, { FC } from "react";
+import { View, Text } from "react-native";
+import { Dropdown } from "react-native-element-dropdown";
+
+import type { SelectProps } from "./Select.types";
+import { styles } from "./Select.styles";
+
+const Select: FC<SelectProps> = ({
+  value,
+  onChange,
+  options,
+  placeholder = "Select an option",
+  label,
+  style,
+}) => {
+  return (
+    <View style={style}>
+      {label && <Text style={styles.label}>{label}</Text>}
+
+      <Dropdown
+        style={styles.dropdown}
+        containerStyle={styles.dropdownContainer}
+        placeholderStyle={styles.placeholderStyle}
+        selectedTextStyle={styles.selectedTextStyle}
+        itemTextStyle={styles.itemTextStyle}
+        iconStyle={styles.iconStyle}
+        data={options}
+        maxHeight={300}
+        labelField="label"
+        valueField="value"
+        placeholder={placeholder}
+        value={value}
+        onChange={(item) => onChange(item.value)}
+      />
+    </View>
+  );
+};
+
+export default Select;
