@@ -6,6 +6,7 @@ import {
   TextInput,
   Platform,
   KeyboardAvoidingView,
+  ActivityIndicator,
 } from "react-native";
 import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
@@ -13,6 +14,8 @@ import { LinearGradient } from "expo-linear-gradient";
 
 import { palette } from "core/styles";
 import { LayoutContainer } from "components/layoutContainer";
+import { LoveLetterMessage } from "components/loveLetterMessage";
+import { CallMessage } from "components/callMessage";
 
 import type { ConversationScreenProps } from "./Conversation.types";
 import { styles } from "./Conversation.styles";
@@ -32,6 +35,8 @@ const Conversation: FC<ConversationScreenProps> = (props) => {
     handleMore,
     handleAddMedia,
     handleSend,
+    isLoading,
+    isSending,
   } = useConversationLogic(props);
 
   const header = (
@@ -113,9 +118,10 @@ const Conversation: FC<ConversationScreenProps> = (props) => {
         </View>
 
         <TouchableOpacity
-          style={styles.sendButtonContainer}
+          style={[styles.sendButtonContainer, isSending && { opacity: 0.6 }]}
           onPress={handleSend}
           activeOpacity={0.7}
+          disabled={isSending}
         >
           <LinearGradient
             colors={[palette.RED2, palette.RED]}
@@ -123,7 +129,11 @@ const Conversation: FC<ConversationScreenProps> = (props) => {
             end={{ x: 0.5, y: 1 }}
             style={styles.sendButton}
           >
-            <Ionicons name="send" size={18} color={palette.WHITE} />
+            {isSending ? (
+              <ActivityIndicator size="small" color={palette.WHITE} />
+            ) : (
+              <Ionicons name="send" size={18} color={palette.WHITE} />
+            )}
           </LinearGradient>
         </TouchableOpacity>
       </View>
@@ -150,34 +160,74 @@ const Conversation: FC<ConversationScreenProps> = (props) => {
       </View>
 
       <View style={styles.messagesContainer}>
-        {messages.map((message) => (
-          <View
-            key={message.id}
-            style={[
-              styles.messageRow,
-              message.isMe ? styles.messageRowMe : styles.messageRowOther,
-            ]}
-          >
-            {message.image ? (
-              <Image
-                source={message.image}
-                style={styles.messageImage}
-                contentFit="cover"
-              />
-            ) : (
+        {isLoading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={palette.PINK} />
+          </View>
+        ) : messages.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>
+              No messages yet. Start the conversation!
+            </Text>
+          </View>
+        ) : (
+          messages.map((message) => {
+            // Format timestamp for display
+            const formatTime = (date: Date): string => {
+              return date.toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              });
+            };
+
+            return (
               <View
+                key={message.id}
                 style={[
-                  styles.messageBubble,
-                  message.isMe
-                    ? styles.messageBubbleMe
-                    : styles.messageBubbleOther,
+                  styles.messageRow,
+                  message.isMe ? styles.messageRowMe : styles.messageRowOther,
                 ]}
               >
-                <Text style={styles.messageText}>{message.text}</Text>
+                {message.isCall ? (
+                  <CallMessage
+                    callType={message.callType || "voice"}
+                    durationSeconds={message.callDuration || 0}
+                    timestamp={formatTime(message.timestamp)}
+                    isMe={message.isMe}
+                  />
+                ) : message.isLoveLetter ? (
+                  <LoveLetterMessage
+                    senderName={message.isMe ? "You" : recipientName}
+                    senderAvatar={message.isMe ? undefined : recipientAvatar}
+                    message={message.text || ""}
+                    isMe={message.isMe}
+                  />
+                ) : message.image ? (
+                  <Image
+                    source={
+                      typeof message.image === "string"
+                        ? { uri: message.image }
+                        : message.image
+                    }
+                    style={styles.messageImage}
+                    contentFit="cover"
+                  />
+                ) : (
+                  <View
+                    style={[
+                      styles.messageBubble,
+                      message.isMe
+                        ? styles.messageBubbleMe
+                        : styles.messageBubbleOther,
+                    ]}
+                  >
+                    <Text style={styles.messageText}>{message.text}</Text>
+                  </View>
+                )}
               </View>
-            )}
-          </View>
-        ))}
+            );
+          })
+        )}
       </View>
     </LayoutContainer>
   );

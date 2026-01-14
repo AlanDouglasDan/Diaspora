@@ -12,6 +12,7 @@ const Select: FC<SelectProps> = ({
   placeholder = "Select an option",
   label,
   style,
+  dropdownPosition = "auto",
 }) => {
   return (
     <View style={style}>
@@ -31,6 +32,7 @@ const Select: FC<SelectProps> = ({
         placeholder={placeholder}
         value={value}
         onChange={(item) => onChange(item.value)}
+        dropdownPosition={dropdownPosition}
       />
     </View>
   );

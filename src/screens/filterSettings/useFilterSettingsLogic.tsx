@@ -18,8 +18,8 @@ const INITIAL_FILTER_STATE: FilterState = {
   gender: "all",
   activity: "just_joined",
   country: "all",
-  distanceRange: [1, 43],
-  ageRange: [21, 32],
+  distanceRange: [1, 1000],
+  ageRange: [18, 99],
   minPhotos: 4,
   hasBio: false,
   lookingFor: null,
@@ -35,22 +35,26 @@ const INITIAL_FILTER_STATE: FilterState = {
 
 export const GENDER_OPTIONS: SelectOption[] = [
   { label: "All", value: "all" },
-  { label: "Male", value: "male" },
-  { label: "Female", value: "female" },
+  { label: "Man", value: "man" },
+  { label: "Woman", value: "woman" },
+  { label: "Non-binary", value: "nonbinary" },
 ];
 
 export const ACTIVITY_OPTIONS: SelectOption[] = [
-  { label: "Just Joined", value: "just_joined" },
-  { label: "Recently Active", value: "recently_active" },
-  { label: "Online Now", value: "online_now" },
+  { label: "All", value: "all" },
+  { label: "Just Joined", value: "justJoined" },
 ];
 
 export const COUNTRY_OPTIONS: SelectOption[] = [
   { label: "All", value: "all" },
-  { label: "United States", value: "us" },
-  { label: "United Kingdom", value: "uk" },
-  { label: "Canada", value: "ca" },
-  { label: "Australia", value: "au" },
+  { label: "United States", value: "US" },
+  { label: "United Kingdom", value: "GB" },
+  { label: "Canada", value: "CA" },
+  { label: "Australia", value: "AU" },
+  { label: "Nigeria", value: "NG" },
+  { label: "Ghana", value: "GH" },
+  { label: "South Africa", value: "ZA" },
+  { label: "Kenya", value: "KE" },
 ];
 
 export const SELECT_ROWS: SelectRowItem[] = [
@@ -225,9 +229,91 @@ export const useFilterSettingsLogic = (props: FilterSettingsScreenProps) => {
   );
 
   const handleApply = useCallback(() => {
-    // TODO: Apply filters
-    navigation.goBack();
-  }, [navigation]);
+    // Build filter params for Match screen - only include non-default values
+    const filterParams: Record<string, any> = {};
+
+    // Gender filter
+    if (filters.gender && filters.gender !== "all") {
+      filterParams.gender = filters.gender as "man" | "woman" | "nonbinary";
+    }
+
+    // Activity filter
+    if (
+      filters.activity &&
+      filters.activity !== "all" &&
+      filters.activity !== "just_joined"
+    ) {
+      filterParams.activity = filters.activity as "justJoined";
+    }
+
+    // Country filter
+    if (filters.country && filters.country !== "all") {
+      filterParams.country = filters.country;
+    }
+
+    // Distance range
+    if (filters.distanceRange) {
+      filterParams.radius = filters.distanceRange;
+    }
+
+    // Age range
+    if (filters.ageRange) {
+      filterParams.age = filters.ageRange;
+    }
+
+    // Has bio
+    if (filters.hasBio) {
+      filterParams.hasBio = true;
+    }
+
+    // Ethnicity
+    if (filters.ethnicity) {
+      filterParams.ethnicity = filters.ethnicity;
+    }
+
+    // Star sign (zodiac)
+    if (filters.starSign) {
+      filterParams.zodiac = filters.starSign;
+    }
+
+    // Height
+    if (filters.height) {
+      filterParams.height = filters.height;
+    }
+
+    // Drinking
+    if (filters.drinking) {
+      filterParams.drinking =
+        filters.drinking === "regularly" || filters.drinking === "socially";
+    }
+
+    // Smoking
+    if (filters.smoking) {
+      filterParams.smoking =
+        filters.smoking === "regularly" || filters.smoking === "socially";
+    }
+
+    // Education level
+    if (filters.educationLevel) {
+      filterParams.educationLevel = filters.educationLevel;
+    }
+
+    // Children (family plans)
+    if (filters.children) {
+      filterParams.familyPlans = filters.children;
+    }
+
+    // Looking for
+    if (filters.lookingFor) {
+      filterParams.lookingFor = filters.lookingFor;
+    }
+
+    // Navigate back to Match with filters
+    navigation.navigate("MainTabs", {
+      screen: "Match",
+      params: { filters: filterParams },
+    } as any);
+  }, [navigation, filters]);
 
   const handleSelectRowPress = useCallback(
     (field: string) => {

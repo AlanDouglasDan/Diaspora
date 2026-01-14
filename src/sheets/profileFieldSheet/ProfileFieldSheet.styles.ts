@@ -43,12 +43,17 @@ export const styles = StyleSheet.create({
   },
   textInput: {
     marginTop: 16,
+    borderWidth: 1,
+    borderRadius: 4,
+    borderColor: palette.TEXT_COLOR,
+    color: palette.INPUT_TEXT,
   },
   selectContainer: {
     marginTop: 16,
   },
   listContainer: {
     marginTop: 8,
+    maxHeight: "60%"
   },
   listItem: {
     flexDirection: "row",
@@ -81,6 +86,7 @@ export const styles = StyleSheet.create({
   singleSelectContainer: {
     marginTop: 16,
     gap: 12,
+    maxHeight: "60%"
   },
   singleSelectOption: {
     padding: 12,

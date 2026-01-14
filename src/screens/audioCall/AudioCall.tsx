@@ -16,6 +16,8 @@ const AudioCall: FC<AudioCallScreenProps> = (props) => {
     recipientAvatar,
     isMuted,
     isVideoOff,
+    isConnecting,
+    callStatus,
     toggleCameraFacing,
     toggleMute,
     toggleVideo,
@@ -47,7 +49,7 @@ const AudioCall: FC<AudioCallScreenProps> = (props) => {
 
       <View style={styles.overlay}>
         <View style={styles.callingContainer}>
-          <Text style={styles.callingText}>Calling...</Text>
+          <Text style={styles.callingText}>{callStatus}</Text>
           <View style={styles.avatarContainer}>
             <Image
               source={recipientAvatar}

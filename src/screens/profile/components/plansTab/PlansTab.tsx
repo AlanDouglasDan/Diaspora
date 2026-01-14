@@ -6,6 +6,7 @@ import { Ionicons } from "@expo/vector-icons";
 
 import { images } from "core/images";
 import { palette } from "core/styles";
+import { navigate } from "@/src/navigation/utils";
 import { Button } from "components/button";
 import { FeaturesModal } from "components/featuresModal";
 import LoveLetter from "components/svg/LoveLetter";
@@ -97,6 +98,8 @@ const PlansTab: FC<PlansTabProps> = ({
           title={plan.buttonText}
           variant="white"
           style={styles.upgradeButton}
+          textStyle={styles.text14}
+          onPress={() => navigate("Upgrade")}
         />
       </>
     );

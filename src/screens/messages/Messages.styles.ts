@@ -26,9 +26,9 @@ export const styles = StyleSheet.create({
   },
   matchesList: {
     flexDirection: "row",
+    gap: 16,
   },
   matchItem: {
-    marginRight: 16,
     alignItems: "center",
     width: 80,
   },
@@ -43,8 +43,8 @@ export const styles = StyleSheet.create({
   },
   matchFlagContainer: {
     position: "absolute",
-    bottom: -4,
-    left: -4,
+    bottom: 0,
+    left: 4,
     backgroundColor: palette.WHITE,
     borderRadius: 10,
     width: 20,
@@ -56,6 +56,7 @@ export const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 2,
     elevation: 2,
+    zIndex: 99,
   },
   matchFlag: {
     fontSize: 12,
@@ -153,5 +154,25 @@ export const styles = StyleSheet.create({
   messageDividerLine: {
     flex: 1,
     width: undefined,
+  },
+  loadingContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 40,
+  },
+  emptyContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 40,
+  },
+  emptyText: {
+    ...typography.semiheader16,
+    color: palette.BLACK,
+    marginBottom: 8,
+  },
+  emptySubtext: {
+    ...typography.text14,
+    color: palette.TEXT_COLOR,
+    textAlign: "center",
   },
 });

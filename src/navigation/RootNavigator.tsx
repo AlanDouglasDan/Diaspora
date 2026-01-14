@@ -40,8 +40,8 @@ import { typography, palette } from "core/styles";
 
 export type RootStackParamList = {
   Welcome: undefined;
-  EmailAuth: undefined;
-  VerifyOtp: { value: string; context: string };
+  EmailAuth: { mode: "sign-up" | "sign-in" };
+  VerifyOtp: { value: string; context: string; mode?: "sign-up" | "sign-in" };
   AddPhone: undefined;
   Onboarding: undefined;
   DisplayName: undefined;
@@ -79,7 +79,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 export default function RootNavigator() {
   return (
     <Stack.Navigator
-      initialRouteName="MainTabs"
+      // initialRouteName="AddPhone"
       screenOptions={{
         headerShown: false,
       }}

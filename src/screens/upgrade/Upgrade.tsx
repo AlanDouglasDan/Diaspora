@@ -1,7 +1,14 @@
 import React, { FC } from "react";
-import { View, Text, TouchableOpacity, ScrollView } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  ActivityIndicator,
+} from "react-native";
 import { Image } from "expo-image";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { StripeProvider } from "@stripe/stripe-react-native";
 
 import { LayoutContainer } from "components/layoutContainer";
 import { TabNav } from "components/tabNav";
@@ -13,11 +20,15 @@ import type { UpgradeScreenProps, PlanFeature } from "./Upgrade.types";
 import { styles } from "./Upgrade.styles";
 import { useUpgradeLogic } from "./useUpgradeLogic";
 
+const STRIPE_PUBLISHABLE_KEY =
+  process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY || "";
+
 const Upgrade: FC<UpgradeScreenProps> = (props) => {
   const {
     tabs,
     selectedTab,
     currentPlan,
+    isLoading,
     handleClose,
     handleTabChange,
     handleUpgrade,
@@ -143,13 +154,31 @@ const Upgrade: FC<UpgradeScreenProps> = (props) => {
       </View>
 
       <Button
-        title={currentPlan.buttonText}
+        title={isLoading ? "Processing..." : currentPlan.buttonText}
         onPress={handleUpgrade}
         style={styles.upgradeButton}
         variant="white"
+        disabled={isLoading}
       />
+      {isLoading && (
+        <View style={styles.loadingOverlay}>
+          <ActivityIndicator size="large" color={palette.PINK} />
+        </View>
+      )}
     </LayoutContainer>
   );
 };
 
-export default Upgrade;
+const UpgradeWithStripe: FC<UpgradeScreenProps> = (props) => {
+  return (
+    <StripeProvider
+      publishableKey={STRIPE_PUBLISHABLE_KEY}
+      merchantIdentifier="merchant.com.diaspora.app"
+      urlScheme="diaspora"
+    >
+      <Upgrade {...props} />
+    </StripeProvider>
+  );
+};
+
+export default UpgradeWithStripe;

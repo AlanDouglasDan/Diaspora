@@ -8,6 +8,9 @@ export type LikesTab = "priority" | "likes" | "views";
 
 export type LikeItem = {
   id: string;
-  image: ImageSourcePropType;
+  image: ImageSourcePropType | string;
   isRecentlyActive: boolean;
+  userId?: string;
+  userName?: string;
+  superLike?: boolean;
 };

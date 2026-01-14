@@ -44,7 +44,7 @@ const ProfileFieldSheet: FC<SheetProps<"profile-field-sheet">> = (props) => {
             value={textValue}
             onChangeText={setTextValue}
             placeholder={placeholder}
-            placeholderTextColor={palette.GREY2}
+            placeholderTextColor={palette.TEXT_COLOR}
             style={styles.textInput}
           />
         );
@@ -57,13 +57,17 @@ const ProfileFieldSheet: FC<SheetProps<"profile-field-sheet">> = (props) => {
               onChange={setSelectedSingle}
               options={selectOptions}
               placeholder={placeholder}
+              dropdownPosition="top"
             />
           </View>
         );
 
       case "single-select":
         return (
-          <View style={styles.singleSelectContainer}>
+          <ScrollView
+            contentContainerStyle={styles.singleSelectContainer}
+            showsVerticalScrollIndicator={false}
+          >
             {options.map((option) => {
               const isSelected = selectedSingle === option.id;
               return (
@@ -87,7 +91,7 @@ const ProfileFieldSheet: FC<SheetProps<"profile-field-sheet">> = (props) => {
                 </TouchableOpacity>
               );
             })}
-          </View>
+          </ScrollView>
         );
 
       case "search-list":
@@ -100,8 +104,8 @@ const ProfileFieldSheet: FC<SheetProps<"profile-field-sheet">> = (props) => {
                   value={searchQuery}
                   onChangeText={setSearchQuery}
                   placeholder={placeholder || "Search..."}
-                  placeholderTextColor={palette.GREY2}
-                  style={styles.searchInput}
+                  placeholderTextColor={palette.TEXT_COLOR}
+                  style={styles.textInput}
                 />
               </View>
             )}

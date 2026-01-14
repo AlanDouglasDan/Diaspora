@@ -136,7 +136,7 @@ const ProfileInfo: FC<ProfileInfoScreenProps> = (props) => {
           <Text style={styles.semiheader14}>Male</Text>
         </View>
 
-        <TouchableOpacity style={styles.flexedRow}>
+        <View style={styles.flexedRow}>
           <Ionicons name="location-outline" size={20} color={palette.GREY2} />
 
           <Text style={[styles.semiheader14, { flex: 1 }]}>
@@ -144,34 +144,36 @@ const ProfileInfo: FC<ProfileInfoScreenProps> = (props) => {
           </Text>
 
           <Ionicons name="chevron-forward" size={16} color={palette.GREY2} />
-        </TouchableOpacity>
+        </View>
 
-        <TouchableOpacity style={styles.flexedRow}>
-          <Text style={styles.semiheader14}>{userData.countryFlag}</Text>
-
+        <View style={styles.flexedRow}>
           <Text style={[styles.semiheader14, { flex: 1 }]}>
-            {userData.country}
+            {userData.countryFlag} {userData.country}
           </Text>
-        </TouchableOpacity>
+        </View>
       </TouchableOpacity>
 
       {/* Why You're Here Section */}
-      <TouchableOpacity style={styles.sectionContainer}>
-        <View style={layout.spacedRow}>
-          <View>
-            <Text style={styles.sectionTitle}>Why You're Here</Text>
+      {sections
+        .filter((section) => section.id === "whyHere")
+        .map((section) => (
+          <TouchableOpacity key={section.id} style={styles.sectionContainer}>
+            <View style={layout.spacedRow}>
+              <View>
+                <Text style={styles.sectionTitle}>Why You're Here</Text>
 
-            <Text style={styles.fieldValue}>Empty</Text>
-          </View>
+                <Text style={styles.fieldValue}>{section.fields[0]?.value}</Text>
+              </View>
 
-          <Ionicons
-            name="chevron-forward"
-            size={16}
-            color={palette.GREY2}
-            style={{ marginLeft: 8 }}
-          />
-        </View>
-      </TouchableOpacity>
+              <Ionicons
+                name="chevron-forward"
+                size={16}
+                color={palette.GREY2}
+                style={{ marginLeft: 8 }}
+              />
+            </View>
+          </TouchableOpacity>
+        ))}
 
       {/* Bio Section */}
       <View style={styles.sectionContainer}>
@@ -241,30 +243,35 @@ const ProfileInfo: FC<ProfileInfoScreenProps> = (props) => {
         ))}
 
       {/* Interests Section */}
-      <TouchableOpacity
-        style={styles.sectionContainer}
-        onPress={handleEditInterests}
-        activeOpacity={0.7}
-      >
-        <View style={layout.spacedRow}>
-          <Text style={styles.sectionTitle}>Interests</Text>
+      {sections
+        .filter((s) => s.id === "interests")
+        .map((section) => (
+          <TouchableOpacity
+            key={section.id}
+            style={styles.sectionContainer}
+            onPress={handleEditInterests}
+            activeOpacity={0.7}
+          >
+            <View style={layout.spacedRow}>
+              <Text style={styles.sectionTitle}>Interests</Text>
 
-          <View style={styles.flexedRow}>
-            <Text style={styles.sectionEdit}>Edit</Text>
+              <View style={styles.flexedRow}>
+                <Text style={styles.sectionEdit}>Edit</Text>
 
-            <Ionicons
-              name="chevron-forward"
-              size={16}
-              color={palette.GREY2}
-              style={styles.fieldChevron}
-            />
-          </View>
-        </View>
+                <Ionicons
+                  name="chevron-forward"
+                  size={16}
+                  color={palette.GREY2}
+                  style={styles.fieldChevron}
+                />
+              </View>
+            </View>
 
-        <View style={styles.sectionContent}>
-          <Text style={styles.fieldValue}>Add your interests here</Text>
-        </View>
-      </TouchableOpacity>
+            <View style={styles.sectionContent}>
+              <Text style={styles.fieldValue}>{section.fields[0]?.value}</Text>
+            </View>
+          </TouchableOpacity>
+        ))}
 
       {/* Get Verified Section */}
       <View style={styles.verifySection}>

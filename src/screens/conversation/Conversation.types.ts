@@ -12,6 +12,10 @@ export interface ChatMessage {
   image?: any;
   isMe: boolean;
   timestamp: Date;
+  isLoveLetter?: boolean;
+  isCall?: boolean;
+  callType?: "voice" | "video";
+  callDuration?: number;
 }
 
 export interface ConversationParams {
@@ -19,4 +23,5 @@ export interface ConversationParams {
   recipientName: string;
   recipientAvatar: any;
   matchDate?: string;
+  channelId?: string;
 }

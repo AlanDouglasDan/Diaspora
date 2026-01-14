@@ -5,6 +5,7 @@ import {
   ScrollView,
   TouchableOpacity,
   TextInput,
+  ActivityIndicator,
 } from "react-native";
 import { Image } from "expo-image";
 import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
@@ -13,7 +14,7 @@ import Swiper from "react-native-deck-swiper";
 import LoveLetterSend from "components/svg/LoveLetterSend";
 import { common, layout, palette, spacing } from "core/styles";
 
-import { styles, CARD_HEIGHT } from "./Match.styles";
+import { styles } from "./Match.styles";
 import { useMatchLogic } from "./useMatchLogic";
 import type { MatchScreenProps, UserProfile } from "./Match.types";
 
@@ -22,6 +23,9 @@ const Match: FC<MatchScreenProps> = (props) => {
     users,
     currentUser,
     cardIndex,
+    isLoading,
+    isActionLoading,
+    locationStatus,
     isSwipingEnabled,
     swiperRef,
     handleOpenImages,
@@ -32,6 +36,10 @@ const Match: FC<MatchScreenProps> = (props) => {
     handleSwipedRight,
     handleSwipedAll,
     handleScroll,
+    loveLetterText,
+    setLoveLetterText,
+    handleSendLoveLetter,
+    isSendingLoveLetter,
   } = useMatchLogic(props);
 
   const renderCard = useCallback(
@@ -99,30 +107,52 @@ const Match: FC<MatchScreenProps> = (props) => {
 
               <View style={styles.actionButtons}>
                 <TouchableOpacity
-                  style={styles.actionButton}
+                  style={[
+                    styles.actionButton,
+                    isActionLoading && { opacity: 0.6 },
+                  ]}
                   onPress={handleDislike}
                   activeOpacity={0.8}
+                  disabled={isActionLoading}
                 >
-                  <FontAwesome name="close" size={24} color={palette.RED} />
+                  {isActionLoading ? (
+                    <ActivityIndicator size="small" color={palette.RED} />
+                  ) : (
+                    <FontAwesome name="close" size={24} color={palette.RED} />
+                  )}
                 </TouchableOpacity>
 
                 <TouchableOpacity
                   style={[
                     styles.actionButton,
                     { backgroundColor: palette.RED },
+                    isActionLoading && { opacity: 0.6 },
                   ]}
                   onPress={handleSuperLike}
                   activeOpacity={0.8}
+                  disabled={isActionLoading}
                 >
-                  <FontAwesome name="star" size={24} color={palette.WHITE} />
+                  {isActionLoading ? (
+                    <ActivityIndicator size="small" color={palette.WHITE} />
+                  ) : (
+                    <FontAwesome name="star" size={24} color={palette.WHITE} />
+                  )}
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  style={styles.actionButton}
+                  style={[
+                    styles.actionButton,
+                    isActionLoading && { opacity: 0.6 },
+                  ]}
                   onPress={handleLike}
                   activeOpacity={0.8}
+                  disabled={isActionLoading}
                 >
-                  <FontAwesome name="heart" size={22} color={palette.RED} />
+                  {isActionLoading ? (
+                    <ActivityIndicator size="small" color={palette.RED} />
+                  ) : (
+                    <FontAwesome name="heart" size={22} color={palette.RED} />
+                  )}
                 </TouchableOpacity>
               </View>
             </View>
@@ -130,8 +160,55 @@ const Match: FC<MatchScreenProps> = (props) => {
         </View>
       );
     },
-    [handleOpenImages, handleDislike, handleSuperLike, handleLike]
+    [
+      handleOpenImages,
+      handleDislike,
+      handleSuperLike,
+      handleLike,
+      isActionLoading,
+    ]
   );
+
+  if (isLoading) {
+    return (
+      <View style={[styles.container, styles.emptyStateContainer]}>
+        <ActivityIndicator size="large" color={palette.PINK} />
+        <Text style={[styles.semiheader16, styles.loadingStateMessage]}>
+          Finding matches near you...
+        </Text>
+        <Text style={[styles.text14, styles.loadingStateSubtext]}>
+          This may take a moment
+        </Text>
+      </View>
+    );
+  }
+
+  if (!currentUser || users.length === 0) {
+    return (
+      <View style={[styles.container, styles.emptyStateContainer]}>
+        <View style={styles.emptyStateIconContainer}>
+          <FontAwesome name="heart-o" size={48} color={palette.PINK} />
+        </View>
+        <Text style={[styles.semiheader16, styles.emptyStateTitle]}>
+          No matches found
+        </Text>
+        <Text style={[styles.text14, styles.emptyStateMessage]}>
+          {locationStatus === "denied"
+            ? "Enable location access to find people near you. You can update this in your device settings."
+            : "We couldn't find any matches in your area right now. Try adjusting your filters or check back later!"}
+        </Text>
+
+        <TouchableOpacity
+          style={styles.emptyStateButton}
+          activeOpacity={0.7}
+          // @ts-ignore
+          onPress={() => props.navigation.navigate("FilterSettings")}
+        >
+          <Text style={styles.emptyStateButtonText}>Adjust Filters</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -312,11 +389,13 @@ const Match: FC<MatchScreenProps> = (props) => {
           </View>
         </View>
 
-        <Image
-          source={currentUser.avatar}
-          style={styles.galleryPhoto}
-          contentFit="cover"
-        />
+        {currentUser.galleryImages.length > 1 && (
+          <Image
+            source={currentUser.galleryImages[1]}
+            style={styles.galleryPhoto}
+            contentFit="cover"
+          />
+        )}
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>My interests</Text>
@@ -356,11 +435,28 @@ const Match: FC<MatchScreenProps> = (props) => {
             <TextInput
               placeholder="Send a Love Letter"
               style={styles.loveLetterInput}
+              multiline
+              numberOfLines={5}
+              value={loveLetterText}
+              onChangeText={setLoveLetterText}
+              editable={!isSendingLoveLetter}
             />
           </View>
 
-          <TouchableOpacity style={styles.shareButton} activeOpacity={0.7}>
-            <LoveLetterSend />
+          <TouchableOpacity
+            style={[
+              styles.shareButton,
+              isSendingLoveLetter && { opacity: 0.6 },
+            ]}
+            activeOpacity={0.7}
+            onPress={handleSendLoveLetter}
+            disabled={isSendingLoveLetter || !loveLetterText.trim()}
+          >
+            {isSendingLoveLetter ? (
+              <ActivityIndicator size="small" color={palette.PINK} />
+            ) : (
+              <LoveLetterSend />
+            )}
           </TouchableOpacity>
         </View>
 

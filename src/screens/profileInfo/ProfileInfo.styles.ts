@@ -100,6 +100,7 @@ export const styles = StyleSheet.create({
   fieldValue: {
     ...typography.text12,
     color: palette.GREY2,
+    textTransform: "capitalize",
   },
   fieldChevron: {
     marginLeft: 8,

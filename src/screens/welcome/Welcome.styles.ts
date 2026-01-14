@@ -38,4 +38,16 @@ export const styles = StyleSheet.create({
     width: "100%",
     marginTop: 12,
   },
+
+  // splash styles
+  splashContainer: {
+    flex: 1,
+    backgroundColor: palette.WHITE,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  icon: {
+    width: 100,
+    height: 100,
+  },
 });

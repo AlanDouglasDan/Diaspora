@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useState, useRef } from "react";
+import { useEffect, useCallback, useState, useRef, useMemo } from "react";
 import {
   Image,
   TouchableOpacity,
@@ -10,144 +10,301 @@ import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { SheetManager } from "react-native-actions-sheet";
 import Swiper from "react-native-deck-swiper";
+import { useUser } from "@clerk/clerk-expo";
+import Toast from "react-native-toast-message";
+import * as Location from "expo-location";
 
+import useAbly from "hooks/useAbly";
+import { useGetUsers, useUpdateLocation, UserListItem } from "@/src/api/user";
+import { useLikeUser, useDislikeUser, useGetLikes } from "@/src/api/likes";
+import { useStreamChat } from "@/src/providers";
 import { images } from "core/images";
 import { palette } from "core/styles";
 import type { MatchScreenProps, UserProfile } from "./Match.types";
 import { styles } from "./Match.styles";
 import type { RootStackParamList } from "../../navigation";
 
-const MOCK_USERS: UserProfile[] = [
-  {
-    id: "1",
-    name: "Rebecca",
-    age: 25,
-    flag: "🇨🇦",
-    isVerified: true,
-    badge: "💍 Marriage",
-    isOnline: true,
-    bio: "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatuDuis aute irure dolor in reprehenderit.",
-    avatar: images.avatar3,
-    galleryImages: [images.avatar3, images.avatar3, images.avatar3],
-    compatibility: [
-      "💍 Single",
-      "🌍 Open to long distance",
-      "✈️ Willing to relocate",
-    ],
-    aboutMe: [
-      "📏 150cm",
-      "🏋️ Rarely",
-      "⭐ Capricorn",
-      "🎓 Bachelors",
-      "🐕 Have & want more",
-      "🚬 Non-smoker",
-      "🍷 Socially",
-    ],
-    school: "University of Toronto",
-    workTitle: "Product designer",
-    company: "Microsoft Inc",
-    ethnicity: ["Jamaican"],
-    nationalities: ["Canada", "Jamaica"],
-    languages: [
-      { name: "🇬🇧 English", isShared: false },
-      { name: "🇫🇷 French", isShared: true },
-      { name: "🇪🇸 Spanish", isShared: false },
-    ],
-    interests: [
-      { name: "🕺 Dancing", isShared: false },
-      { name: "🏋️ Bodybuilding", isShared: true },
-      { name: "🐶 Dogs", isShared: false },
-      { name: "🐱 Cats", isShared: false },
-    ],
-    location: "🇨🇦 Toronto, Canada 200km away",
-  },
-  {
-    id: "2",
-    name: "Sofia",
-    age: 28,
-    flag: "🇧🇷",
-    isVerified: true,
-    badge: "💕 Dating",
-    isOnline: false,
-    bio: "Adventure seeker and coffee enthusiast. Love exploring new places and meeting new people. Life is too short for boring conversations!",
-    avatar: images.avatar2,
-    galleryImages: [images.avatar2, images.avatar2, images.avatar2],
-    compatibility: ["💍 Single", "🌍 Open to long distance"],
-    aboutMe: [
-      "📏 165cm",
-      "🏋️ Often",
-      "⭐ Leo",
-      "🎓 Masters",
-      "🐕 Want someday",
-      "🚬 Non-smoker",
-      "🍷 Never",
-    ],
-    school: "University of São Paulo",
-    workTitle: "Software Engineer",
-    company: "Google",
-    ethnicity: ["Brazilian"],
-    nationalities: ["Brazil"],
-    languages: [
-      { name: "🇧🇷 Portuguese", isShared: false },
-      { name: "🇬🇧 English", isShared: true },
-    ],
-    interests: [
-      { name: "✈️ Travel", isShared: true },
-      { name: "☕ Coffee", isShared: false },
-      { name: "📸 Photography", isShared: false },
-    ],
-    location: "🇧🇷 São Paulo, Brazil 5000km away",
-  },
-  {
-    id: "3",
-    name: "Emma",
-    age: 24,
-    flag: "🇬🇧",
-    isVerified: false,
-    badge: "💍 Marriage",
-    isOnline: true,
-    bio: "Book lover and tea addict. Looking for someone who appreciates deep conversations and cozy nights in.",
-    avatar: images.avatar2,
-    galleryImages: [images.avatar2, images.avatar2, images.avatar2],
-    compatibility: ["💍 Single", "✈️ Willing to relocate"],
-    aboutMe: [
-      "📏 160cm",
-      "🏋️ Sometimes",
-      "⭐ Virgo",
-      "🎓 PhD",
-      "🐕 Have pets",
-      "🚬 Non-smoker",
-      "🍷 Socially",
-    ],
-    school: "Oxford University",
-    workTitle: "Research Scientist",
-    company: "Cambridge Labs",
-    ethnicity: ["British"],
-    nationalities: ["United Kingdom"],
-    languages: [
-      { name: "🇬🇧 English", isShared: true },
-      { name: "🇩🇪 German", isShared: false },
-    ],
-    interests: [
-      { name: "📚 Reading", isShared: false },
-      { name: "🎵 Music", isShared: true },
-      { name: "🎨 Art", isShared: false },
-    ],
-    location: "🇬🇧 London, UK 3500km away",
-  },
-];
+const calculateAge = (birthday: string): number => {
+  const birthDate = new Date(birthday);
+  const today = new Date();
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDiff = today.getMonth() - birthDate.getMonth();
+  if (
+    monthDiff < 0 ||
+    (monthDiff === 0 && today.getDate() < birthDate.getDate())
+  ) {
+    age--;
+  }
+  return age;
+};
+
+const getLookingToDateBadge = (lookingToDate?: string[]): string => {
+  if (!lookingToDate || lookingToDate.length === 0) return "💕 Dating";
+  const first = lookingToDate[0]?.toLowerCase() || "";
+  if (first.includes("marriage") || first.includes("serious"))
+    return "💍 Marriage";
+  if (first.includes("casual")) return "💕 Casual";
+  if (first.includes("network")) return "🤝 Networking";
+  return `💕 ${lookingToDate[0]}`;
+};
+
+const mapUserToProfile = (apiUser: UserListItem): UserProfile => {
+  const prefs = apiUser.preferences;
+  const profile = apiUser.profile;
+
+  const sortedImages = [...(apiUser.images || [])].sort(
+    (a, b) => a.order - b.order
+  );
+  const avatarUri = sortedImages[0]?.imageUrl || "";
+  const galleryUris = sortedImages.map((img) => img.imageUrl);
+
+  const compatibility: string[] = [];
+  if (prefs?.lookingToDate?.length) {
+    prefs.lookingToDate.forEach((item) => {
+      if (item) compatibility.push(`💕 ${item}`);
+    });
+  }
+  if (!compatibility.length) {
+    compatibility.push("💍 Single", "🌍 Open to long distance");
+  }
+
+  const aboutMe: string[] = [];
+  if (prefs?.height) aboutMe.push(`📏 ${prefs.height}`);
+  if (prefs?.zodiac) aboutMe.push(`⭐ ${prefs.zodiac}`);
+  if (prefs?.education) aboutMe.push(`🎓 ${prefs.education}`);
+  if (prefs?.pets) aboutMe.push(`🐕 ${prefs.pets}`);
+  if (prefs?.smoking !== null && prefs?.smoking !== undefined) {
+    aboutMe.push(prefs.smoking ? "🚬 Smoker" : "🚬 Non-smoker");
+  }
+  if (prefs?.drinking !== null && prefs?.drinking !== undefined) {
+    aboutMe.push(prefs.drinking ? "🍷 Drinks" : "🍷 Non-drinker");
+  }
+  if (prefs?.religion) aboutMe.push(`🙏 ${prefs.religion}`);
+  if (prefs?.familyPlans) aboutMe.push(`👨‍👩‍👧 ${prefs.familyPlans}`);
+
+  const interests: { name: string; isShared: boolean }[] = (
+    prefs?.interests || []
+  ).map((interest) => ({
+    name: interest,
+    isShared: false,
+  }));
+
+  const ethnicity: string[] = prefs?.ethnicity ? [prefs.ethnicity] : [];
+
+  const nationalities: string[] = apiUser.country?.name
+    ? [apiUser.country.name]
+    : [];
+
+  const languages: { name: string; isShared: boolean }[] = prefs?.language
+    ? [{ name: prefs.language, isShared: false }]
+    : [{ name: "English", isShared: false }];
+
+  const distanceDisplay =
+    typeof apiUser.distanceKm === "number"
+      ? `${Math.round(apiUser.distanceKm)}km away`
+      : apiUser.distanceKm || "";
+  const location = apiUser.country
+    ? `${apiUser.country.flag} ${apiUser.country.name}`
+    : distanceDisplay;
+
+  return {
+    id: apiUser.id,
+    name: apiUser.displayName || "User",
+    age: apiUser.birthday ? calculateAge(apiUser.birthday) : 25,
+    flag: apiUser.country?.flag || "🌍",
+    isVerified: apiUser.verified || false,
+    badge: getLookingToDateBadge(prefs?.lookingToDate),
+    isOnline: apiUser.onlineStatus || false,
+    bio: profile?.bio || "No bio yet",
+    avatar: avatarUri ? { uri: avatarUri } : images.avatar2,
+    galleryImages: galleryUris.length
+      ? galleryUris.map((uri) => ({ uri }))
+      : [images.avatar2],
+    compatibility,
+    aboutMe: aboutMe.length ? aboutMe : ["No details yet"],
+    school: "Not specified",
+    workTitle: "Not specified",
+    company: "Not specified",
+    ethnicity: ethnicity.length ? ethnicity : ["Not specified"],
+    nationalities: nationalities.length ? nationalities : ["Not specified"],
+    languages,
+    interests: interests.length
+      ? interests
+      : [{ name: "No interests yet", isShared: false }],
+    location: location || "Location not available",
+  };
+};
 
 export const useMatchLogic = (props: MatchScreenProps) => {
-  const { navigation } = props;
+  const { navigation, route } = props;
   const rootNavigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const { user: clerkUser } = useUser();
+
+  // Get filters from route params
+  const filterParams = route.params?.filters;
+
+  const { data: usersData, getUsers, isLoading } = useGetUsers();
+  const { updateLocation, isLoading: isUpdatingLocation } = useUpdateLocation();
+  const { likeUser } = useLikeUser();
+  const { dislikeUser } = useDislikeUser();
+  const { getLikes, data: likesData } = useGetLikes();
+  const { sendLoveLetter, isConnected: isStreamConnected } = useStreamChat();
 
   const [cardIndex, setCardIndex] = useState(0);
   const [isSwipingEnabled, setIsSwipingEnabled] = useState(true);
+  const [excludedUserIds, setExcludedUserIds] = useState<Set<string>>(
+    new Set()
+  );
+  const [locationStatus, setLocationStatus] = useState<
+    "pending" | "granted" | "denied" | "error"
+  >("pending");
+  const [isActionLoading, setIsActionLoading] = useState(false);
+  const [loveLetterText, setLoveLetterText] = useState("");
+  const [isSendingLoveLetter, setIsSendingLoveLetter] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(true);
   const swiperRef = useRef<Swiper<UserProfile>>(null);
 
-  const currentUser = MOCK_USERS[cardIndex % MOCK_USERS.length];
-  const users = MOCK_USERS;
+  // Build getUsers params from filter params
+  const buildGetUsersParams = useCallback(() => {
+    const params: any = {
+      userId: clerkUser?.id || "",
+      radius: filterParams?.radius || [1, 1000],
+      age: filterParams?.age || [18, 99],
+    };
+
+    // Add optional filters only if they exist
+    if (filterParams?.gender) {
+      params.gender = filterParams.gender;
+    }
+    if (filterParams?.activity) {
+      params.activity = filterParams.activity;
+    }
+    if (filterParams?.country) {
+      params.country = filterParams.country;
+    }
+
+    // Build advanced filters
+    const advancedFilters: any = {};
+    if (filterParams?.hasBio) advancedFilters.bio = true;
+    if (filterParams?.ethnicity)
+      advancedFilters.ethnicity = filterParams.ethnicity;
+    if (filterParams?.zodiac) advancedFilters.zodiac = filterParams.zodiac;
+    if (filterParams?.height) advancedFilters.height = filterParams.height;
+    if (filterParams?.drinking) advancedFilters.drinking = true;
+    if (filterParams?.smoking) advancedFilters.smoking = true;
+    if (filterParams?.educationLevel)
+      advancedFilters.educationLevel = filterParams.educationLevel;
+    if (filterParams?.familyPlans)
+      advancedFilters.familyPlans = filterParams.familyPlans;
+    if (filterParams?.lookingFor)
+      advancedFilters.lookingFor = filterParams.lookingFor;
+
+    if (Object.keys(advancedFilters).length > 0) {
+      params.advancedFilters = advancedFilters;
+    }
+
+    return params;
+  }, [clerkUser?.id, filterParams]);
+
+  // Request location permission, update location, then fetch users
+  useEffect(() => {
+    const initializeLocationAndFetchUsers = async () => {
+      if (!clerkUser?.id) return;
+
+      setIsInitializing(true);
+      const getUsersParams = buildGetUsersParams();
+
+      try {
+        // Request location permission
+        const { status } = await Location.requestForegroundPermissionsAsync();
+
+        if (status !== "granted") {
+          setLocationStatus("denied");
+          Toast.show({
+            type: "info",
+            text1: "Location Access Required",
+            text2: "Enable location to find matches near you",
+          });
+          // Still fetch users even without location - wait for both to complete
+          await Promise.all([getUsers(getUsersParams), getLikes(clerkUser.id)]);
+          setIsInitializing(false);
+          return;
+        }
+
+        setLocationStatus("granted");
+
+        // Get current location
+        const location = await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.Balanced,
+        });
+
+        // Update location on backend
+        await updateLocation({
+          userId: clerkUser.id,
+          latitude: String(location.coords.latitude),
+          longitude: String(location.coords.longitude),
+        });
+
+        // Now fetch users and likes - wait for both to complete
+        await Promise.all([getUsers(getUsersParams), getLikes(clerkUser.id)]);
+
+        setIsInitializing(false);
+      } catch (error) {
+        console.error("Location error:", error);
+        setLocationStatus("error");
+        // Still try to fetch users even if location fails - wait for both to complete
+        await Promise.all([getUsers(getUsersParams), getLikes(clerkUser.id)]);
+        setIsInitializing(false);
+      }
+    };
+
+    initializeLocationAndFetchUsers();
+  }, [
+    clerkUser?.id,
+    getUsers,
+    getLikes,
+    updateLocation,
+    buildGetUsersParams,
+    filterParams,
+  ]);
+
+  // Initialize Ably
+  useAbly();
+
+  // Update excluded users when likes data changes
+  useEffect(() => {
+    if (likesData?.length) {
+      const likedIds = new Set(likesData.map((like) => like.likedId));
+      setExcludedUserIds((prev) => new Set([...prev, ...likedIds]));
+    }
+  }, [likesData]);
+
+  // Map API users to UserProfile format and filter out excluded users
+  const users: UserProfile[] = useMemo(() => {
+    if (!usersData?.users?.length) return [];
+    return usersData.users
+      .filter((user) => !excludedUserIds.has(user.id))
+      .map(mapUserToProfile);
+  }, [usersData, excludedUserIds]);
+
+  const currentUser: UserProfile | null = useMemo(() => {
+    if (!users.length) return null;
+    return users[cardIndex % users.length];
+  }, [users, cardIndex]);
+
+  console.log(users.length);
+
+  const handleRefresh = useCallback(async () => {
+    if (!clerkUser?.id) return;
+
+    try {
+      const getUsersParams = buildGetUsersParams();
+      await Promise.all([getUsers(getUsersParams), getLikes(clerkUser.id)]);
+    } catch (error) {
+      console.error("Error refreshing data:", error);
+    }
+  }, [clerkUser?.id, getUsers, getLikes, buildGetUsersParams]);
 
   useEffect(() => {
     navigation.setOptions({
@@ -161,7 +318,11 @@ export const useMatchLogic = (props: MatchScreenProps) => {
         />
       ),
       headerLeft: () => (
-        <TouchableOpacity style={styles.headerButton} activeOpacity={0.7}>
+        <TouchableOpacity
+          style={styles.headerButton}
+          activeOpacity={0.7}
+          onPress={handleRefresh}
+        >
           <MaterialIcons name="refresh" size={24} color={palette.GREY2} />
         </TouchableOpacity>
       ),
@@ -175,46 +336,113 @@ export const useMatchLogic = (props: MatchScreenProps) => {
         </TouchableOpacity>
       ),
     });
-  }, [navigation]);
+  }, [navigation, handleRefresh]);
 
   const handleSeePlans = useCallback(() => {
     rootNavigation.navigate("Upgrade");
   }, [rootNavigation]);
 
-  const handleOpenActionSheet = useCallback(() => {
-    SheetManager.show("match-action-sheet", {
-      payload: {
-        onSeePlans: handleSeePlans,
-      },
-    });
-  }, [handleSeePlans]);
+  // const handleOpenActionSheet = useCallback(() => {
+  //   SheetManager.show("match-action-sheet", {
+  //     payload: {
+  //       onSeePlans: handleSeePlans,
+  //     },
+  //   });
+  // }, [handleSeePlans]);
 
   const handleOpenImages = useCallback(() => {
+    if (!currentUser) return;
     rootNavigation.navigate("Images", {
       images: currentUser.galleryImages,
     });
-  }, [rootNavigation, currentUser.galleryImages]);
+  }, [rootNavigation, currentUser]);
 
-  const handleDislike = useCallback(() => {
-    handleOpenActionSheet();
-  }, [handleOpenActionSheet]);
+  const excludeUser = useCallback((userId: string) => {
+    setExcludedUserIds((prev) => new Set([...prev, userId]));
+  }, []);
 
-  const handleSuperLike = useCallback(() => {
-    rootNavigation.navigate("MatchResult");
-  }, [rootNavigation]);
+  const handleLikeAction = useCallback(
+    async (superLike: boolean = false): Promise<boolean> => {
+      if (!currentUser || !clerkUser?.id) return false;
 
-  const handleLike = useCallback(() => {
-    handleOpenActionSheet();
-  }, [handleOpenActionSheet]);
+      setIsActionLoading(true);
+      try {
+        await likeUser({
+          likedId: currentUser.id,
+          likerId: clerkUser.id,
+          superLike,
+        });
+
+        Toast.show({
+          type: "success",
+          text1: superLike ? "Super Like Sent! 💖" : "Like Sent! ❤️",
+          text2: `You ${superLike ? "super liked" : "liked"} ${
+            currentUser.name
+          }`,
+        });
+
+        excludeUser(currentUser.id);
+        return true;
+      } catch (error) {
+        Toast.show({
+          type: "error",
+          text1: "Failed to send like",
+          text2: "Please try again",
+        });
+        return false;
+      } finally {
+        setIsActionLoading(false);
+      }
+    },
+    [currentUser, clerkUser?.id, likeUser, excludeUser]
+  );
+
+  const handleDislikeAction = useCallback(async (): Promise<boolean> => {
+    if (!currentUser || !clerkUser?.id) return false;
+
+    setIsActionLoading(true);
+    try {
+      await dislikeUser({
+        dislikedId: currentUser.id,
+        dislikerId: clerkUser.id,
+      });
+
+      Toast.show({
+        type: "success",
+        text1: "Passed 👋",
+        text2: `You passed on ${currentUser.name}`,
+      });
+
+      excludeUser(currentUser.id);
+      return true;
+    } catch (error) {
+      Toast.show({
+        type: "error",
+        text1: "Failed to pass",
+        text2: "Please try again",
+      });
+      return false;
+    } finally {
+      setIsActionLoading(false);
+    }
+  }, [currentUser, clerkUser?.id, dislikeUser, excludeUser]);
+
+  const handleSuperLike = useCallback(async () => {
+    const success = await handleLikeAction(true);
+    if (success) {
+      swiperRef.current?.swipeRight();
+    }
+  }, [handleLikeAction]);
 
   const handleSwipedLeft = useCallback(() => {
+    // handleDislikeAction();
     setCardIndex((prev) => prev + 1);
   }, []);
 
   const handleSwipedRight = useCallback(() => {
+    // handleLikeAction(false);
     setCardIndex((prev) => prev + 1);
-    handleOpenActionSheet();
-  }, [handleOpenActionSheet]);
+  }, []);
 
   const handleSwipedAll = useCallback(() => {
     setCardIndex(0);
@@ -231,18 +459,74 @@ export const useMatchLogic = (props: MatchScreenProps) => {
     [isSwipingEnabled]
   );
 
-  const swipeLeft = useCallback(() => {
-    swiperRef.current?.swipeLeft();
-  }, []);
+  const swipeLeft = useCallback(async () => {
+    const success = await handleDislikeAction();
+    if (success) {
+      swiperRef.current?.swipeLeft();
+    }
+  }, [handleDislikeAction]);
 
-  const swipeRight = useCallback(() => {
-    swiperRef.current?.swipeRight();
-  }, []);
+  const swipeRight = useCallback(async () => {
+    const success = await handleLikeAction(false);
+    if (success) {
+      swiperRef.current?.swipeRight();
+    }
+  }, [handleLikeAction]);
+
+  const handleSendLoveLetter = useCallback(async () => {
+    if (!currentUser || !loveLetterText.trim() || isSendingLoveLetter) return;
+
+    if (!isStreamConnected) {
+      Toast.show({
+        type: "error",
+        text1: "Connection Error",
+        text2: "Please wait for chat to connect",
+      });
+      return;
+    }
+
+    setIsSendingLoveLetter(true);
+    try {
+      const success = await sendLoveLetter(currentUser.id, loveLetterText);
+
+      if (success) {
+        Toast.show({
+          type: "success",
+          text1: "Love Letter Sent! 💌",
+          text2: `Your love letter to ${currentUser.name} has been delivered`,
+        });
+        setLoveLetterText("");
+      } else {
+        Toast.show({
+          type: "error",
+          text1: "Failed to send",
+          text2: "Please try again",
+        });
+      }
+    } catch (error) {
+      Toast.show({
+        type: "error",
+        text1: "Failed to send",
+        text2: "Please try again",
+      });
+    } finally {
+      setIsSendingLoveLetter(false);
+    }
+  }, [
+    currentUser,
+    loveLetterText,
+    isSendingLoveLetter,
+    isStreamConnected,
+    sendLoveLetter,
+  ]);
 
   return {
     users,
     currentUser,
     cardIndex,
+    isLoading: isInitializing,
+    isActionLoading,
+    locationStatus,
     isSwipingEnabled,
     swiperRef,
     handleOpenImages,
@@ -253,5 +537,9 @@ export const useMatchLogic = (props: MatchScreenProps) => {
     handleSwipedRight,
     handleSwipedAll,
     handleScroll,
+    loveLetterText,
+    setLoveLetterText,
+    handleSendLoveLetter,
+    isSendingLoveLetter,
   };
 };

@@ -6,4 +6,4 @@ export type DatingPreferenceScreenProps = NativeStackScreenProps<
   "DatingPreference"
 >;
 
-export type PreferenceOption = "WOMEN" | "MEN" | "NONBINARY";
+export type PreferenceOption = "woman" | "man" | "nonbinary";

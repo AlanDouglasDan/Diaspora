@@ -1,5 +1,11 @@
 import React, { FC } from "react";
-import { Platform, Text, View, TouchableOpacity } from "react-native";
+import {
+  Platform,
+  Text,
+  View,
+  TouchableOpacity,
+  ActivityIndicator,
+} from "react-native";
 import { FontAwesome6, Entypo } from "@expo/vector-icons";
 import {
   CodeField,
@@ -17,8 +23,16 @@ import { useVerifyOtpLogic } from "./useVerifyOtpLogic";
 const CELL_COUNT = 6;
 
 const VerifyOtp: FC<VerifyOtpScreenProps> = (props) => {
-  const { code, setCode, handleGoBack, handleSubmit, context, value } =
-    useVerifyOtpLogic(props);
+  const {
+    code,
+    setCode,
+    handleGoBack,
+    handleSubmit,
+    context,
+    value,
+    isLoading,
+    resendVerification,
+  } = useVerifyOtpLogic(props);
 
   const ref = useBlurOnFulfill({ value: code, cellCount: CELL_COUNT });
   const [codeFieldProps, getCellOnLayoutHandler] = useClearByFocusCell({
@@ -70,18 +84,24 @@ const VerifyOtp: FC<VerifyOtpScreenProps> = (props) => {
           )}
         />
 
-        <Text style={styles.header14}>Resend</Text>
+        <TouchableOpacity onPress={resendVerification}>
+          <Text style={styles.header14}>Resend</Text>
+        </TouchableOpacity>
       </View>
 
       <TouchableOpacity
-        disabled={code.length !== CELL_COUNT}
+        disabled={code.length !== CELL_COUNT || isLoading}
         style={[
           styles.button,
-          { opacity: code.length === CELL_COUNT ? 1 : 0.5 },
+          { opacity: code.length === CELL_COUNT && !isLoading ? 1 : 0.5 },
         ]}
         onPress={handleSubmit}
       >
-        <FontAwesome6 name="arrow-right" size={20} color={palette.BLACK} />
+        {isLoading ? (
+          <ActivityIndicator size="small" color={palette.BLACK} />
+        ) : (
+          <FontAwesome6 name="arrow-right" size={20} color={palette.BLACK} />
+        )}
       </TouchableOpacity>
     </LayoutContainer>
   );

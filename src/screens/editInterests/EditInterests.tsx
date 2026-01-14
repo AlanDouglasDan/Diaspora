@@ -1,9 +1,16 @@
 import React, { FC } from "react";
-import { View, Text, TouchableOpacity, ScrollView } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  ActivityIndicator,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 import { palette } from "core/styles";
 import { LayoutContainer } from "components/layoutContainer";
+import { Button } from "components/button";
 
 import type { EditInterestsScreenProps } from "./EditInterests.types";
 import { styles } from "./EditInterests.styles";
@@ -11,14 +18,16 @@ import { useEditInterestsLogic } from "./useEditInterestsLogic";
 
 const EditInterests: FC<EditInterestsScreenProps> = (props) => {
   const {
-    categories,
+    interests,
     selectedInterests,
     toggleInterest,
     isSelected,
-    toggleCategoryExpanded,
-    isCategoryExpanded,
-    getVisibleInterests,
+    toggleShowAll,
+    showAll,
     hasMoreInterests,
+    interestsLoading,
+    isLoading,
+    handleSave,
   } = useEditInterestsLogic(props);
 
   return (
@@ -57,12 +66,17 @@ const EditInterests: FC<EditInterestsScreenProps> = (props) => {
           </View>
         )}
 
-        {/* Category Sections */}
-        {categories.map((category) => (
-          <View key={category.id} style={styles.categorySection}>
-            <Text style={styles.categoryTitle}>{category.title}</Text>
+        {/* All Interests Section */}
+        {interestsLoading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={palette.RED2} />
+            <Text style={styles.loadingText}>Loading interests...</Text>
+          </View>
+        ) : (
+          <View style={styles.categorySection}>
+            <Text style={styles.categoryTitle}>All Interests</Text>
             <View style={styles.interestsWrap}>
-              {getVisibleInterests(category).map((interest) => {
+              {interests.map((interest) => {
                 const selected = isSelected(interest.id);
                 return (
                   <TouchableOpacity
@@ -89,20 +103,30 @@ const EditInterests: FC<EditInterestsScreenProps> = (props) => {
               })}
             </View>
 
-            {hasMoreInterests(category) && (
+            {hasMoreInterests && (
               <TouchableOpacity
                 style={styles.showMoreButton}
-                onPress={() => toggleCategoryExpanded(category.id)}
+                onPress={toggleShowAll}
                 activeOpacity={0.7}
               >
                 <Text style={styles.showMoreText}>
-                  {isCategoryExpanded(category.id) ? "Show less" : "Show more"}
+                  {showAll ? "Show less" : "Show more"}
                 </Text>
               </TouchableOpacity>
             )}
           </View>
-        ))}
+        )}
       </ScrollView>
+
+      {/* Save Button */}
+      <View style={styles.buttonContainer}>
+        <Button
+          title="Save Interests"
+          onPress={handleSave}
+          disabled={isLoading || selectedInterests.length === 0}
+          loading={isLoading}
+        />
+      </View>
     </LayoutContainer>
   );
 };

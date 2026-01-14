@@ -64,8 +64,8 @@ const FilterSettings: FC<FilterSettingsScreenProps> = (props) => {
             updateFilter("distanceRange", value as [number, number])
           }
           minimumValue={1}
-          maximumValue={100}
-          step={1}
+          maximumValue={1000}
+          step={10}
           isRange
           style={styles.sliderContainer}
         />
@@ -77,7 +77,7 @@ const FilterSettings: FC<FilterSettingsScreenProps> = (props) => {
             updateFilter("ageRange", value as [number, number])
           }
           minimumValue={18}
-          maximumValue={65}
+          maximumValue={100}
           step={1}
           isRange
           valueFormatter={(val) => {

@@ -7,6 +7,7 @@ export type AudioCallScreenProps = NativeStackScreenProps<
 >;
 
 export interface AudioCallParams {
+  recipientId: string;
   recipientName: string;
   recipientAvatar: any;
 }

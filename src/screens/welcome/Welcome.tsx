@@ -1,19 +1,63 @@
-import React, { FC } from "react";
-import { ImageBackground, Text, View } from "react-native";
+import React, { FC, useEffect } from "react";
+import { ImageBackground, Text, View, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Image } from "expo-image";
-import { AntDesign } from "@expo/vector-icons";
+import { AntDesign, Feather } from "@expo/vector-icons";
 
 import { images } from "core/images";
-import { common, spacing, palette } from "core/styles";
+import { common, spacing, palette, layout } from "core/styles";
 import { Button } from "components/button";
 import type { WelcomeScreenProps } from "./Welcome.types";
 import { styles } from "./Welcome.styles";
 import { useWelcomeLogic } from "./useWelcomeLogic";
 
 const Welcome: FC<WelcomeScreenProps> = (props) => {
-  const { authState, setAuthState, handleContinueWithEmail } =
-    useWelcomeLogic(props);
+  const {
+    authState,
+    setAuthState,
+    handleContinueWithEmail,
+    handleGoogleSignIn,
+    handleAppleSignIn,
+    handleLogout,
+    isGoogleLoading,
+    isAppleLoading,
+    showSplash,
+  } = useWelcomeLogic(props);
+
+  useEffect(() => {
+    if (authState !== "welcome") {
+      props.navigation.setOptions({
+        headerShown: true,
+        headerTitle: "",
+        headerTransparent: true,
+        headerLeft: () => (
+          <TouchableOpacity
+            onPress={() => setAuthState("welcome")}
+            style={{ paddingLeft: 4 }}
+          >
+            <Feather name="chevron-left" size={24} color={palette.WHITE} />
+          </TouchableOpacity>
+        ),
+      });
+    } else {
+      props.navigation.setOptions({
+        headerLeft: undefined,
+      });
+    }
+  }, [authState, props.navigation, setAuthState]);
+
+  // Show splash extension while checking auth
+  if (showSplash) {
+    return (
+      <View style={styles.splashContainer}>
+        <Image
+          source={images.splashIcon}
+          style={styles.icon}
+          contentFit="contain"
+        />
+      </View>
+    );
+  }
 
   return (
     <ImageBackground
@@ -24,11 +68,13 @@ const Welcome: FC<WelcomeScreenProps> = (props) => {
       <View style={styles.overlay}>
         <SafeAreaView style={styles.container}>
           <View style={styles.content}>
-            <Image
-              source={images.logo}
-              style={styles.logo}
-              contentFit="contain"
-            />
+            <TouchableOpacity onPress={handleLogout} activeOpacity={0.7}>
+              <Image
+                source={images.logo}
+                style={styles.logo}
+                contentFit="contain"
+              />
+            </TouchableOpacity>
 
             <Text style={[common.textCenter, styles.title]}>
               Meet. Match. Love. Anywhere.
@@ -70,6 +116,8 @@ const Welcome: FC<WelcomeScreenProps> = (props) => {
                   title="Continue with Apple"
                   style={styles.button}
                   variant="white"
+                  onPress={handleAppleSignIn}
+                  loading={isAppleLoading}
                 />
 
                 <Button
@@ -79,6 +127,8 @@ const Welcome: FC<WelcomeScreenProps> = (props) => {
                   title="Continue With Google"
                   style={styles.button}
                   variant="white"
+                  onPress={handleGoogleSignIn}
+                  loading={isGoogleLoading}
                 />
               </View>
             )}

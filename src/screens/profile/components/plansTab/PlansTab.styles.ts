@@ -104,4 +104,8 @@ export const styles = StyleSheet.create({
   upgradeButton: {
     marginTop: 16,
   },
+  text14: {
+    ...typography.text14,
+    color: palette.BLACK,
+  }
 });

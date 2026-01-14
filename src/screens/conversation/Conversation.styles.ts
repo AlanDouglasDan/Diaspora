@@ -65,6 +65,23 @@ export const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 16,
   },
+  loadingContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 40,
+  },
+  emptyContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 40,
+  },
+  emptyText: {
+    ...typography.text14,
+    color: palette.TEXT_COLOR,
+    textAlign: "center",
+  },
   messageRow: {
     marginBottom: 8,
   },

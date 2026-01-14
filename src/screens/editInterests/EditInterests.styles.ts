@@ -81,4 +81,20 @@ export const styles = StyleSheet.create({
     ...typography.text12,
     color: palette.GREY2,
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 40,
+  },
+  loadingText: {
+    ...typography.text14,
+    color: palette.GREY2,
+    marginTop: 12,
+  },
+  buttonContainer: {
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    backgroundColor: palette.WHITE,
+  },
 });

@@ -267,7 +267,52 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 20,
     width: "100%",
-    height: 40,
+    paddingVertical: 10,
+  },
+  emptyStateContainer: {
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 32,
+  },
+  emptyStateIconContainer: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: "#FFF0F5",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 24,
+  },
+  emptyStateTitle: {
+    textAlign: "center",
+    fontSize: 20,
+  },
+  emptyStateMessage: {
+    marginTop: 12,
+    textAlign: "center",
+    color: palette.GREY2,
+    lineHeight: 22,
+  },
+  emptyStateButton: {
+    marginTop: 24,
+    backgroundColor: palette.PINK,
+    paddingHorizontal: 32,
+    paddingVertical: 14,
+    borderRadius: 25,
+  },
+  emptyStateButtonText: {
+    color: palette.WHITE,
+    fontWeight: "600",
+    fontSize: 16,
+  },
+  loadingStateMessage: {
+    marginTop: 16,
+    textAlign: "center",
+  },
+  loadingStateSubtext: {
+    marginTop: 8,
+    textAlign: "center",
+    color: palette.GREY2,
   },
 });
 

@@ -57,6 +57,17 @@ export const styles = StyleSheet.create({
     ...typography.text16,
     color: palette.TEXT_COLOR,
   },
+  loadingContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 40,
+  },
+  loadingText: {
+    ...typography.text16,
+    color: palette.TEXT_COLOR,
+    marginTop: 16,
+  },
   submitButton: {
     width: 44,
     height: 44,

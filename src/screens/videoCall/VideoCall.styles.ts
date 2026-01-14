@@ -79,4 +79,16 @@ export const styles = StyleSheet.create({
     marginTop: 16,
     textAlign: "center",
   },
+  waitingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  waitingText: {
+    ...typography.text16,
+    color: palette.WHITE,
+    textAlign: "center",
+    paddingHorizontal: 24,
+  },
 });

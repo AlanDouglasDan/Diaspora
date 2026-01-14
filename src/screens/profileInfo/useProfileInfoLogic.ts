@@ -1,75 +1,94 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import { useWindowDimensions } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { SheetManager } from "react-native-actions-sheet";
+import { useUser } from "@clerk/clerk-expo";
+import Toast from "react-native-toast-message";
+
+import { useAppSelector, useAppDispatch, setPreferences } from "@/src/store";
+import { calculateAge, calculateProfileProgress } from "@/src/core/utils";
+import { useGetProfile, useUpdateProfile } from "@/src/api/profile";
+import { useGetPreference, useUpdatePreference } from "@/src/api/preferences";
+import { setProfile } from "@/src/store/slices/profileSlice";
+import {
+  useGetUploadUrl,
+  useUploadToCloudinary,
+  useSaveImages,
+} from "@/src/api/image";
 
 import images from "../../../assets/images";
 import type {
   ProfileInfoScreenProps,
   ProfileSection,
 } from "./ProfileInfo.types";
+import {
+  LANGUAGE_OPTIONS,
+  EDUCATION_OPTIONS,
+  PET_OPTIONS,
+  SMOKING_OPTIONS,
+  DRINKING_OPTIONS,
+  RELIGION_OPTIONS,
+  ZODIAC_OPTIONS,
+  ETHNICITY_OPTIONS,
+  HEIGHT_OPTIONS,
+  FAMILY_PLANS_OPTIONS,
+} from "@/src/core/constants";
 
-// Field options data
-const LANGUAGE_OPTIONS = [
-  { id: "english", label: "ENGLISH" },
-  { id: "german", label: "GERMAN" },
-  { id: "french", label: "FRENCH" },
-  { id: "italian", label: "ITALIAN" },
-  { id: "portuguese", label: "PORTUGUESE" },
-  { id: "russian", label: "RUSSIAN" },
-  { id: "chinese", label: "CHINESE" },
-  { id: "arabic", label: "ARABIC" },
-  { id: "catalan", label: "CATALAN" },
-  { id: "spanish", label: "SPANISH" },
-  { id: "japanese", label: "JAPANESE" },
-  { id: "korean", label: "KOREAN" },
-  { id: "hindi", label: "HINDI" },
-  { id: "dutch", label: "DUTCH" },
-  { id: "swedish", label: "SWEDISH" },
+const PRONOUNS_OPTIONS = [
+  { id: "he_him", label: "HE/HIM" },
+  { id: "she_her", label: "SHE/HER" },
+  { id: "they_them", label: "THEY/THEM" },
+  { id: "other", label: "OTHER" },
 ];
 
-const EDUCATION_OPTIONS = [
-  { label: "High School", value: "high_school" },
-  { label: "Some College", value: "some_college" },
-  { label: "Associate Degree", value: "associate" },
-  { label: "Bachelor's Degree", value: "bachelors" },
-  { label: "Master's Degree", value: "masters" },
-  { label: "Doctorate", value: "doctorate" },
-  { label: "Trade School", value: "trade_school" },
-];
-
-const PET_OPTIONS = [
-  { id: "dogs", label: "DOGS" },
-  { id: "cats", label: "CATS" },
-  { id: "birds", label: "BIRDS" },
-  { id: "fish", label: "FISH/AQUARIUMS" },
-  { id: "reptiles", label: "REPTILES/AMPHIBIANS" },
-  {
-    id: "small_mammals",
-    label: "SMALL MAMMALS (HAMSTERS/GUINEA PIGS/RABBITS/FERRETS)",
-  },
-  { id: "horses", label: "HORSES/EQUESTRIAN" },
-  { id: "livestock", label: "LIVESTOCK (GOATS/SHEEP/CHICKENS)" },
-  { id: "exotic", label: "EXOTIC PETS" },
-  { id: "none", label: "NO PETS" },
-];
-
-const SMOKING_OPTIONS = [
-  { id: "socially", label: "SOCIALLY" },
-  { id: "occasionally", label: "OCCASIONALLY" },
-  { id: "regularly", label: "REGULARLY" },
-  { id: "never", label: "NEVER" },
-];
-
-const DRINKING_OPTIONS = [
-  { id: "socially", label: "SOCIALLY" },
-  { id: "occasionally", label: "OCCASIONALLY" },
-  { id: "regularly", label: "REGULARLY" },
-  { id: "never", label: "NEVER" },
+const GENDER_OPTIONS = [
+  { id: "man", label: "MAN" },
+  { id: "woman", label: "WOMAN" },
+  { id: "non_binary", label: "NON-BINARY" },
+  { id: "other", label: "OTHER" },
 ];
 
 export const useProfileInfoLogic = ({ navigation }: ProfileInfoScreenProps) => {
   const { width: screenWidth } = useWindowDimensions();
+  const { user } = useUser();
+  const profileData = useAppSelector((state) => state.profile.data);
+  const preferencesData = useAppSelector((state) => state.preferences.data);
+
+  const dispatch = useAppDispatch();
+  const { getProfile } = useGetProfile();
+  const { getPreference } = useGetPreference();
+  const { updatePreference, isLoading: isUpdatingPreference } =
+    useUpdatePreference();
+  const { updateProfile, isLoading: isUpdatingProfile } = useUpdateProfile();
+
+  // Photo upload hooks
+  const { data: uploadUrlData, getUploadUrl } = useGetUploadUrl();
+  const { uploadToCloudinary } = useUploadToCloudinary();
+  const { saveImages } = useSaveImages();
+  const [isUploading, setIsUploading] = useState(false);
+
+  // Debounce timer ref for bio
+  const bioDebounceRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Fetch profile data if not in Redux
+  useEffect(() => {
+    if (!profileData && user?.id) {
+      getProfile(user.id);
+    }
+  }, [profileData, user?.id, getProfile]);
+
+  // Fetch preferences data if not in Redux
+  useEffect(() => {
+    if (!preferencesData && user?.id) {
+      getPreference(user.id);
+    }
+  }, [preferencesData, user?.id, getPreference]);
+
+  // Get upload URL on mount
+  useEffect(() => {
+    getUploadUrl().catch(console.error);
+  }, [getUploadUrl]);
+
   const [bio, setBio] = useState("");
   // Photos array: 6 slots, null means empty
   const [photos, setPhotos] = useState<(string | null)[]>([
@@ -86,7 +105,93 @@ export const useProfileInfoLogic = ({ navigation }: ProfileInfoScreenProps) => {
     Record<string, string | string[]>
   >({});
 
-  const profileCompletion = 75;
+  const profileCompletion = profileData
+    ? calculateProfileProgress(profileData)
+    : 0;
+
+  // Prefill data from Redux
+  useEffect(() => {
+    if (profileData) {
+      // Set bio
+      if (profileData.bio) {
+        setBio(profileData.bio);
+      }
+
+      // Set photos from images array
+      if (profileData.images && profileData.images.length > 0) {
+        const newPhotos = [...photos];
+        profileData.images.forEach((image, index) => {
+          if (index < 6) {
+            newPhotos[index] = image;
+          }
+        });
+        setPhotos(newPhotos);
+      }
+
+      // Set field values from user data
+      const newFieldValues: Record<string, string | string[]> = {};
+
+      if (profileData.user) {
+        if (profileData.user.name) {
+          newFieldValues.name = profileData.user.name;
+        }
+        if (profileData.user.gender) {
+          newFieldValues.gender = profileData.user.gender.toLowerCase();
+        }
+        if (profileData.user.age) {
+          newFieldValues.age = profileData.user.age;
+        }
+      }
+
+      setFieldValues((prev) => ({ ...prev, ...newFieldValues }));
+    }
+  }, [profileData]);
+
+  useEffect(() => {
+    if (preferencesData) {
+      const newFieldValues: Record<string, string | string[]> = {};
+
+      // Map preferences data to field values
+      if (preferencesData.education) {
+        newFieldValues.education = preferencesData.education;
+      }
+      if (preferencesData.pets) {
+        newFieldValues.pets = preferencesData.pets;
+      }
+      if (preferencesData.smoking !== undefined) {
+        newFieldValues.smoking = preferencesData.smoking ? "yes" : "no";
+      }
+      if (preferencesData.drinking !== undefined) {
+        newFieldValues.drinking = preferencesData.drinking ? "yes" : "no";
+      }
+      if (preferencesData.religion) {
+        newFieldValues.religion = preferencesData.religion;
+      }
+      if (preferencesData.zodiac) {
+        newFieldValues.zodiac = preferencesData.zodiac;
+      }
+      if (preferencesData.language) {
+        newFieldValues.language = preferencesData.language;
+      }
+      if (preferencesData.familyPlans) {
+        newFieldValues.familyPlans = preferencesData.familyPlans;
+      }
+      if (preferencesData.height) {
+        newFieldValues.height = preferencesData.height;
+      }
+      if (preferencesData.pronouns) {
+        newFieldValues.pronouns = preferencesData.pronouns;
+      }
+      if (preferencesData.ethnicity) {
+        newFieldValues.ethnicity = preferencesData.ethnicity;
+      }
+      if (preferencesData.interests && preferencesData.interests.length > 0) {
+        newFieldValues.interests = preferencesData.interests;
+      }
+
+      setFieldValues((prev) => ({ ...prev, ...newFieldValues }));
+    }
+  }, [preferencesData]);
 
   // Calculate photo sizes based on screen width
   const HORIZONTAL_PADDING = 20;
@@ -98,11 +203,11 @@ export const useProfileInfoLogic = ({ navigation }: ProfileInfoScreenProps) => {
   const mainPhotoSize = smallPhotoSize * 2 + GAP;
 
   const userData = {
-    name: "Jerry",
-    age: 28,
-    location: "New Jersey · 13:00GMT",
-    country: "Canada",
-    countryFlag: "🇨🇦",
+    name: profileData?.user?.name || "User",
+    age: profileData?.user?.age ? calculateAge(profileData.user.age) : 0,
+    location: "N/A", // Location not available in current API response
+    country: "N/A",
+    countryFlag: "🏠",
   };
 
   const handleSelectPhoto = useCallback(
@@ -123,13 +228,189 @@ export const useProfileInfoLogic = ({ navigation }: ProfileInfoScreenProps) => {
       });
 
       if (!result.canceled && result.assets[0]) {
-        const uri = result.assets[0].uri;
+        const localUri = result.assets[0].uri;
+
+        // Show local image immediately while uploading
         setPhotos((prev) =>
-          prev.map((photo, idx) => (idx === index ? uri : photo))
+          prev.map((photo, idx) => (idx === index ? localUri : photo))
         );
+
+        // Upload to Cloudinary
+        if (uploadUrlData && user?.id) {
+          setIsUploading(true);
+          try {
+            const imageUrl = await uploadToCloudinary({
+              localUri,
+              uploadData: uploadUrlData,
+              fileName: `profile_${index}.jpg`,
+            });
+
+            if (imageUrl) {
+              // Update with Cloudinary URL
+              setPhotos((prev) => {
+                const newPhotos = prev.map((photo, idx) =>
+                  idx === index ? imageUrl : photo
+                );
+
+                // Save to backend
+                const uploadedImages = newPhotos
+                  .filter((photo): photo is string => photo !== null)
+                  .map((photo, idx) => ({
+                    imageUrl: photo,
+                    order: idx + 1,
+                    userId: user.id,
+                  }));
+
+                saveImages({
+                  userId: user.id,
+                  images: uploadedImages,
+                })
+                  .then(() => {
+                    Toast.show({
+                      type: "success",
+                      text1: "Photo Uploaded",
+                      text2: "Your photo has been saved successfully",
+                    });
+                  })
+                  .catch((error) => {
+                    console.error("Save image error:", error);
+                    Toast.show({
+                      type: "error",
+                      text1: "Save Failed",
+                      text2: error?.message || "Could not save image",
+                    });
+                  });
+
+                return newPhotos;
+              });
+            }
+          } catch (error: any) {
+            console.error("Upload error:", error);
+            Toast.show({
+              type: "error",
+              text1: "Upload Failed",
+              text2:
+                error?.message || "Could not upload image. Please try again.",
+            });
+            // Revert to previous photo on error
+            setPhotos((prev) =>
+              prev.map((photo, idx) => (idx === index ? null : photo))
+            );
+          } finally {
+            setIsUploading(false);
+          }
+        }
       }
     },
-    [setPhotos]
+    [uploadUrlData, uploadToCloudinary, saveImages, user?.id]
+  );
+
+  // Debounced bio update - uses updateProfile endpoint
+  const handleBioChange = useCallback(
+    (newBio: string) => {
+      setBio(newBio);
+
+      // Clear existing debounce timer
+      if (bioDebounceRef.current) {
+        clearTimeout(bioDebounceRef.current);
+      }
+
+      // Set new debounce timer
+      bioDebounceRef.current = setTimeout(async () => {
+        if (user?.id) {
+          try {
+            const result = await updateProfile(user.id, { bio: newBio });
+            if (result) {
+              dispatch(setProfile(result));
+            }
+            Toast.show({
+              type: "success",
+              text1: "Bio Updated",
+              text2: "Your bio has been saved",
+            });
+          } catch (error: any) {
+            console.error("Bio update error:", error);
+            Toast.show({
+              type: "error",
+              text1: "Update Failed",
+              text2: error?.message || "Could not update bio",
+            });
+          }
+        }
+      }, 1000);
+    },
+    [user?.id, updateProfile, dispatch]
+  );
+
+  // Cleanup debounce timer on unmount
+  useEffect(() => {
+    return () => {
+      if (bioDebounceRef.current) {
+        clearTimeout(bioDebounceRef.current);
+      }
+    };
+  }, []);
+
+  // Helper to update preference field via API
+  const updatePreferenceField = useCallback(
+    async (fieldId: string, value: string | string[] | boolean) => {
+      if (!user?.id || !preferencesData?.id) return;
+
+      try {
+        const payload: Record<string, any> = { [fieldId]: value };
+        const result = await updatePreference(
+          String(preferencesData.id),
+          user.id,
+          payload
+        );
+        if (result) {
+          dispatch(setPreferences(result));
+        }
+        // Refresh profile data after preference update
+        await getProfile(user.id);
+        Toast.show({
+          type: "success",
+          text1: "Updated",
+          text2: "Your profile has been updated",
+        });
+      } catch (error: any) {
+        console.error("Update preference error:", error);
+        Toast.show({
+          type: "error",
+          text1: "Update Failed",
+          text2: error?.message || "Could not update. Please try again.",
+        });
+      }
+    },
+    [user?.id, preferencesData?.id, updatePreference, dispatch, getProfile]
+  );
+
+  // Helper to update profile field via API (for bio, interests)
+  const updateProfileField = useCallback(
+    async (fieldId: string, value: string | string[]) => {
+      if (!user?.id) return;
+
+      try {
+        const payload: Record<string, any> = { [fieldId]: value };
+        const result = await updateProfile(user.id, payload);
+        if (result) {
+          dispatch(setProfile(result));
+        }
+        Toast.show({
+          type: "success",
+          text1: "Updated",
+          text2: "Your profile has been updated",
+        });
+      } catch (error: any) {
+        console.error("Update profile error:", error);
+        Toast.show({
+          type: "error",
+          text1: "Update Failed",
+          text2: error?.message || "Could not update. Please try again.",
+        });
+      }
+    },
+    [user?.id, updateProfile, dispatch]
   );
 
   const sections: ProfileSection[] = useMemo(
@@ -137,7 +418,17 @@ export const useProfileInfoLogic = ({ navigation }: ProfileInfoScreenProps) => {
       {
         id: "whyHere",
         title: "Why You're Here",
-        fields: [{ id: "why", label: "", value: "Empty" }],
+        fields: [
+          {
+            id: "why",
+            label: "",
+            value:
+              preferencesData?.lookingToDate &&
+              preferencesData.lookingToDate.length > 0
+                ? preferencesData.lookingToDate.join(", ")
+                : "Empty",
+          },
+        ],
       },
       {
         id: "aboutMe",
@@ -170,8 +461,8 @@ export const useProfileInfoLogic = ({ navigation }: ProfileInfoScreenProps) => {
             icon: "school",
           },
           {
-            id: "languages",
-            label: "Languages",
+            id: "language",
+            label: "Language",
             value: "Empty",
             icon: "language",
           },
@@ -202,7 +493,12 @@ export const useProfileInfoLogic = ({ navigation }: ProfileInfoScreenProps) => {
             icon: "ruler-vertical",
           },
           { id: "bodyType", label: "Body Type", value: "Empty", icon: "child" },
-          { id: "children", label: "Children", value: "Empty", icon: "baby" },
+          {
+            id: "familyPlans",
+            label: "Family Plans",
+            value: "Empty",
+            icon: "baby",
+          },
           {
             id: "drinking",
             label: "Drinking",
@@ -295,10 +591,19 @@ export const useProfileInfoLogic = ({ navigation }: ProfileInfoScreenProps) => {
         id: "interests",
         title: "Interests",
         editable: true,
-        fields: [],
+        fields: [
+          {
+            id: "interests",
+            label: "",
+            value:
+              preferencesData?.interests && preferencesData.interests.length > 0
+                ? preferencesData.interests.join(", ")
+                : "Add your interests here",
+          },
+        ],
       },
     ],
-    []
+    [preferencesData]
   );
 
   const handlePreview = useCallback(() => {
@@ -311,14 +616,40 @@ export const useProfileInfoLogic = ({ navigation }: ProfileInfoScreenProps) => {
 
   const handleEditInterests = useCallback(() => {
     navigation.navigate("EditInterests");
-  }, [navigation]);
+  }, []);
 
-  // Helper to update field value
+  // Helper to update field value and call API
   const updateFieldValue = useCallback(
-    (fieldId: string, value: string | string[]) => {
+    async (fieldId: string, value: string | string[]) => {
       setFieldValues((prev) => ({ ...prev, [fieldId]: value }));
+
+      // Map field IDs to preference field names
+      const fieldToPreferenceMap: Record<string, string> = {
+        languages: "language",
+        education: "education",
+        pets: "pets",
+        smoking: "smoking",
+        drinking: "drinking",
+        religion: "religion",
+        starSign: "zodiac",
+        ethnicity: "ethnicity",
+        height: "height",
+        familyPlans: "familyPlans",
+        pronouns: "pronouns",
+        gender: "gender",
+      };
+
+      const preferenceField = fieldToPreferenceMap[fieldId];
+      if (preferenceField) {
+        // Convert smoking/drinking to boolean
+        let apiValue: string | string[] | boolean = value;
+        if (fieldId === "smoking" || fieldId === "drinking") {
+          apiValue = value !== "never";
+        }
+        await updatePreferenceField(preferenceField, apiValue);
+      }
     },
-    []
+    [updatePreferenceField]
   );
 
   // Helper to get display value for a field
@@ -353,10 +684,9 @@ export const useProfileInfoLogic = ({ navigation }: ProfileInfoScreenProps) => {
               fieldId: "languages",
               title: "Language",
               image: images.language,
-              variant: "search-list",
-              placeholder: "Search language",
+              variant: "single-select",
               options: LANGUAGE_OPTIONS,
-              initialValue: fieldValues.languages || [],
+              initialValue: fieldValues.languages || "",
               onSubmit: (value) => updateFieldValue("languages", value),
             },
           });
@@ -397,9 +727,9 @@ export const useProfileInfoLogic = ({ navigation }: ProfileInfoScreenProps) => {
               fieldId: "pets",
               title: "Do you have pets?",
               image: images.pets,
-              variant: "multi-select",
+              variant: "single-select",
               options: PET_OPTIONS,
-              initialValue: fieldValues.pets || [],
+              initialValue: fieldValues.pets || "",
               onSubmit: (value) => updateFieldValue("pets", value),
             },
           });
@@ -433,6 +763,104 @@ export const useProfileInfoLogic = ({ navigation }: ProfileInfoScreenProps) => {
           });
           break;
 
+        case "religion":
+          SheetManager.show("profile-field-sheet", {
+            payload: {
+              fieldId: "religion",
+              title: "What is your religion?",
+              image: images.language,
+              variant: "single-select",
+              options: RELIGION_OPTIONS,
+              initialValue: fieldValues.religion || "",
+              onSubmit: (value) => updateFieldValue("religion", value),
+            },
+          });
+          break;
+
+        case "starSign":
+          SheetManager.show("profile-field-sheet", {
+            payload: {
+              fieldId: "starSign",
+              title: "What is your zodiac sign?",
+              image: images.language,
+              variant: "single-select",
+              options: ZODIAC_OPTIONS,
+              initialValue: fieldValues.starSign || "",
+              onSubmit: (value) => updateFieldValue("starSign", value),
+            },
+          });
+          break;
+
+        case "ethnicity":
+          SheetManager.show("profile-field-sheet", {
+            payload: {
+              fieldId: "ethnicity",
+              title: "What is your ethnicity?",
+              image: images.language,
+              variant: "single-select",
+              options: ETHNICITY_OPTIONS,
+              initialValue: fieldValues.ethnicity || "",
+              onSubmit: (value) => updateFieldValue("ethnicity", value),
+            },
+          });
+          break;
+
+        case "height":
+          SheetManager.show("profile-field-sheet", {
+            payload: {
+              fieldId: "height",
+              title: "What is your height?",
+              image: images.language,
+              variant: "single-select",
+              options: HEIGHT_OPTIONS,
+              initialValue: fieldValues.height || "",
+              onSubmit: (value) => updateFieldValue("height", value),
+            },
+          });
+          break;
+
+        case "familyPlans":
+          SheetManager.show("profile-field-sheet", {
+            payload: {
+              fieldId: "familyPlans",
+              title: "What are your family plans?",
+              image: images.language,
+              variant: "single-select",
+              options: FAMILY_PLANS_OPTIONS,
+              initialValue: fieldValues.familyPlans || "",
+              onSubmit: (value) => updateFieldValue("familyPlans", value),
+            },
+          });
+          break;
+
+        case "pronouns":
+          SheetManager.show("profile-field-sheet", {
+            payload: {
+              fieldId: "pronouns",
+              title: "What are your pronouns?",
+              image: images.language,
+              variant: "single-select",
+              options: PRONOUNS_OPTIONS,
+              initialValue: fieldValues.pronouns || "",
+              onSubmit: (value) => updateFieldValue("pronouns", value),
+            },
+          });
+          break;
+
+        case "gender":
+          SheetManager.show("profile-field-sheet", {
+            payload: {
+              fieldId: "gender",
+              title: "What is your gender?",
+              image: images.language,
+              variant: "single-select",
+              options: GENDER_OPTIONS,
+              initialValue: fieldValues.gender || "",
+              onSubmit: (value) => updateFieldValue("gender", value),
+            },
+          });
+          break;
+
         default:
           // For other fields, do nothing for now
           break;
@@ -444,7 +872,7 @@ export const useProfileInfoLogic = ({ navigation }: ProfileInfoScreenProps) => {
   return {
     userData,
     bio,
-    setBio,
+    setBio: handleBioChange,
     sections,
     handlePreview,
     handleVerify,
@@ -457,5 +885,7 @@ export const useProfileInfoLogic = ({ navigation }: ProfileInfoScreenProps) => {
     handleFieldPress,
     getFieldDisplayValue,
     fieldValues,
+    isUploading,
+    isUpdatingPreference,
   };
 };

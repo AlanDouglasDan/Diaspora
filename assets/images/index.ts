@@ -34,4 +34,5 @@ export default {
   emptyState2: require("./emptyState2.png"),
   upgradeSuccessful: require("./upgradeSuccessful.png"),
   matched: require("./matched.png"),
+  splashIcon: require("./splash-icon.png"),
 };

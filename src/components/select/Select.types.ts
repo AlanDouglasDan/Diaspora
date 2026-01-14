@@ -12,4 +12,5 @@ export interface SelectProps {
   placeholder?: string;
   label?: string;
   style?: ViewStyle;
+  dropdownPosition?: "auto" | "top" | "bottom";
 }

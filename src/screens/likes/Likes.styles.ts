@@ -110,6 +110,12 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  // Loading state styles
+  loadingContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   // Empty state styles
   emptyStateContainer: {
     flex: 1,

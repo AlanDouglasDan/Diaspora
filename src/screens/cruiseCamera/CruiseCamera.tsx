@@ -11,8 +11,13 @@ import { styles } from "./CruiseCamera.styles";
 import { useCruiseCameraLogic } from "./useCruiseCameraLogic";
 
 const CruiseCamera: FC<CruiseCameraScreenProps> = (props) => {
-  const { facing, permission, toggleCameraFacing, handleStart } =
-    useCruiseCameraLogic(props);
+  const {
+    facing,
+    permission,
+    isStartingRoulette,
+    toggleCameraFacing,
+    handleStart,
+  } = useCruiseCameraLogic(props);
 
   useEffect(() => {
     props.navigation.setOptions({
@@ -62,7 +67,11 @@ const CruiseCamera: FC<CruiseCameraScreenProps> = (props) => {
       <CameraView style={styles.camera} facing={facing}>
         <View style={styles.overlay}>
           <View style={styles.buttonContainer}>
-            <Button title="Start" onPress={handleStart} />
+            <Button
+              title={isStartingRoulette ? "Finding match..." : "Start"}
+              onPress={handleStart}
+              disabled={isStartingRoulette}
+            />
           </View>
         </View>
       </CameraView>

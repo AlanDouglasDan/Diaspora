@@ -15,4 +15,6 @@ export const palette = {
   GREY2: "#262626",
   LIGHT_GREY: "#D9D9D9",
   PURPLE: "#8B50FF",
+  SUCCESS: "#12B76A",
+  LIGHT_GREEN: "#EEFDF1"
 };
