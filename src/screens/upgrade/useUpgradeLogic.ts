@@ -93,7 +93,7 @@ export const useUpgradeLogic = (props: UpgradeScreenProps) => {
           style: "alwaysDark",
           allowsDelayedPaymentMethods: true,
           defaultBillingDetails: {
-            email: user?.emailAddresses[0]?.emailAddress,
+            email: user?.primaryEmailAddress?.emailAddress,
           },
           returnURL: "diaspora://payment-return",
         });
@@ -218,7 +218,7 @@ export const useUpgradeLogic = (props: UpgradeScreenProps) => {
 
       await createCustomer({
         userId: user.id,
-        email: user.emailAddresses[0]?.emailAddress || "",
+        email: user.primaryEmailAddress?.emailAddress || "",
       });
 
       // Step 2: Create subscription/payment intent

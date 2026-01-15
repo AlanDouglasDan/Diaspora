@@ -31,3 +31,5 @@ export * from "./matchResult";
 export * from "./filterSettings";
 export * from "./images";
 export * from "./conversation";
+export * from "./loveLetterSent";
+export * from "./loading";

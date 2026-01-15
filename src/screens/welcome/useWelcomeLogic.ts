@@ -55,7 +55,7 @@ export function useWelcomeLogic({ navigation }: WelcomeScreenProps) {
     // Redirect if authenticated with complete profile
     if (data?.displayName) {
       hasRedirected.current = true;
-      navigation.navigate("MainTabs");
+      navigation.navigate("Loading");
       return;
     }
 
@@ -123,7 +123,7 @@ export function useWelcomeLogic({ navigation }: WelcomeScreenProps) {
             text1: "Welcome!",
             text2: "Successfully signed in with Google",
           });
-          navigation.navigate("MainTabs");
+          navigation.navigate("Loading");
         }
       }
     } catch (error: any) {
@@ -166,7 +166,7 @@ export function useWelcomeLogic({ navigation }: WelcomeScreenProps) {
             text1: "Welcome!",
             text2: "Successfully signed in with Apple",
           });
-          navigation.navigate("MainTabs");
+          navigation.navigate("Loading");
         }
       }
     } catch (error: any) {

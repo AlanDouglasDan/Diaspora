@@ -5,6 +5,7 @@ import type { ProfileView } from "./types";
 
 export function useGetProfileViews() {
   const dispatch = useAppDispatch();
+
   const profileViewsData = useAppSelector((state) => state.profileViews.data);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

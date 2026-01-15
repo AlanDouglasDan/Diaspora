@@ -14,7 +14,7 @@ import type { CruiseCallScreenProps } from "./CruiseCall.types";
 import type { RouletteMatch } from "@/src/api/roulette/types";
 
 const CALL_DURATION_SECONDS = 120; // 2 minutes
-const SEARCH_TIMEOUT_SECONDS = 15;
+const SEARCH_TIMEOUT_SECONDS = 120;
 const POLL_INTERVAL_MS = 2000;
 
 export const useCruiseCallLogic = (props: CruiseCallScreenProps) => {

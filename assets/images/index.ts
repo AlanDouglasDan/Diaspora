@@ -32,7 +32,9 @@ export default {
   cruiseIcon: require("./cruiseIcon.png"),
   emptyState: require("./emptyState.png"),
   emptyState2: require("./emptyState2.png"),
+  emptyState3: require("./emptyState3.png"),
   upgradeSuccessful: require("./upgradeSuccessful.png"),
   matched: require("./matched.png"),
   splashIcon: require("./splash-icon.png"),
+  loveLetter: require("./loveLetter.png"),
 };

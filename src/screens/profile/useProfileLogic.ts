@@ -85,19 +85,19 @@ export const useProfileLogic = () => {
         logoImage: isFirstClass
           ? images.firstClassLogo
           : isPremium
-          ? images.premiumLogo
-          : images.economyLogo,
+            ? images.premiumLogo
+            : images.economyLogo,
         backgroundColor: isFirstClass
           ? palette.PINK
           : isPremium
-          ? palette.RED
-          : palette.TEXT_COLOR,
+            ? palette.RED
+            : palette.TEXT_COLOR,
         useGradient: isPremium,
         description: isFirstClass
           ? "Unlock all the features to be in complete control of your experience"
           : isPremium
-          ? "Get premium features to enhance your dating experience"
-          : "Get started with essential features for your dating journey",
+            ? "Get premium features to enhance your dating experience"
+            : "Get started with essential features for your dating journey",
         features: isFirstClass
           ? [
               { name: "Unlimited likes", free: false, included: true },
@@ -105,16 +105,16 @@ export const useProfileLogic = () => {
               { name: "Remove ads", free: false, included: true },
             ]
           : isPremium
-          ? [
-              { name: "Unlimited likes", free: false, included: true },
-              { name: "See who likes you", free: false, included: true },
-              { name: "Priority matches", free: false, included: true },
-            ]
-          : [
-              { name: "Unlimited likes", free: false, included: true },
-              { name: "Basic matches", free: false, included: true },
-              { name: "Limited swipes", free: true, included: true },
-            ],
+            ? [
+                { name: "Unlimited likes", free: false, included: true },
+                { name: "See who likes you", free: false, included: true },
+                { name: "Priority matches", free: false, included: true },
+              ]
+            : [
+                { name: "Unlimited likes", free: false, included: true },
+                { name: "Basic matches", free: false, included: true },
+                { name: "Limited swipes", free: true, included: true },
+              ],
         price: plan.amount,
         buttonText: `Upgrade To ${productName.replace("Diaspora ", "")} from $${
           plan.amount

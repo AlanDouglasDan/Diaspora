@@ -51,7 +51,7 @@ export function useEmailAuthLogic({ navigation, route }: EmailAuthScreenProps) {
             text2: "Successfully signed in",
           });
 
-          navigation.navigate("MainTabs");
+          navigation.navigate("Loading");
         } else {
           // OTP was sent, navigate to verify
           Toast.show({

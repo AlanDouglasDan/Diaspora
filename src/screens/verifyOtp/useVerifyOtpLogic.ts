@@ -107,7 +107,7 @@ export function useVerifyOtpLogic({ route, navigation }: VerifyOtpScreenProps) {
               text1: "Welcome Back!",
               text2: "Successfully signed in",
             });
-            navigation.navigate("MainTabs");
+            navigation.navigate("Loading");
           }
         }
       } else if (context === "phone") {

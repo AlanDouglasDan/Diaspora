@@ -22,7 +22,7 @@ export function useDisplayNameLogic({ navigation }: DisplayNameScreenProps) {
     try {
       await updateUser(user.id, {
         displayName: displayName.trim(),
-        email: user.emailAddresses[0]?.emailAddress,
+        email: user.primaryEmailAddress?.emailAddress,
         userId: user.id,
       });
 

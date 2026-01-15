@@ -12,6 +12,8 @@ import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
 import Swiper from "react-native-deck-swiper";
 
 import LoveLetterSend from "components/svg/LoveLetterSend";
+import { Button } from "components/button";
+import { images } from "core/images";
 import { common, layout, palette, spacing } from "core/styles";
 
 import { styles } from "./Match.styles";
@@ -25,7 +27,6 @@ const Match: FC<MatchScreenProps> = (props) => {
     cardIndex,
     isLoading,
     isActionLoading,
-    locationStatus,
     isSwipingEnabled,
     swiperRef,
     handleOpenImages,
@@ -171,7 +172,13 @@ const Match: FC<MatchScreenProps> = (props) => {
 
   if (isLoading) {
     return (
-      <View style={[styles.container, styles.emptyStateContainer]}>
+      <View
+        style={[
+          styles.container,
+          styles.emptyStateContainer,
+          { justifyContent: "center" },
+        ]}
+      >
         <ActivityIndicator size="large" color={palette.PINK} />
         <Text style={[styles.semiheader16, styles.loadingStateMessage]}>
           Finding matches near you...
@@ -186,26 +193,25 @@ const Match: FC<MatchScreenProps> = (props) => {
   if (!currentUser || users.length === 0) {
     return (
       <View style={[styles.container, styles.emptyStateContainer]}>
-        <View style={styles.emptyStateIconContainer}>
-          <FontAwesome name="heart-o" size={48} color={palette.PINK} />
+        <View style={styles.emptyStateImageContainer}>
+          <Image
+            source={images.emptyState3}
+            style={styles.emptyStateImage}
+            contentFit="contain"
+          />
         </View>
-        <Text style={[styles.semiheader16, styles.emptyStateTitle]}>
-          No matches found
-        </Text>
-        <Text style={[styles.text14, styles.emptyStateMessage]}>
-          {locationStatus === "denied"
-            ? "Enable location access to find people near you. You can update this in your device settings."
-            : "We couldn't find any matches in your area right now. Try adjusting your filters or check back later!"}
-        </Text>
 
-        <TouchableOpacity
-          style={styles.emptyStateButton}
-          activeOpacity={0.7}
-          // @ts-ignore
-          onPress={() => props.navigation.navigate("FilterSettings")}
-        >
-          <Text style={styles.emptyStateButtonText}>Adjust Filters</Text>
-        </TouchableOpacity>
+        <View style={styles.emptyStateBottomSection}>
+          <Text style={[styles.text14, styles.emptyStateMessage]}>
+            Adjust your filter to get see more prospective matchs
+          </Text>
+
+          <Button
+            title="Open filter"
+            onPress={() => props.navigation.navigate("FilterSettings" as never)}
+            style={styles.emptyStateButton}
+          />
+        </View>
       </View>
     );
   }
@@ -243,6 +249,8 @@ const Match: FC<MatchScreenProps> = (props) => {
             cardStyle={styles.swiperCard}
             containerStyle={styles.swiperInnerContainer}
             infinite
+            swipeAnimationDuration={150}
+            swipeBackCard
             overlayLabels={{
               left: {
                 title: "NOPE",
@@ -286,51 +294,61 @@ const Match: FC<MatchScreenProps> = (props) => {
           />
         </View>
 
-        <View style={spacing.marginTop12}>
-          <Text style={styles.text14}>My bio</Text>
-
-          <Text style={styles.semiheader16}>{currentUser.bio}</Text>
-        </View>
+        {currentUser.bio && currentUser.bio !== "No bio yet" && (
+          <View style={spacing.marginTop12}>
+            <Text style={styles.text14}>My bio</Text>
+            <Text style={styles.semiheader16}>{currentUser.bio}</Text>
+          </View>
+        )}
 
         {/* Info Tags */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Compatibility</Text>
-
-          <View style={styles.tagsRow}>
-            {currentUser.compatibility.map((item, index) => (
-              <View key={index} style={styles.basicTag}>
-                <Text style={styles.tagText}>{item}</Text>
-              </View>
-            ))}
+        {currentUser.compatibility.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Compatibility</Text>
+            <View style={styles.tagsRow}>
+              {currentUser.compatibility.map((item, index) => (
+                <View key={index} style={styles.basicTag}>
+                  <Text style={styles.tagText}>{item}</Text>
+                </View>
+              ))}
+            </View>
           </View>
-        </View>
+        )}
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>About me</Text>
-
-          <View style={styles.tagsRow}>
-            {currentUser.aboutMe.map((item, index) => (
-              <View key={index} style={styles.basicTag}>
-                <Text style={styles.tagText}>{item}</Text>
+        {currentUser.aboutMe.length > 0 &&
+          currentUser.aboutMe[0] !== "No details yet" && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>About me</Text>
+              <View style={styles.tagsRow}>
+                {currentUser.aboutMe.map((item, index) => (
+                  <View key={index} style={styles.basicTag}>
+                    <Text style={styles.tagText}>{item}</Text>
+                  </View>
+                ))}
               </View>
-            ))}
+            </View>
+          )}
+
+        {currentUser.school && currentUser.school !== "Not specified" && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>School</Text>
+            <Text style={styles.sectionValue}>{currentUser.school}</Text>
           </View>
-        </View>
+        )}
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>School</Text>
-          <Text style={styles.sectionValue}>{currentUser.school}</Text>
-        </View>
+        {currentUser.workTitle && currentUser.workTitle !== "Not specified" && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Work title</Text>
+            <Text style={styles.sectionValue}>{currentUser.workTitle}</Text>
+          </View>
+        )}
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Work title</Text>
-          <Text style={styles.sectionValue}>{currentUser.workTitle}</Text>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Company</Text>
-          <Text style={styles.sectionValue}>{currentUser.company}</Text>
-        </View>
+        {currentUser.company && currentUser.company !== "Not specified" && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Company</Text>
+            <Text style={styles.sectionValue}>{currentUser.company}</Text>
+          </View>
+        )}
 
         <Image
           source={currentUser.avatar}
@@ -338,34 +356,37 @@ const Match: FC<MatchScreenProps> = (props) => {
           contentFit="cover"
         />
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>My ethnicity</Text>
-
-          <View style={styles.tagsRow}>
-            {currentUser.ethnicity.map((item, index) => (
-              <View key={index} style={styles.basicTag}>
-                <Text style={styles.tagText}>{item}</Text>
+        {currentUser.ethnicity.length > 0 &&
+          currentUser.ethnicity[0] !== "Not specified" && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>My ethnicity</Text>
+              <View style={styles.tagsRow}>
+                {currentUser.ethnicity.map((item, index) => (
+                  <View key={index} style={styles.basicTag}>
+                    <Text style={styles.tagText}>{item}</Text>
+                  </View>
+                ))}
               </View>
-            ))}
-          </View>
-
-          <View style={[common.line, spacing.marginTop12]} />
-
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>My nationalities</Text>
-
-            <View style={styles.tagsRow}>
-              {currentUser.nationalities.map((item, index) => (
-                <View key={index} style={styles.basicTag}>
-                  <Text style={styles.tagText}>{item}</Text>
-                </View>
-              ))}
             </View>
-          </View>
+          )}
 
+        {currentUser.nationalities.length > 0 &&
+          currentUser.nationalities[0] !== "Not specified" && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>My nationalities</Text>
+              <View style={styles.tagsRow}>
+                {currentUser.nationalities.map((item, index) => (
+                  <View key={index} style={styles.basicTag}>
+                    <Text style={styles.tagText}>{item}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
+
+        {currentUser.languages.length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Languages I know</Text>
-
             <View style={styles.tagsRow}>
               {currentUser.languages.map((lang, index) => (
                 <View
@@ -387,7 +408,7 @@ const Match: FC<MatchScreenProps> = (props) => {
               ))}
             </View>
           </View>
-        </View>
+        )}
 
         {currentUser.galleryImages.length > 1 && (
           <Image
@@ -397,36 +418,40 @@ const Match: FC<MatchScreenProps> = (props) => {
           />
         )}
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>My interests</Text>
-
-          <View style={styles.tagsRow}>
-            {currentUser.interests.map((interest, index) => (
-              <View
-                key={index}
-                style={[
-                  styles.basicTag,
-                  interest.isShared && { backgroundColor: palette.PINK },
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.tagText,
-                    interest.isShared && { color: palette.WHITE },
-                  ]}
-                >
-                  {interest.name}
-                </Text>
+        {currentUser.interests.length > 0 &&
+          currentUser.interests[0]?.name !== "No interests yet" && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>My interests</Text>
+              <View style={styles.tagsRow}>
+                {currentUser.interests.map((interest, index) => (
+                  <View
+                    key={index}
+                    style={[
+                      styles.basicTag,
+                      interest.isShared && { backgroundColor: palette.PINK },
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.tagText,
+                        interest.isShared && { color: palette.WHITE },
+                      ]}
+                    >
+                      {interest.name}
+                    </Text>
+                  </View>
+                ))}
               </View>
-            ))}
-          </View>
-        </View>
+            </View>
+          )}
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>My location</Text>
-
-          <Text style={styles.sectionValue}>{currentUser.location}</Text>
-        </View>
+        {currentUser.location &&
+          currentUser.location !== "Location not available" && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>My location</Text>
+              <Text style={styles.sectionValue}>{currentUser.location}</Text>
+            </View>
+          )}
 
         <View style={styles.loveLetterContainer}>
           <View style={layout.flex1}>

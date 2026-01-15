@@ -27,6 +27,7 @@ export const styles = StyleSheet.create({
   matchesList: {
     flexDirection: "row",
     gap: 16,
+    paddingHorizontal: 6,
   },
   matchItem: {
     alignItems: "center",

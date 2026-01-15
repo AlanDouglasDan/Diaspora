@@ -30,6 +30,21 @@ export const styles = StyleSheet.create({
   selectContainer: {
     marginTop: 16,
   },
+  selectLabel: {
+    ...typography.semiheader14,
+    color: palette.TEXT_COLOR,
+    marginBottom: 8,
+  },
+  countryPickerButton: {
+    backgroundColor: palette.GREY,
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+  },
+  countryPickerText: {
+    ...typography.text14,
+    color: palette.TEXT_COLOR,
+  },
   sliderContainer: {
     marginTop: 32,
   },

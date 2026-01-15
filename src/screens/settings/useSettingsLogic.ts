@@ -66,7 +66,7 @@ export const useSettingsLogic = ({ navigation }: SettingsScreenProps) => {
     // TODO: Implement delete account logic
   }, []);
 
-  const userEmail = user?.emailAddresses[0]?.emailAddress || "No email";
+  const userEmail = user?.primaryEmailAddress?.emailAddress || "No email";
   const userPhone = userData?.phone || "No phone";
 
   const sections: SettingsSection[] = useMemo(

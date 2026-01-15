@@ -31,6 +31,8 @@ import {
   Conversation,
   AudioCall,
   VideoCall,
+  LoveLetterSent,
+  Loading,
 } from "screens";
 import type { ConversationParams } from "screens/conversation";
 import type { AudioCallParams } from "screens/audioCall";
@@ -53,6 +55,7 @@ export type RootStackParamList = {
   SetupComplete: undefined;
 
   MainTabs: undefined;
+  Loading: undefined;
 
   Settings: undefined;
   Privacy: undefined;
@@ -72,6 +75,10 @@ export type RootStackParamList = {
   Conversation: ConversationParams;
   AudioCall: AudioCallParams;
   VideoCall: VideoCallParams;
+  LoveLetterSent: {
+    recipientName: string;
+    recipientImage: { uri: string };
+  };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -109,6 +116,14 @@ export default function RootNavigator() {
       <Stack.Screen name="SetupComplete" component={SetupComplete} />
 
       <Stack.Screen name="MainTabs" component={MainTabNavigator} />
+
+      <Stack.Screen
+        name="Loading"
+        component={Loading}
+        options={{
+          headerShown: false,
+        }}
+      />
 
       <Stack.Screen
         name="Settings"
@@ -247,6 +262,14 @@ export default function RootNavigator() {
           headerTransparent: true,
           headerBackButtonDisplayMode: "minimal",
           headerLeft: () => null,
+        }}
+      />
+
+      <Stack.Screen
+        name="LoveLetterSent"
+        component={LoveLetterSent}
+        options={{
+          headerShown: false,
         }}
       />
     </Stack.Navigator>

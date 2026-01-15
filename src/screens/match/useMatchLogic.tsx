@@ -12,11 +12,10 @@ import { SheetManager } from "react-native-actions-sheet";
 import Swiper from "react-native-deck-swiper";
 import { useUser } from "@clerk/clerk-expo";
 import Toast from "react-native-toast-message";
-import * as Location from "expo-location";
 
-import useAbly from "hooks/useAbly";
-import { useGetUsers, useUpdateLocation, UserListItem } from "@/src/api/user";
+import { useGetUsers, UserListItem } from "@/src/api/user";
 import { useLikeUser, useDislikeUser, useGetLikes } from "@/src/api/likes";
+import { useCreateProfileView } from "@/src/api/profileViews";
 import { useStreamChat } from "@/src/providers";
 import { images } from "core/images";
 import { palette } from "core/styles";
@@ -145,20 +144,17 @@ export const useMatchLogic = (props: MatchScreenProps) => {
   const filterParams = route.params?.filters;
 
   const { data: usersData, getUsers, isLoading } = useGetUsers();
-  const { updateLocation, isLoading: isUpdatingLocation } = useUpdateLocation();
   const { likeUser } = useLikeUser();
   const { dislikeUser } = useDislikeUser();
   const { getLikes, data: likesData } = useGetLikes();
   const { sendLoveLetter, isConnected: isStreamConnected } = useStreamChat();
+  const { createProfileView } = useCreateProfileView();
 
   const [cardIndex, setCardIndex] = useState(0);
   const [isSwipingEnabled, setIsSwipingEnabled] = useState(true);
   const [excludedUserIds, setExcludedUserIds] = useState<Set<string>>(
     new Set()
   );
-  const [locationStatus, setLocationStatus] = useState<
-    "pending" | "granted" | "denied" | "error"
-  >("pending");
   const [isActionLoading, setIsActionLoading] = useState(false);
   const [loveLetterText, setLoveLetterText] = useState("");
   const [isSendingLoveLetter, setIsSendingLoveLetter] = useState(false);
@@ -207,70 +203,25 @@ export const useMatchLogic = (props: MatchScreenProps) => {
     return params;
   }, [clerkUser?.id, filterParams]);
 
-  // Request location permission, update location, then fetch users
+  // Fetch users and likes
   useEffect(() => {
-    const initializeLocationAndFetchUsers = async () => {
+    const fetchUsersAndLikes = async () => {
       if (!clerkUser?.id) return;
 
       setIsInitializing(true);
       const getUsersParams = buildGetUsersParams();
 
       try {
-        // Request location permission
-        const { status } = await Location.requestForegroundPermissionsAsync();
-
-        if (status !== "granted") {
-          setLocationStatus("denied");
-          Toast.show({
-            type: "info",
-            text1: "Location Access Required",
-            text2: "Enable location to find matches near you",
-          });
-          // Still fetch users even without location - wait for both to complete
-          await Promise.all([getUsers(getUsersParams), getLikes(clerkUser.id)]);
-          setIsInitializing(false);
-          return;
-        }
-
-        setLocationStatus("granted");
-
-        // Get current location
-        const location = await Location.getCurrentPositionAsync({
-          accuracy: Location.Accuracy.Balanced,
-        });
-
-        // Update location on backend
-        await updateLocation({
-          userId: clerkUser.id,
-          latitude: String(location.coords.latitude),
-          longitude: String(location.coords.longitude),
-        });
-
-        // Now fetch users and likes - wait for both to complete
         await Promise.all([getUsers(getUsersParams), getLikes(clerkUser.id)]);
-
-        setIsInitializing(false);
       } catch (error) {
-        console.error("Location error:", error);
-        setLocationStatus("error");
-        // Still try to fetch users even if location fails - wait for both to complete
-        await Promise.all([getUsers(getUsersParams), getLikes(clerkUser.id)]);
+        console.error("Error fetching users:", error);
+      } finally {
         setIsInitializing(false);
       }
     };
 
-    initializeLocationAndFetchUsers();
-  }, [
-    clerkUser?.id,
-    getUsers,
-    getLikes,
-    updateLocation,
-    buildGetUsersParams,
-    filterParams,
-  ]);
-
-  // Initialize Ably
-  useAbly();
+    fetchUsersAndLikes();
+  }, [clerkUser?.id, getUsers, getLikes, buildGetUsersParams, filterParams]);
 
   // Update excluded users when likes data changes
   useEffect(() => {
@@ -292,6 +243,16 @@ export const useMatchLogic = (props: MatchScreenProps) => {
     if (!users.length) return null;
     return users[cardIndex % users.length];
   }, [users, cardIndex]);
+
+  // Track profile views when viewing a user
+  useEffect(() => {
+    if (currentUser && clerkUser?.id && currentUser.id !== clerkUser.id) {
+      createProfileView({
+        viewedId: currentUser.id,
+        viewerId: clerkUser.id,
+      });
+    }
+  }, [currentUser?.id, clerkUser?.id, createProfileView]);
 
   console.log(users.length);
 
@@ -434,15 +395,15 @@ export const useMatchLogic = (props: MatchScreenProps) => {
     }
   }, [handleLikeAction]);
 
-  const handleSwipedLeft = useCallback(() => {
-    // handleDislikeAction();
+  const handleSwipedLeft = useCallback(async () => {
+    await handleDislikeAction();
     setCardIndex((prev) => prev + 1);
-  }, []);
+  }, [handleDislikeAction]);
 
-  const handleSwipedRight = useCallback(() => {
-    // handleLikeAction(false);
+  const handleSwipedRight = useCallback(async () => {
+    await handleLikeAction(false);
     setCardIndex((prev) => prev + 1);
-  }, []);
+  }, [handleLikeAction]);
 
   const handleSwipedAll = useCallback(() => {
     setCardIndex(0);
@@ -490,12 +451,16 @@ export const useMatchLogic = (props: MatchScreenProps) => {
       const success = await sendLoveLetter(currentUser.id, loveLetterText);
 
       if (success) {
-        Toast.show({
-          type: "success",
-          text1: "Love Letter Sent! 💌",
-          text2: `Your love letter to ${currentUser.name} has been delivered`,
-        });
         setLoveLetterText("");
+        // Navigate to LoveLetterSent screen
+        const recipientImage =
+          typeof currentUser.avatar === "object" && "uri" in currentUser.avatar
+            ? (currentUser.avatar as { uri: string })
+            : { uri: "" };
+        rootNavigation.navigate("LoveLetterSent", {
+          recipientName: currentUser.name,
+          recipientImage,
+        });
       } else {
         Toast.show({
           type: "error",
@@ -526,7 +491,6 @@ export const useMatchLogic = (props: MatchScreenProps) => {
     cardIndex,
     isLoading: isInitializing,
     isActionLoading,
-    locationStatus,
     isSwipingEnabled,
     swiperRef,
     handleOpenImages,

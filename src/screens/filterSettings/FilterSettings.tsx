@@ -1,5 +1,9 @@
-import React, { FC } from "react";
+import React, { FC, useState } from "react";
 import { View, Text, ScrollView, TouchableOpacity, Switch } from "react-native";
+import CountryPicker, {
+  Country,
+  CountryCode,
+} from "react-native-country-picker-modal";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 
@@ -21,6 +25,23 @@ import {
 const FilterSettings: FC<FilterSettingsScreenProps> = (props) => {
   const { filters, updateFilter, handleApply, handleSelectRowPress } =
     useFilterSettingsLogic(props);
+
+  const [showCountryPicker, setShowCountryPicker] = useState(false);
+
+  const handleCountrySelect = (country: Country) => {
+    updateFilter("country", country.cca2);
+    setShowCountryPicker(false);
+  };
+
+  const getCountryDisplayName = () => {
+    if (!filters.country || filters.country === "all") return "All";
+    return filters.country;
+  };
+
+  const getValidCountryCode = (): CountryCode => {
+    if (!filters.country || filters.country === "all") return "US";
+    return filters.country as CountryCode;
+  };
 
   return (
     <View style={styles.container}>
@@ -48,14 +69,34 @@ const FilterSettings: FC<FilterSettingsScreenProps> = (props) => {
           />
         </View>
 
-        <Select
-          label="Country"
-          value={filters.country}
-          onChange={(value) => updateFilter("country", value)}
-          options={COUNTRY_OPTIONS}
-          placeholder="All"
-          style={styles.selectContainer}
-        />
+        <View style={styles.selectContainer}>
+          <Text style={styles.selectLabel}>Country</Text>
+
+          <TouchableOpacity
+            style={styles.countryPickerButton}
+            onPress={() => setShowCountryPicker(true)}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.countryPickerText}>
+              {getCountryDisplayName()}
+            </Text>
+          </TouchableOpacity>
+
+          {showCountryPicker && (
+            <CountryPicker
+              countryCode={getValidCountryCode()}
+              withFilter
+              withFlag
+              withCountryNameButton={false}
+              withAlphaFilter
+              withCallingCode={false}
+              withEmoji
+              onSelect={handleCountrySelect}
+              visible={showCountryPicker}
+              onClose={() => setShowCountryPicker(false)}
+            />
+          )}
+        </View>
 
         <GradientSlider
           label="Distance (km)"
