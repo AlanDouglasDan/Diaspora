@@ -42,19 +42,19 @@ export function useVerifyOtpLogic({ route, navigation }: VerifyOtpScreenProps) {
               )?.emailAddressId || "",
           });
         }
-        Toast.show({
-          type: "success",
-          text1: "Code Resent",
-          text2: "A new verification code has been sent to your email",
-        });
+        // Toast.show({
+        //   type: "success",
+        //   text1: "Code Resent",
+        //   text2: "A new verification code has been sent to your email",
+        // });
       } else if (context === "phone") {
         if (user && user.phoneNumbers.length > 0) {
           await user.phoneNumbers[0].prepareVerification();
-          Toast.show({
-            type: "success",
-            text1: "Code Resent",
-            text2: "A new verification code has been sent to your phone",
-          });
+          // Toast.show({
+          //   type: "success",
+          //   text1: "Code Resent",
+          //   text2: "A new verification code has been sent to your phone",
+          // });
         }
       }
     } catch (error: any) {
@@ -85,11 +85,11 @@ export function useVerifyOtpLogic({ route, navigation }: VerifyOtpScreenProps) {
 
           if (completeSignUp.status === "complete") {
             await setActiveSignUp({ session: completeSignUp.createdSessionId });
-            Toast.show({
-              type: "success",
-              text1: "Email Verified!",
-              text2: "Your email has been successfully verified",
-            });
+            // Toast.show({
+            //   type: "success",
+            //   text1: "Email Verified!",
+            //   text2: "Your email has been successfully verified",
+            // });
 
             navigation.navigate("AddPhone");
           }
@@ -102,11 +102,11 @@ export function useVerifyOtpLogic({ route, navigation }: VerifyOtpScreenProps) {
 
           if (completeSignIn.status === "complete") {
             await setActiveSignIn({ session: completeSignIn.createdSessionId });
-            Toast.show({
-              type: "success",
-              text1: "Welcome Back!",
-              text2: "Successfully signed in",
-            });
+            // Toast.show({
+            //   type: "success",
+            //   text1: "Welcome Back!",
+            //   text2: "Successfully signed in",
+            // });
             navigation.navigate("Loading");
           }
         }
@@ -115,11 +115,11 @@ export function useVerifyOtpLogic({ route, navigation }: VerifyOtpScreenProps) {
           await user.phoneNumbers[0].attemptVerification({
             code: code.trim(),
           });
-          Toast.show({
-            type: "success",
-            text1: "Phone Verified!",
-            text2: "Your phone number has been successfully verified",
-          });
+          // Toast.show({
+          //   type: "success",
+          //   text1: "Phone Verified!",
+          //   text2: "Your phone number has been successfully verified",
+          // });
 
           navigation.navigate("Onboarding");
         }

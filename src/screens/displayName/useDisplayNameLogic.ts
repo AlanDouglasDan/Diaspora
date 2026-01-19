@@ -22,8 +22,6 @@ export function useDisplayNameLogic({ navigation }: DisplayNameScreenProps) {
     try {
       await updateUser(user.id, {
         displayName: displayName.trim(),
-        email: user.primaryEmailAddress?.emailAddress,
-        userId: user.id,
       });
 
       Toast.show({

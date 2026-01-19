@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useUser } from "@clerk/clerk-expo";
 import Toast from "react-native-toast-message";
-import type { InterestsScreenProps, Interest } from "./Interests.types";
+import type { InterestsScreenProps } from "./Interests.types";
 import { useGetPreference, useUpdatePreference } from "@/src/api/preferences";
 import { useGetInterests } from "@/src/api/interests";
 import { ICON_TO_EMOJI } from "@/src/core/constants";
@@ -27,7 +27,7 @@ export function useInterestsLogic({ navigation }: InterestsScreenProps) {
 
   useEffect(() => {
     getInterests();
-  }, [getInterests]);
+  }, []);
 
   // Transform API data to match Interest interface with emojis - use useMemo to prevent infinite loops
   const transformedInterests = useMemo(

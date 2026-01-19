@@ -172,6 +172,10 @@ export const useMessagesLogic = () => {
     console.log("Love letters pressed");
   }, []);
 
+  const handleGetSwiping = useCallback(() => {
+    navigation.navigate("MainTabs", { screen: "Match" } as any);
+  }, [navigation]);
+
   return {
     matches: matchesData || [],
     messages,
@@ -181,5 +185,6 @@ export const useMessagesLogic = () => {
     handleMatchPress,
     handleMessagePress,
     handleLoveLettersPress,
+    handleGetSwiping,
   };
 };

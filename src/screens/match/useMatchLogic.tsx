@@ -16,7 +16,9 @@ import Toast from "react-native-toast-message";
 import { useGetUsers, UserListItem } from "@/src/api/user";
 import { useLikeUser, useDislikeUser, useGetLikes } from "@/src/api/likes";
 import { useCreateProfileView } from "@/src/api/profileViews";
+import { useGetPreference } from "@/src/api/preferences";
 import { useStreamChat } from "@/src/providers";
+import { useAppSelector } from "@/src/store";
 import { images } from "core/images";
 import { palette } from "core/styles";
 import type { MatchScreenProps, UserProfile } from "./Match.types";
@@ -140,13 +142,14 @@ export const useMatchLogic = (props: MatchScreenProps) => {
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { user: clerkUser } = useUser();
 
-  // Get filters from route params
-  const filterParams = route.params?.filters;
+  // Get filters from Redux store for persistence
+  const { filters, appliedFilters } = useAppSelector((state) => state.filters);
 
   const { data: usersData, getUsers, isLoading } = useGetUsers();
   const { likeUser } = useLikeUser();
   const { dislikeUser } = useDislikeUser();
   const { getLikes, data: likesData } = useGetLikes();
+  const { getPreference, data: preferencesData } = useGetPreference();
   const { sendLoveLetter, isConnected: isStreamConnected } = useStreamChat();
   const { createProfileView } = useCreateProfileView();
 
@@ -161,67 +164,116 @@ export const useMatchLogic = (props: MatchScreenProps) => {
   const [isInitializing, setIsInitializing] = useState(true);
   const swiperRef = useRef<Swiper<UserProfile>>(null);
 
-  // Build getUsers params from filter params
+  // Build getUsers params from applied filters and user preferences
   const buildGetUsersParams = useCallback(() => {
     const params: any = {
       userId: clerkUser?.id || "",
-      radius: filterParams?.radius || [1, 1000],
-      age: filterParams?.age || [18, 99],
+      radius: appliedFilters?.distanceRange || [1, 1000],
+      age: appliedFilters?.ageRange || [18, 99],
     };
 
-    // Add optional filters only if they exist
-    if (filterParams?.gender) {
-      params.gender = filterParams.gender;
+    // Use gender from preferences if not explicitly set in filters
+    if (appliedFilters?.gender && appliedFilters.gender !== "all") {
+      params.gender = appliedFilters.gender;
+    } 
+    // else if (preferencesData?.lookingToDate?.length) {
+    //   // Use the first value in lookingToDate as gender preference
+    //   const lookingFor = preferencesData.lookingToDate[0]?.toLowerCase();
+    //   if (
+    //     lookingFor === "man" ||
+    //     lookingFor === "woman" ||
+    //     lookingFor === "nonbinary"
+    //   ) {
+    //     params.gender = lookingFor;
+    //   }
+    // }
+
+    console.log("params", params);
+
+    if (appliedFilters?.activity && appliedFilters.activity !== "all") {
+      params.activity = appliedFilters.activity;
     }
-    if (filterParams?.activity) {
-      params.activity = filterParams.activity;
-    }
-    if (filterParams?.country) {
-      params.country = filterParams.country;
+    if (appliedFilters?.country && appliedFilters.country !== "all") {
+      params.country = appliedFilters.country;
     }
 
     // Build advanced filters
     const advancedFilters: any = {};
-    if (filterParams?.hasBio) advancedFilters.bio = true;
-    if (filterParams?.ethnicity)
-      advancedFilters.ethnicity = filterParams.ethnicity;
-    if (filterParams?.zodiac) advancedFilters.zodiac = filterParams.zodiac;
-    if (filterParams?.height) advancedFilters.height = filterParams.height;
-    if (filterParams?.drinking) advancedFilters.drinking = true;
-    if (filterParams?.smoking) advancedFilters.smoking = true;
-    if (filterParams?.educationLevel)
-      advancedFilters.educationLevel = filterParams.educationLevel;
-    if (filterParams?.familyPlans)
-      advancedFilters.familyPlans = filterParams.familyPlans;
-    if (filterParams?.lookingFor)
-      advancedFilters.lookingFor = filterParams.lookingFor;
+    if (appliedFilters?.hasBio) advancedFilters.bio = true;
+    if (appliedFilters?.ethnicity)
+      advancedFilters.ethnicity = appliedFilters.ethnicity;
+    if (appliedFilters?.starSign)
+      advancedFilters.zodiac = appliedFilters.starSign;
+    if (appliedFilters?.height) advancedFilters.height = appliedFilters.height;
+
+    if (appliedFilters?.drinking) {
+      advancedFilters.drinking =
+        appliedFilters.drinking === "socially" ||
+        appliedFilters.drinking === "regularly";
+    }
+
+    if (appliedFilters?.smoking) {
+      advancedFilters.smoking =
+        appliedFilters.smoking === "socially" ||
+        appliedFilters.smoking === "regularly";
+    }
+
+    if (appliedFilters?.educationLevel)
+      advancedFilters.educationLevel = appliedFilters.educationLevel;
+    if (appliedFilters?.children)
+      advancedFilters.familyPlans = appliedFilters.children;
+    if (appliedFilters?.lookingFor)
+      advancedFilters.lookingFor = appliedFilters.lookingFor;
+    if (appliedFilters?.religion)
+      advancedFilters.religion = appliedFilters.religion;
 
     if (Object.keys(advancedFilters).length > 0) {
       params.advancedFilters = advancedFilters;
     }
 
     return params;
-  }, [clerkUser?.id, filterParams]);
+  }, [clerkUser?.id, appliedFilters, preferencesData]);
 
-  // Fetch users and likes
+  // Fetch users, likes and preferences
   useEffect(() => {
-    const fetchUsersAndLikes = async () => {
+    const fetchData = async () => {
       if (!clerkUser?.id) return;
 
       setIsInitializing(true);
-      const getUsersParams = buildGetUsersParams();
 
       try {
-        await Promise.all([getUsers(getUsersParams), getLikes(clerkUser.id)]);
+        // Fetch preferences and likes first to build correct params
+        await Promise.all([
+          getPreference(clerkUser.id),
+          getLikes(clerkUser.id),
+        ]);
+
+        // buildGetUsersParams will now have updated preferencesData
       } catch (error) {
-        console.error("Error fetching users:", error);
+        console.error("Error fetching initial data:", error);
       } finally {
         setIsInitializing(false);
       }
     };
 
-    fetchUsersAndLikes();
-  }, [clerkUser?.id, getUsers, getLikes, buildGetUsersParams, filterParams]);
+    fetchData();
+  }, [clerkUser?.id, getPreference, getLikes]);
+
+  // Fetch users when params change or after initial data fetch
+  useEffect(() => {
+    if (!clerkUser?.id || isInitializing) return;
+
+    const fetchUsers = async () => {
+      const getUsersParams = buildGetUsersParams();
+      try {
+        await getUsers(getUsersParams);
+      } catch (error) {
+        console.error("Error fetching users:", error);
+      }
+    };
+
+    fetchUsers();
+  }, [clerkUser?.id, isInitializing, buildGetUsersParams, getUsers]);
 
   // Update excluded users when likes data changes
   useEffect(() => {

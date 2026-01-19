@@ -275,7 +275,7 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 32,
     paddingTop: 100,
-    paddingBottom: 24
+    paddingBottom: 24,
   },
   emptyStateImageContainer: {
     flex: 1,

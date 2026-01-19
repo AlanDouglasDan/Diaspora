@@ -67,12 +67,12 @@ export function useGetStreamToken() {
 
       try {
         // Check cache first unless force refresh
-        if (!forceRefresh) {
-          const cached = await getCachedStreamToken();
-          if (cached) {
-            return cached;
-          }
-        }
+        // if (!forceRefresh) {
+        //   const cached = await getCachedStreamToken();
+        //   if (cached) {
+        //     return cached;
+        //   }
+        // }
 
         // Fetch new token from backend
         const response: StreamTokenResponse = await fetchAPI("/stream/token", {

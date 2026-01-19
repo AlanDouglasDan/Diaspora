@@ -1,7 +1,9 @@
 export interface ProfileView {
-  id: string;
-  viewerId: string;
-  viewedUserId: string;
-  createdAt: string;
-  updatedAt: string;
+  isNew: boolean;
+  viewedAt: string;
+  viewer: {
+    id: string;
+    displayName: string;
+    image: string;
+  };
 }

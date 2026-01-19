@@ -1,7 +1,16 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo } from "react";
 import { TouchableOpacity, Text } from "react-native";
 import { SheetManager } from "react-native-actions-sheet";
 
+import {
+  useAppDispatch,
+  useAppSelector,
+  updateFilter as updateFilterAction,
+  applyFilters,
+  clearFilters,
+} from "@/src/store";
+import { useGetPreference } from "@/src/api/preferences";
+import { useUser } from "@clerk/clerk-expo";
 import type {
   FilterSettingsScreenProps,
   FilterState,
@@ -14,25 +23,6 @@ import type {
   FilterSelectVariant,
 } from "../../sheets/filterSelectSheet";
 
-const INITIAL_FILTER_STATE: FilterState = {
-  gender: "all",
-  activity: "just_joined",
-  country: "all",
-  distanceRange: [1, 1000],
-  ageRange: [18, 99],
-  minPhotos: 4,
-  hasBio: false,
-  lookingFor: null,
-  ethnicity: null,
-  starSign: null,
-  height: null,
-  drinking: null,
-  smoking: null,
-  educationLevel: null,
-  children: null,
-  sexuality: null,
-};
-
 export const GENDER_OPTIONS: SelectOption[] = [
   { label: "All", value: "all" },
   { label: "Man", value: "man" },
@@ -43,6 +33,8 @@ export const GENDER_OPTIONS: SelectOption[] = [
 export const ACTIVITY_OPTIONS: SelectOption[] = [
   { label: "All", value: "all" },
   { label: "Just Joined", value: "justJoined" },
+  { label: "Online", value: "online" },
+  { label: "Active", value: "active" },
 ];
 
 export const COUNTRY_OPTIONS: SelectOption[] = [
@@ -66,6 +58,7 @@ export const SELECT_ROWS: SelectRowItem[] = [
   { key: "smoking", label: "Smoking" },
   { key: "educationLevel", label: "Education level" },
   { key: "children", label: "Children" },
+  { key: "religion", label: "Religion" },
   { key: "sexuality", label: "Sexuality" },
 ];
 
@@ -133,6 +126,17 @@ const CHILDREN_OPTIONS: FilterSelectOption[] = [
   { id: "prefer_not_say", label: "Prefer not to say" },
 ];
 
+const RELIGION_OPTIONS: FilterSelectOption[] = [
+  { id: "christianity", label: "Christianity" },
+  { id: "islam", label: "Islam" },
+  { id: "hinduism", label: "Hinduism" },
+  { id: "buddhism", label: "Buddhism" },
+  { id: "judaism", label: "Judaism" },
+  { id: "sikhism", label: "Sikhism" },
+  { id: "other", label: "Other" },
+  { id: "prefer_not_say", label: "Prefer not to say" },
+];
+
 const SEXUALITY_OPTIONS: FilterSelectOption[] = [
   { id: "straight", label: "Straight" },
   { id: "gay", label: "Gay" },
@@ -191,6 +195,11 @@ const FIELD_CONFIG: Record<string, FieldConfig> = {
     variant: "single-select",
     options: CHILDREN_OPTIONS,
   },
+  religion: {
+    title: "Religion",
+    variant: "single-select",
+    options: RELIGION_OPTIONS,
+  },
   sexuality: {
     title: "Sexuality",
     variant: "single-select",
@@ -200,12 +209,38 @@ const FIELD_CONFIG: Record<string, FieldConfig> = {
 
 export const useFilterSettingsLogic = (props: FilterSettingsScreenProps) => {
   const { navigation } = props;
+  const dispatch = useAppDispatch();
+  const { user } = useUser();
+  const { filters, appliedFilters } = useAppSelector((state) => state.filters);
+  const { data: preferencesData, getPreference } = useGetPreference();
 
-  const [filters, setFilters] = useState<FilterState>(INITIAL_FILTER_STATE);
+  // Load preferences to set default gender if needed
+  useEffect(() => {
+    if (user?.id) {
+      getPreference(user.id);
+    }
+  }, [user?.id, getPreference]);
+
+  // Set default gender from lookingToDate if gender is "all" or empty
+  useEffect(() => {
+    if (
+      (filters.gender === "all" || !filters.gender) &&
+      preferencesData?.lookingToDate?.length
+    ) {
+      const lookingFor = preferencesData.lookingToDate[0]?.toLowerCase();
+      if (
+        lookingFor === "man" ||
+        lookingFor === "woman" ||
+        lookingFor === "nonbinary"
+      ) {
+        dispatch(updateFilterAction({ key: "gender", value: lookingFor }));
+      }
+    }
+  }, [preferencesData, filters.gender, dispatch]);
 
   const handleClearAll = useCallback(() => {
-    setFilters(INITIAL_FILTER_STATE);
-  }, []);
+    dispatch(clearFilters());
+  }, [dispatch]);
 
   useEffect(() => {
     navigation.setOptions({
@@ -223,97 +258,22 @@ export const useFilterSettingsLogic = (props: FilterSettingsScreenProps) => {
 
   const updateFilter = useCallback(
     <K extends keyof FilterState>(key: K, value: FilterState[K]) => {
-      setFilters((prev) => ({ ...prev, [key]: value }));
+      dispatch(updateFilterAction({ key, value }));
     },
-    []
+    [dispatch]
   );
 
+  const isFilterChanged = useMemo(() => {
+    return JSON.stringify(filters) !== JSON.stringify(appliedFilters);
+  }, [filters, appliedFilters]);
+
   const handleApply = useCallback(() => {
-    // Build filter params for Match screen - only include non-default values
-    const filterParams: Record<string, any> = {};
-
-    // Gender filter
-    if (filters.gender && filters.gender !== "all") {
-      filterParams.gender = filters.gender as "man" | "woman" | "nonbinary";
-    }
-
-    // Activity filter
-    if (
-      filters.activity &&
-      filters.activity !== "all" &&
-      filters.activity !== "just_joined"
-    ) {
-      filterParams.activity = filters.activity as "justJoined";
-    }
-
-    // Country filter
-    if (filters.country && filters.country !== "all") {
-      filterParams.country = filters.country;
-    }
-
-    // Distance range
-    if (filters.distanceRange) {
-      filterParams.radius = filters.distanceRange;
-    }
-
-    // Age range
-    if (filters.ageRange) {
-      filterParams.age = filters.ageRange;
-    }
-
-    // Has bio
-    if (filters.hasBio) {
-      filterParams.hasBio = true;
-    }
-
-    // Ethnicity
-    if (filters.ethnicity) {
-      filterParams.ethnicity = filters.ethnicity;
-    }
-
-    // Star sign (zodiac)
-    if (filters.starSign) {
-      filterParams.zodiac = filters.starSign;
-    }
-
-    // Height
-    if (filters.height) {
-      filterParams.height = filters.height;
-    }
-
-    // Drinking
-    if (filters.drinking) {
-      filterParams.drinking =
-        filters.drinking === "regularly" || filters.drinking === "socially";
-    }
-
-    // Smoking
-    if (filters.smoking) {
-      filterParams.smoking =
-        filters.smoking === "regularly" || filters.smoking === "socially";
-    }
-
-    // Education level
-    if (filters.educationLevel) {
-      filterParams.educationLevel = filters.educationLevel;
-    }
-
-    // Children (family plans)
-    if (filters.children) {
-      filterParams.familyPlans = filters.children;
-    }
-
-    // Looking for
-    if (filters.lookingFor) {
-      filterParams.lookingFor = filters.lookingFor;
-    }
-
-    // Navigate back to Match with filters
+    dispatch(applyFilters());
+    // Navigate back to Match
     navigation.navigate("MainTabs", {
       screen: "Match",
-      params: { filters: filterParams },
     } as any);
-  }, [navigation, filters]);
+  }, [navigation, dispatch]);
 
   const handleSelectRowPress = useCallback(
     (field: string) => {
@@ -348,5 +308,6 @@ export const useFilterSettingsLogic = (props: FilterSettingsScreenProps) => {
     updateFilter,
     handleApply,
     handleSelectRowPress,
+    isFilterChanged,
   };
 };

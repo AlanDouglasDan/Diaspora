@@ -42,7 +42,35 @@ export function useBirthdayLogic({ navigation }: BirthdayScreenProps) {
     setYear(numericText);
   };
 
-  const isValid = day.length === 2 && month.length === 2 && year.length === 4;
+  const isValid = (() => {
+    if (day.length !== 2 || month.length !== 2 || year.length !== 4)
+      return false;
+
+    const d = parseInt(day, 10);
+    const m = parseInt(month, 10);
+    const y = parseInt(year, 10);
+
+    if (isNaN(d) || isNaN(m) || isNaN(y)) return false;
+    if (m < 1 || m > 12) return false;
+    if (d < 1 || d > 31) return false;
+
+    const daysInMonth = new Date(y, m, 0).getDate();
+    if (d > daysInMonth) return false;
+
+    const birthDate = new Date(y, m - 1, d);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+
+    if (
+      monthDiff < 0 ||
+      (monthDiff === 0 && today.getDate() < birthDate.getDate())
+    ) {
+      age--;
+    }
+
+    return age >= 18;
+  })();
 
   const handleSubmit = async () => {
     if (!user || !isValid) return;
@@ -51,8 +79,8 @@ export function useBirthdayLogic({ navigation }: BirthdayScreenProps) {
     try {
       await updateUser(user.id, {
         birthday: `${month}-${day}-${year}`, // MM-DD-YYYY format
-        email: user.primaryEmailAddress?.emailAddress,
-        userId: user.id,
+        // email: user.primaryEmailAddress?.emailAddress,
+        // userId: user.id,
       });
 
       Toast.show({

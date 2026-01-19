@@ -4,10 +4,11 @@ export function useSetupCompleteLogic({
   navigation,
 }: SetupCompleteScreenProps) {
   const handleContinue = () => {
-    navigation.reset({
-      index: 0,
-      routes: [{ name: "MainTabs" }],
-    });
+    navigation.navigate("Loading");
+    // navigation.reset({
+    //   index: 0,
+    //   routes: [{ name: "MainTabs" }],
+    // });
   };
 
   return {

@@ -161,19 +161,39 @@ export const styles = StyleSheet.create({
     justifyContent: "center",
     paddingVertical: 40,
   },
-  emptyContainer: {
+  emptyStateContainer: {
+    flex: 1,
+    justifyContent: "space-between",
     alignItems: "center",
-    justifyContent: "center",
+    paddingHorizontal: 32,
     paddingVertical: 40,
   },
-  emptyText: {
-    ...typography.semiheader16,
-    color: palette.BLACK,
-    marginBottom: 8,
+  emptyStateImageContainer: {
+    flex: 1,
+    alignItems: "center",
   },
-  emptySubtext: {
+  emptyStateImage: {
+    width: 280,
+    height: 350,
+  },
+  emptyStateBottomSection: {
+    width: "100%",
+    alignItems: "center",
+  },
+  emptyStateMessage: {
     ...typography.text14,
+    textAlign: "center",
+    color: palette.GREY2,
+    lineHeight: 22,
+    marginBottom: 24,
+  },
+  emptyTitle: {
+    ...typography.header22,
     color: palette.TEXT_COLOR,
     textAlign: "center",
+    marginBottom: 8,
+  },
+  emptyButton: {
+    width: "100%",
   },
 });

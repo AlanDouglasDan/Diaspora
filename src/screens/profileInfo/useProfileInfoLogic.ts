@@ -266,19 +266,19 @@ export const useProfileInfoLogic = ({ navigation }: ProfileInfoScreenProps) => {
                   images: uploadedImages,
                 })
                   .then(() => {
-                    Toast.show({
-                      type: "success",
-                      text1: "Photo Uploaded",
-                      text2: "Your photo has been saved successfully",
-                    });
+                    // Toast.show({
+                    //   type: "success",
+                    //   text1: "Photo Uploaded",
+                    //   text2: "Your photo has been saved successfully",
+                    // });
                   })
                   .catch((error) => {
                     console.error("Save image error:", error);
-                    Toast.show({
-                      type: "error",
-                      text1: "Save Failed",
-                      text2: error?.message || "Could not save image",
-                    });
+                    // Toast.show({
+                    //   type: "error",
+                    //   text1: "Save Failed",
+                    //   text2: error?.message || "Could not save image",
+                    // });
                   });
 
                 return newPhotos;
@@ -286,12 +286,12 @@ export const useProfileInfoLogic = ({ navigation }: ProfileInfoScreenProps) => {
             }
           } catch (error: any) {
             console.error("Upload error:", error);
-            Toast.show({
-              type: "error",
-              text1: "Upload Failed",
-              text2:
-                error?.message || "Could not upload image. Please try again.",
-            });
+            // Toast.show({
+            //   type: "error",
+            //   text1: "Upload Failed",
+            //   text2:
+            //     error?.message || "Could not upload image. Please try again.",
+            // });
             // Revert to previous photo on error
             setPhotos((prev) =>
               prev.map((photo, idx) => (idx === index ? null : photo))
@@ -323,18 +323,18 @@ export const useProfileInfoLogic = ({ navigation }: ProfileInfoScreenProps) => {
             if (result) {
               dispatch(setProfile(result));
             }
-            Toast.show({
-              type: "success",
-              text1: "Bio Updated",
-              text2: "Your bio has been saved",
-            });
+            // Toast.show({
+            //   type: "success",
+            //   text1: "Bio Updated",
+            //   text2: "Your bio has been saved",
+            // });
           } catch (error: any) {
             console.error("Bio update error:", error);
-            Toast.show({
-              type: "error",
-              text1: "Update Failed",
-              text2: error?.message || "Could not update bio",
-            });
+            // Toast.show({
+            //   type: "error",
+            //   text1: "Update Failed",
+            //   text2: error?.message || "Could not update bio",
+            // });
           }
         }
       }, 1000);
@@ -368,18 +368,18 @@ export const useProfileInfoLogic = ({ navigation }: ProfileInfoScreenProps) => {
         }
         // Refresh profile data after preference update
         await getProfile(user.id);
-        Toast.show({
-          type: "success",
-          text1: "Updated",
-          text2: "Your profile has been updated",
-        });
+        // Toast.show({
+        //   type: "success",
+        //   text1: "Updated",
+        //   text2: "Your profile has been updated",
+        // });
       } catch (error: any) {
         console.error("Update preference error:", error);
-        Toast.show({
-          type: "error",
-          text1: "Update Failed",
-          text2: error?.message || "Could not update. Please try again.",
-        });
+        // Toast.show({
+        //   type: "error",
+        //   text1: "Update Failed",
+        //   text2: error?.message || "Could not update. Please try again.",
+        // });
       }
     },
     [user?.id, preferencesData?.id, updatePreference, dispatch, getProfile]
@@ -396,18 +396,18 @@ export const useProfileInfoLogic = ({ navigation }: ProfileInfoScreenProps) => {
         if (result) {
           dispatch(setProfile(result));
         }
-        Toast.show({
-          type: "success",
-          text1: "Updated",
-          text2: "Your profile has been updated",
-        });
+        // Toast.show({
+        //   type: "success",
+        //   text1: "Updated",
+        //   text2: "Your profile has been updated",
+        // });
       } catch (error: any) {
         console.error("Update profile error:", error);
-        Toast.show({
-          type: "error",
-          text1: "Update Failed",
-          text2: error?.message || "Could not update. Please try again.",
-        });
+        // Toast.show({
+        //   type: "error",
+        //   text1: "Update Failed",
+        //   text2: error?.message || "Could not update. Please try again.",
+        // });
       }
     },
     [user?.id, updateProfile, dispatch]

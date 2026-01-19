@@ -54,3 +54,13 @@ export {
   setMatchesError,
   clearMatches,
 } from "./matchesSlice";
+
+export {
+  default as filtersReducer,
+  setFilters,
+  updateFilter,
+  applyFilters,
+  clearFilters,
+} from "./filtersSlice";
+
+export * from "./filtersSlice";

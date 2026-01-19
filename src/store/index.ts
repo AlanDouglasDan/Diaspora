@@ -10,6 +10,7 @@ import {
   profileViewsReducer,
   preferencesReducer,
   matchesReducer,
+  filtersReducer,
 } from "./slices";
 
 export const store = configureStore({
@@ -22,6 +23,7 @@ export const store = configureStore({
     profileViews: profileViewsReducer,
     preferences: preferencesReducer,
     matches: matchesReducer,
+    filters: filtersReducer,
   },
 });
 

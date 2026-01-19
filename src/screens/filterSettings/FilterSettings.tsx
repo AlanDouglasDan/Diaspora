@@ -1,5 +1,5 @@
 import React, { FC, useState } from "react";
-import { View, Text, ScrollView, TouchableOpacity, Switch } from "react-native";
+import { View, Text, TouchableOpacity, Switch } from "react-native";
 import CountryPicker, {
   Country,
   CountryCode,
@@ -7,6 +7,7 @@ import CountryPicker, {
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 
+import { LayoutContainer } from "components/layoutContainer";
 import { Button } from "components/button";
 import { Select } from "components/select";
 import { GradientSlider } from "components/gradientSlider";
@@ -18,13 +19,17 @@ import {
   useFilterSettingsLogic,
   GENDER_OPTIONS,
   ACTIVITY_OPTIONS,
-  COUNTRY_OPTIONS,
   SELECT_ROWS,
 } from "./useFilterSettingsLogic";
 
 const FilterSettings: FC<FilterSettingsScreenProps> = (props) => {
-  const { filters, updateFilter, handleApply, handleSelectRowPress } =
-    useFilterSettingsLogic(props);
+  const {
+    filters,
+    updateFilter,
+    handleApply,
+    handleSelectRowPress,
+    isFilterChanged,
+  } = useFilterSettingsLogic(props);
 
   const [showCountryPicker, setShowCountryPicker] = useState(false);
 
@@ -44,14 +49,24 @@ const FilterSettings: FC<FilterSettingsScreenProps> = (props) => {
   };
 
   return (
-    <View style={styles.container}>
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
+    <LayoutContainer
+      edges={[]}
+      footer={
+        isFilterChanged && (
+          <View style={styles.footer}>
+            <Button
+              title="Apply changes"
+              onPress={handleApply}
+              style={styles.applyButton}
+            />
+          </View>
+        )
+      }
+    >
+      <View style={styles.scrollContent}>
         <View style={styles.row}>
           <Select
-            label="Gender"
+            label="Looking for"
             value={filters.gender}
             onChange={(value) => updateFilter("gender", value)}
             options={GENDER_OPTIONS}
@@ -64,7 +79,7 @@ const FilterSettings: FC<FilterSettingsScreenProps> = (props) => {
             value={filters.activity}
             onChange={(value) => updateFilter("activity", value)}
             options={ACTIVITY_OPTIONS}
-            placeholder="Just Joined"
+            placeholder="All"
             style={styles.halfWidth}
           />
         </View>
@@ -150,8 +165,8 @@ const FilterSettings: FC<FilterSettingsScreenProps> = (props) => {
             onValueChange={(value) =>
               updateFilter("minPhotos", value as number)
             }
-            minimumValue={1}
-            maximumValue={10}
+            minimumValue={0}
+            maximumValue={4}
             step={1}
             style={styles.sliderContainer}
           />
@@ -175,7 +190,9 @@ const FilterSettings: FC<FilterSettingsScreenProps> = (props) => {
             >
               <Text style={styles.selectRowLabel}>{row.label}</Text>
               <View style={styles.selectRowRight}>
-                <Text style={styles.selectRowValue}>Select</Text>
+                <Text style={styles.selectRowValue}>
+                  {filters[row.key as keyof typeof filters] || "Select"}
+                </Text>
                 <Ionicons
                   name="chevron-forward"
                   size={18}
@@ -185,14 +202,8 @@ const FilterSettings: FC<FilterSettingsScreenProps> = (props) => {
             </TouchableOpacity>
           ))}
         </View>
-
-        <Button
-          title="Apply changes"
-          onPress={handleApply}
-          style={styles.applyButton}
-        />
-      </ScrollView>
-    </View>
+      </View>
+    </LayoutContainer>
   );
 };
 

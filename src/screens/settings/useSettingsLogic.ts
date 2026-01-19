@@ -40,11 +40,11 @@ export const useSettingsLogic = ({ navigation }: SettingsScreenProps) => {
       dispatch(clearProfileViews());
       dispatch(clearReceivedLikes());
 
-      Toast.show({
-        type: "success",
-        text1: "Signed Out",
-        text2: "You have been successfully signed out",
-      });
+      // Toast.show({
+      //   type: "success",
+      //   text1: "Signed Out",
+      //   text2: "You have been successfully signed out",
+      // });
 
       navigation.reset({
         index: 0,

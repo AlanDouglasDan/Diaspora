@@ -38,6 +38,7 @@ const Likes: FC = () => {
     handleLikeFromViews,
     isLikeLoading,
     handleOpenConversation,
+    handleGetSwiping,
   } = useLikesLogic();
 
   const { title, subtitle } = getHeaderContent();
@@ -77,6 +78,14 @@ const Likes: FC = () => {
                 </View>
               )}
             </View>
+
+            {/* Icon logic for Priority Aisles and Your Likes */}
+            {activeTab === "priority" && !item.superLike && (
+              <View style={styles.priorityLikeIcon}>
+                <FontAwesome name="star" size={16} color={palette.WHITE} />
+              </View>
+            )}
+
             {showActionButtons && (
               <View style={styles.likeIconContainer}>
                 <TouchableOpacity
@@ -161,14 +170,18 @@ const Likes: FC = () => {
           {activeTab === "priority"
             ? "No one has super liked you yet. Keep your profile active!"
             : activeTab === "likes"
-            ? "No one has liked you yet. Get out there and start swiping!"
-            : "No one has viewed your profile yet. Update your photos!"}
+              ? "No one has liked you yet. Get out there and start swiping!"
+              : "No one has viewed your profile yet. Update your photos!"}
         </Text>
 
-        <Button title="Get Swiping" style={common.w100} />
+        <Button
+          title="Get Swiping"
+          style={common.w100}
+          onPress={handleGetSwiping}
+        />
       </View>
     ),
-    [activeTab]
+    [activeTab, handleGetSwiping]
   );
 
   const isEmpty = likes.length === 0 && !isLoading;

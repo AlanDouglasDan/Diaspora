@@ -110,6 +110,22 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  priorityLikeIcon: {
+    position: "absolute",
+    bottom: 12,
+    right: 12,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: palette.RED,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: palette.BLACK,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
+  },
   // Loading state styles
   loadingContainer: {
     flex: 1,

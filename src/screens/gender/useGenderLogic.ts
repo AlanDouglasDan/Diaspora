@@ -29,7 +29,7 @@ export function useGenderLogic({ navigation }: GenderScreenProps) {
     try {
       await updateUser(user.id, {
         showGender: showOnProfile,
-        userId: user.id,
+        // userId: user.id,
         gender: selectedGender,
       });
 

@@ -116,22 +116,6 @@ export const useCruiseCallLogic = (props: CruiseCallScreenProps) => {
     }
   }, [call, stopTimer, endRoulette, cancelRoulette]);
 
-  // Handle app state changes (background/close)
-  useEffect(() => {
-    const handleAppStateChange = async (nextAppState: AppStateStatus) => {
-      if (nextAppState === "background" || nextAppState === "inactive") {
-        console.log("📱 App going to background, cleaning up roulette...");
-        await cleanupAndCancel();
-      }
-    };
-
-    const subscription = AppState.addEventListener(
-      "change",
-      handleAppStateChange
-    );
-    return () => subscription.remove();
-  }, [cleanupAndCancel]);
-
   // Cleanup on unmount only - no dependencies to prevent re-running
   useEffect(() => {
     return () => {
@@ -164,44 +148,44 @@ export const useCruiseCallLogic = (props: CruiseCallScreenProps) => {
     hasStartedPollingRef.current = true;
     console.log("🚀 Starting roulette polling for user:", user.id);
 
-    // Start search countdown - runs every 1 second
+    // Start search countdown
+    const endTime = Date.now() + searchTimeRemaining * 1000;
+
     const countdownId = setInterval(() => {
-      setSearchTimeRemaining((prev) => {
-        const newTime = prev - 1;
-        console.log(`⏱️ Search countdown: ${newTime}s remaining`);
+      const now = Date.now();
+      const newTime = Math.max(0, Math.round((endTime - now) / 1000));
 
-        if (newTime <= 0) {
-          console.log("⏰ Search timeout reached, no match found");
+      setSearchTimeRemaining(newTime);
+      console.log(`⏱️ Search countdown: ${newTime}s remaining`);
 
-          // Clear both intervals
-          clearInterval(countdownId);
-          if (pollIntervalRef.current) {
-            clearInterval(pollIntervalRef.current);
-            pollIntervalRef.current = null;
-          }
-          countdownIntervalRef.current = null;
+      if (newTime <= 0) {
+        console.log("⏰ Search timeout reached, no match found");
 
-          // Cancel roulette since timeout reached
-          const userId = userIdRef.current;
-          if (userId) {
-            console.log(
-              "❌ Cancelling roulette due to timeout for user:",
-              userId
-            );
-            cancelRoulette(userId).catch(console.error);
-          }
+        // Clear both intervals
+        clearInterval(countdownId);
+        if (pollIntervalRef.current) {
+          clearInterval(pollIntervalRef.current);
+          pollIntervalRef.current = null;
+        }
+        countdownIntervalRef.current = null;
 
-          Alert.alert("No Match Found", "Please try again later.", [
-            {
-              text: "OK",
-              onPress: () => navigationRef.current.navigate("MainTabs"),
-            },
-          ]);
-          return 0;
+        // Cancel roulette since timeout reached
+        const userId = userIdRef.current;
+        if (userId) {
+          console.log(
+            "❌ Cancelling roulette due to timeout for user:",
+            userId
+          );
+          cancelRoulette(userId).catch(console.error);
         }
 
-        return newTime;
-      });
+        Alert.alert("No Match Found", "Please try again later.", [
+          {
+            text: "OK",
+            onPress: () => navigationRef.current.navigate("MainTabs"),
+          },
+        ]);
+      }
     }, 1000);
 
     countdownIntervalRef.current = countdownId;

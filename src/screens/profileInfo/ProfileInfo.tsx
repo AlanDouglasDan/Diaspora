@@ -274,7 +274,7 @@ const ProfileInfo: FC<ProfileInfoScreenProps> = (props) => {
         ))}
 
       {/* Get Verified Section */}
-      <View style={styles.verifySection}>
+      {/* <View style={styles.verifySection}>
         <Text style={styles.verifyTitle}>Get verified</Text>
 
         <Text style={styles.verifyDescription}>
@@ -290,7 +290,7 @@ const ProfileInfo: FC<ProfileInfoScreenProps> = (props) => {
           }
           style={styles.verifyButton}
         />
-      </View>
+      </View> */}
     </LayoutContainer>
   );
 };

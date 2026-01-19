@@ -33,7 +33,7 @@ export function useWelcomeLogic({ navigation }: WelcomeScreenProps) {
     if (isSignedIn && user?.id && clerkLoaded) {
       getUser(user.id).catch(console.error);
     }
-  }, [isSignedIn, user?.id, clerkLoaded, getUser]);
+  }, [isSignedIn, user?.id, clerkLoaded]);
 
   // Handle all auth checks and redirects
   useEffect(() => {
@@ -59,14 +59,19 @@ export function useWelcomeLogic({ navigation }: WelcomeScreenProps) {
       return;
     }
 
-    // If user is signed in but profile is incomplete or API failed, redirect to complete profile
-    if (data && (isError || !data?.displayName)) {
+    // If user is signed in but profile is incomplete, redirect to complete profile
+    if (data && !data?.displayName) {
       hasRedirected.current = true;
       navigation.navigate("DisplayName");
       return;
     }
 
-    // If we get here and data is null (API hasn't returned yet), keep showing splash
+    if (data || isError) {
+      setShowSplash(false);
+      return;
+    }
+
+    // If we get here and data is null, keep showing splash
     if (!data) return;
 
     // All checks done, no redirect needed, show welcome screen
@@ -90,11 +95,11 @@ export function useWelcomeLogic({ navigation }: WelcomeScreenProps) {
         });
       } catch (error) {
         console.error("Logout error:", error);
-        Toast.show({
-          type: "error",
-          text1: "Logout Failed",
-          text2: "Could not sign out. Please try again.",
-        });
+        // Toast.show({
+        //   type: "error",
+        //   text1: "Logout Failed",
+        //   text2: "Could not sign out. Please try again.",
+        // });
       }
     }
   };
@@ -111,18 +116,18 @@ export function useWelcomeLogic({ navigation }: WelcomeScreenProps) {
 
         if (authState === "sign-up") {
           // For sign-up, navigate to AddPhone to continue onboarding
-          Toast.show({
-            type: "success",
-            text1: "Welcome!",
-            text2: "Successfully signed up with Google",
-          });
+          // Toast.show({
+          //   type: "success",
+          //   text1: "Welcome!",
+          //   text2: "Successfully signed up with Google",
+          // });
           navigation.navigate("AddPhone");
         } else {
-          Toast.show({
-            type: "success",
-            text1: "Welcome!",
-            text2: "Successfully signed in with Google",
-          });
+          // Toast.show({
+          //   type: "success",
+          //   text1: "Welcome!",
+          //   text2: "Successfully signed in with Google",
+          // });
           navigation.navigate("Loading");
         }
       }
@@ -152,20 +157,20 @@ export function useWelcomeLogic({ navigation }: WelcomeScreenProps) {
 
         if (authState === "sign-up") {
           // For sign-up, navigate to AddPhone to continue onboarding
-          Toast.show({
-            type: "success",
-            text1: "Welcome!",
-            text2: "Successfully signed up with Apple",
-          });
+          // Toast.show({
+          //   type: "success",
+          //   text1: "Welcome!",
+          //   text2: "Successfully signed up with Apple",
+          // });
 
           navigation.navigate("AddPhone");
         } else {
           // For sign-in, check if user has complete profile
-          Toast.show({
-            type: "success",
-            text1: "Welcome!",
-            text2: "Successfully signed in with Apple",
-          });
+          // Toast.show({
+          //   type: "success",
+          //   text1: "Welcome!",
+          //   text2: "Successfully signed in with Apple",
+          // });
           navigation.navigate("Loading");
         }
       }

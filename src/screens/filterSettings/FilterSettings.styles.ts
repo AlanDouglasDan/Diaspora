@@ -9,7 +9,7 @@ export const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    paddingHorizontal: 16,
+    // paddingHorizontal: 16,
     paddingBottom: 32,
   },
   headerRight: {
@@ -113,5 +113,10 @@ export const styles = StyleSheet.create({
   applyButton: {
     marginTop: 32,
     marginBottom: 16,
+  },
+  footer: {
+    paddingHorizontal: 16,
+    paddingBottom: 24,
+    backgroundColor: palette.WHITE,
   },
 });

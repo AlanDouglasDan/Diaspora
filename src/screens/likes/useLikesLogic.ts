@@ -12,6 +12,7 @@ import {
   useGetReceivedLikes,
   useGetProfileViews,
   useLikeUser,
+  useGetLikes,
 } from "@/src/api";
 import type { Like } from "@/src/api/likes/types";
 import type { ProfileView } from "@/src/api/profileViews/types";
@@ -42,10 +43,11 @@ const mapLikeToItem = (like: Like): LikeItem => ({
 
 // Map API ProfileView to LikeItem
 const mapProfileViewToItem = (view: ProfileView): LikeItem => ({
-  id: view.id,
-  image: "", // Profile views may not have images - will need to fetch user data
-  isRecentlyActive: isRecentLike(view.createdAt),
-  userId: view.viewerId,
+  id: view.viewer.id + view.viewedAt,
+  image: view.viewer.image || "",
+  isRecentlyActive: view.isNew,
+  userId: view.viewer.id,
+  userName: view.viewer.displayName,
 });
 
 export function useLikesLogic() {
@@ -63,6 +65,7 @@ export function useLikesLogic() {
     getReceivedLikes,
     isLoading: receivedLikesLoading,
   } = useGetReceivedLikes();
+  const { data: likesData, getLikes, isLoading: likesLoading } = useGetLikes();
   const {
     data: profileViewsData,
     getProfileViews,
@@ -76,20 +79,18 @@ export function useLikesLogic() {
       if (!user?.id) return;
 
       try {
-        await getReceivedLikes(user.id);
+        await Promise.all([
+          getReceivedLikes(user.id),
+          getLikes(user.id),
+          getProfileViews(user.id),
+        ]);
       } catch (error) {
-        console.log("Error fetching received likes:", error);
-      }
-
-      try {
-        await getProfileViews(user.id);
-      } catch (error) {
-        console.log("Error fetching profile views:", error);
+        console.log("Error fetching likes data:", error);
       }
     };
 
     fetchData();
-  }, [user?.id, getReceivedLikes, getProfileViews]);
+  }, [user?.id, getReceivedLikes, getLikes, getProfileViews]);
 
   // Pull to refresh handler
   const handleRefresh = useCallback(async () => {
@@ -97,31 +98,31 @@ export function useLikesLogic() {
 
     setIsRefreshing(true);
     try {
-      await Promise.all([getReceivedLikes(user.id), getProfileViews(user.id)]);
+      await Promise.all([
+        getReceivedLikes(user.id),
+        getLikes(user.id),
+        getProfileViews(user.id),
+      ]);
     } catch (error) {
       console.log("Error refreshing data:", error);
     } finally {
       setIsRefreshing(false);
     }
-  }, [user?.id, getReceivedLikes, getProfileViews]);
+  }, [user?.id, getReceivedLikes, getLikes, getProfileViews]);
 
-  // Priority Aisles: only super likes
+  // Priority Aisles: all received likes
   const priorityLikes = useMemo((): LikeItem[] => {
     if (!receivedLikesData?.length) return [];
-    return receivedLikesData
-      .filter((like) => like.superLike)
-      .map(mapLikeToItem);
+    return receivedLikesData.map(mapLikeToItem);
   }, [receivedLikesData]);
 
-  // Your Likes: non-super likes
-  const regularLikes = useMemo((): LikeItem[] => {
-    if (!receivedLikesData?.length) return [];
-    return receivedLikesData
-      .filter((like) => !like.superLike)
-      .map(mapLikeToItem);
-  }, [receivedLikesData]);
+  // Your Likes: users I have liked
+  const yourLikes = useMemo((): LikeItem[] => {
+    if (!likesData?.length) return [];
+    return likesData.map(mapLikeToItem);
+  }, [likesData]);
 
-  // Profile Views
+  // Profile Views: users who have viewed my profile
   const profileViews = useMemo((): LikeItem[] => {
     if (!profileViewsData?.length) return [];
     return profileViewsData.map(mapProfileViewToItem);
@@ -133,13 +134,13 @@ export function useLikesLogic() {
       case "priority":
         return priorityLikes;
       case "likes":
-        return regularLikes;
+        return yourLikes;
       case "views":
         return profileViews;
       default:
         return [];
     }
-  }, [activeTab, priorityLikes, regularLikes, profileViews]);
+  }, [activeTab, priorityLikes, yourLikes, profileViews]);
 
   const handleTabChange = useCallback((value: string) => {
     setActiveTab(value as LikesTab);
@@ -176,8 +177,8 @@ export function useLikesLogic() {
   const blurImages = useMemo(() => activeTab === "views", [activeTab]);
 
   const isLoading = useMemo(
-    () => receivedLikesLoading || profileViewsLoading,
-    [receivedLikesLoading, profileViewsLoading]
+    () => receivedLikesLoading || profileViewsLoading || likesLoading,
+    [receivedLikesLoading, profileViewsLoading, likesLoading]
   );
 
   const handleUpgrade = useCallback(() => {
@@ -251,6 +252,10 @@ export function useLikesLogic() {
     [navigation]
   );
 
+  const handleGetSwiping = useCallback(() => {
+    navigation.navigate("MainTabs", { screen: "Match" } as any);
+  }, [navigation]);
+
   return {
     tabs: TABS,
     activeTab,
@@ -266,5 +271,6 @@ export function useLikesLogic() {
     handleLikeFromViews,
     isLikeLoading,
     handleOpenConversation,
+    handleGetSwiping,
   };
 }
