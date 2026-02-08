@@ -5,6 +5,9 @@ import { palette, typography } from "core/styles";
 export const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 20,
+    // maxHeight: "80%",
+  },
+  scrollContent: {
     paddingBottom: 40,
   },
   header: {
@@ -53,7 +56,6 @@ export const styles = StyleSheet.create({
   },
   listContainer: {
     marginTop: 8,
-    maxHeight: "60%"
   },
   listItem: {
     flexDirection: "row",
@@ -86,7 +88,6 @@ export const styles = StyleSheet.create({
   singleSelectContainer: {
     marginTop: 16,
     gap: 12,
-    maxHeight: "60%"
   },
   singleSelectOption: {
     padding: 12,

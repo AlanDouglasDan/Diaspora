@@ -188,6 +188,17 @@ export const styles = StyleSheet.create({
   section: {
     marginTop: 24,
   },
+  sectionCard: {
+    backgroundColor: palette.WHITE,
+    borderRadius: 12,
+    padding: 16,
+    marginTop: 16,
+    shadowColor: palette.BLACK,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 2,
+  },
   sectionTitle: {
     ...typography.semiheader14,
     color: palette.TEXT_COLOR,
@@ -307,6 +318,11 @@ export const styles = StyleSheet.create({
     marginTop: 8,
     textAlign: "center",
     color: palette.GREY2,
+  },
+  flexedRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
   },
 });
 

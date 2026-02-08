@@ -68,19 +68,21 @@ const FilterSettings: FC<FilterSettingsScreenProps> = (props) => {
           <Select
             label="Looking for"
             value={filters.gender}
-            onChange={(value) => updateFilter("gender", value)}
+            onChange={(value) => updateFilter("gender", value as string[])}
             options={GENDER_OPTIONS}
             placeholder="All"
             style={styles.halfWidth}
+            multiple
           />
 
           <Select
             label="Activity"
             value={filters.activity}
-            onChange={(value) => updateFilter("activity", value)}
+            onChange={(value) => updateFilter("activity", value as string[])}
             options={ACTIVITY_OPTIONS}
             placeholder="All"
             style={styles.halfWidth}
+            multiple
           />
         </View>
 

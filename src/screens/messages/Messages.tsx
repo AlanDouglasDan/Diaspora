@@ -122,7 +122,7 @@ const Messages: FC = () => {
           <View style={styles.messagesHeader}>
             <Text style={styles.sectionTitle}>Messages</Text>
 
-            <TouchableOpacity
+            {/* <TouchableOpacity
               style={styles.loveLettersButton}
               onPress={handleLoveLettersPress}
               activeOpacity={0.7}
@@ -135,7 +135,7 @@ const Messages: FC = () => {
               >
                 <Text style={styles.loveLettersText}>Open Love Letters 💌</Text>
               </LinearGradient>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </View>
 
           {!isLoading && messages.length === 0 && (

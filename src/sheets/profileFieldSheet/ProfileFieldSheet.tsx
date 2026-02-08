@@ -64,10 +64,7 @@ const ProfileFieldSheet: FC<SheetProps<"profile-field-sheet">> = (props) => {
 
       case "single-select":
         return (
-          <ScrollView
-            contentContainerStyle={styles.singleSelectContainer}
-            showsVerticalScrollIndicator={false}
-          >
+          <View style={styles.singleSelectContainer}>
             {options.map((option) => {
               const isSelected = selectedSingle === option.id;
               return (
@@ -91,7 +88,7 @@ const ProfileFieldSheet: FC<SheetProps<"profile-field-sheet">> = (props) => {
                 </TouchableOpacity>
               );
             })}
-          </ScrollView>
+          </View>
         );
 
       case "search-list":
@@ -110,10 +107,7 @@ const ProfileFieldSheet: FC<SheetProps<"profile-field-sheet">> = (props) => {
               </View>
             )}
 
-            <ScrollView
-              style={styles.listContainer}
-              showsVerticalScrollIndicator={false}
-            >
+            <View style={styles.listContainer}>
               {filteredOptions.map((option) => {
                 const isSelected = selectedItems.includes(option.id);
                 return (
@@ -138,7 +132,7 @@ const ProfileFieldSheet: FC<SheetProps<"profile-field-sheet">> = (props) => {
                   </TouchableOpacity>
                 );
               })}
-            </ScrollView>
+            </View>
           </>
         );
 
@@ -153,7 +147,11 @@ const ProfileFieldSheet: FC<SheetProps<"profile-field-sheet">> = (props) => {
       gestureEnabled
       containerStyle={{ borderTopLeftRadius: 32, borderTopRightRadius: 32 }}
     >
-      <View style={styles.container}>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.header}>
           <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
             <Ionicons name="close" size={24} color={palette.BLACK} />
@@ -178,7 +176,7 @@ const ProfileFieldSheet: FC<SheetProps<"profile-field-sheet">> = (props) => {
           onPress={handleSubmit}
           style={styles.submitButton}
         />
-      </View>
+      </ScrollView>
     </ActionSheet>
   );
 };

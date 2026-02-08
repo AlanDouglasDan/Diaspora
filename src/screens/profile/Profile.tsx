@@ -33,6 +33,9 @@ const Profile: FC<ProfileScreenProps> = () => {
     handleOpenProfileInfo,
     profileData,
     profileLoading,
+    handleTakeOff,
+    isBoosting,
+    preferencesData,
   } = useProfileLogic();
 
   if (profileLoading || !profileData) {
@@ -71,7 +74,7 @@ const Profile: FC<ProfileScreenProps> = () => {
           <CircularProgress
             size={140}
             strokeWidth={6}
-            progress={calculateProfileProgress(profileData)}
+            progress={calculateProfileProgress(profileData, preferencesData)}
           >
             <Image
               source={{ uri: profileData?.images?.[0] || "" }}
@@ -96,7 +99,7 @@ const Profile: FC<ProfileScreenProps> = () => {
           style={styles.progressBadge}
         >
           <Text style={styles.progressText}>
-            {calculateProfileProgress(profileData)}% Complete
+            {calculateProfileProgress(profileData, preferencesData)}% Complete
           </Text>
         </LinearGradient>
 
@@ -121,6 +124,8 @@ const Profile: FC<ProfileScreenProps> = () => {
           onViewAllFeatures={handleViewAllFeatures}
           onCloseModal={handleCloseModal}
           getModalFeatures={getModalFeatures}
+          onTakeOff={handleTakeOff}
+          isBoosting={isBoosting}
         />
       ) : (
         <SafetyTab />

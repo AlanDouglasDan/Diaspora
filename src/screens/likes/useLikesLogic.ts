@@ -178,7 +178,7 @@ export function useLikesLogic() {
 
   const isLoading = useMemo(
     () => receivedLikesLoading || profileViewsLoading || likesLoading,
-    [receivedLikesLoading, profileViewsLoading, likesLoading]
+    [receivedLikesLoading, profileViewsLoading, likesLoading],
   );
 
   const handleUpgrade = useCallback(() => {
@@ -195,7 +195,7 @@ export function useLikesLogic() {
         },
       });
     },
-    [handleUpgrade]
+    [handleUpgrade],
   );
 
   // Handle like action for profile views
@@ -226,30 +226,57 @@ export function useLikesLogic() {
         setIsLikeLoading(false);
       }
     },
-    [user?.id, likeUser]
+    [user?.id, likeUser],
   );
 
-  // Navigate to conversation with the user who liked you
+  // Check if there is a mutual like (both users liked each other)
+  const isMutualLike = useCallback(
+    (userId: string): boolean => {
+      if (!userId) return false;
+      // Check if I have liked this user
+      const iLikedThem =
+        likesData?.some((like) => like.likedId === userId) || false;
+      // Check if this user has liked me
+      const theyLikedMe =
+        receivedLikesData?.some(
+          (like) => (like.user?.id || like.likedId) === userId,
+        ) || false;
+      return iLikedThem && theyLikedMe;
+    },
+    [likesData, receivedLikesData],
+  );
+
+  // Navigate to conversation if mutual like, otherwise open profile view
   const handleOpenConversation = useCallback(
     (item: LikeItem) => {
       if (!item.userId) return;
 
-      // Format the match date
-      const matchDate = new Date().toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      });
+      if (isMutualLike(item.userId)) {
+        // Mutual like - open conversation
+        const matchDate = new Date().toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        });
 
-      navigation.navigate("Conversation", {
-        recipientId: item.userId,
-        recipientName: item.userName || "User",
-        recipientAvatar:
-          typeof item.image === "string" ? { uri: item.image } : item.image,
-        matchDate,
-      });
+        navigation.navigate("Conversation", {
+          recipientId: item.userId,
+          recipientName: item.userName || "User",
+          recipientAvatar:
+            typeof item.image === "string" ? { uri: item.image } : item.image,
+          matchDate,
+        });
+      } else {
+        // Not mutual - open user profile view
+        const imageUri = typeof item.image === "string" ? item.image : "";
+        navigation.navigate("UserProfileView", {
+          userId: item.userId,
+          avatar: imageUri,
+          userName: item.userName || "User",
+        });
+      }
     },
-    [navigation]
+    [navigation, isMutualLike],
   );
 
   const handleGetSwiping = useCallback(() => {

@@ -32,6 +32,17 @@ import {
   ETHNICITY_OPTIONS,
   HEIGHT_OPTIONS,
   FAMILY_PLANS_OPTIONS,
+  SEXUALITY_OPTIONS,
+  BODY_TYPE_OPTIONS,
+  DIETARY_PREFERENCE_OPTIONS,
+  SLEEPING_HABITS_OPTIONS,
+  WORKOUT_FREQUENCY_OPTIONS,
+  LOVE_LANGUAGE_OPTIONS,
+  TRAVEL_PLANS_OPTIONS,
+  PERSONALITY_OPTIONS,
+  RELATIONSHIP_STATUS_OPTIONS,
+  WILLING_TO_RELOCATE_OPTIONS,
+  OPENNESS_TO_LONG_DISTANCE_OPTIONS,
 } from "@/src/core/constants";
 
 const PRONOUNS_OPTIONS = [
@@ -46,6 +57,12 @@ const GENDER_OPTIONS = [
   { id: "woman", label: "WOMAN" },
   { id: "non_binary", label: "NON-BINARY" },
   { id: "other", label: "OTHER" },
+];
+
+const LOOKING_FOR_OPTIONS = [
+  { id: "man", label: "MAN" },
+  { id: "woman", label: "WOMAN" },
+  { id: "nonbinary", label: "NON-BINARY" },
 ];
 
 export const useProfileInfoLogic = ({ navigation }: ProfileInfoScreenProps) => {
@@ -106,7 +123,7 @@ export const useProfileInfoLogic = ({ navigation }: ProfileInfoScreenProps) => {
   >({});
 
   const profileCompletion = profileData
-    ? calculateProfileProgress(profileData)
+    ? calculateProfileProgress(profileData, preferencesData)
     : 0;
 
   // Prefill data from Redux
@@ -188,6 +205,55 @@ export const useProfileInfoLogic = ({ navigation }: ProfileInfoScreenProps) => {
       if (preferencesData.interests && preferencesData.interests.length > 0) {
         newFieldValues.interests = preferencesData.interests;
       }
+      // New fields
+      if (preferencesData.jobTitle) {
+        newFieldValues.jobTitle = preferencesData.jobTitle;
+      }
+      if (preferencesData.company) {
+        newFieldValues.company = preferencesData.company;
+      }
+      if (preferencesData.school) {
+        newFieldValues.school = preferencesData.school;
+      }
+      if (preferencesData.sexuality) {
+        newFieldValues.sexuality = preferencesData.sexuality;
+      }
+      if (preferencesData.bodyType) {
+        newFieldValues.bodyType = preferencesData.bodyType;
+      }
+      if (preferencesData.dietaryPreference) {
+        newFieldValues.dietaryPreference = preferencesData.dietaryPreference;
+      }
+      if (preferencesData.sleepingHabits) {
+        newFieldValues.sleepingHabits = preferencesData.sleepingHabits;
+      }
+      if (preferencesData.workoutFrequency) {
+        newFieldValues.workoutFrequency = preferencesData.workoutFrequency;
+      }
+      if (preferencesData.loveLanguage) {
+        newFieldValues.loveLanguage = preferencesData.loveLanguage;
+      }
+      if (preferencesData.travelPlans) {
+        newFieldValues.travelPlans = preferencesData.travelPlans;
+      }
+      if (preferencesData.personality) {
+        newFieldValues.personality = preferencesData.personality;
+      }
+      if (preferencesData.relationshipStatus) {
+        newFieldValues.relationshipStatus = preferencesData.relationshipStatus;
+      }
+      if (preferencesData.willingToRelocate !== undefined) {
+        newFieldValues.willingToRelocate = preferencesData.willingToRelocate
+          ? "yes"
+          : "no";
+      }
+      if (preferencesData.opennessToLongDistance !== undefined) {
+        newFieldValues.opennessToLongDistance =
+          preferencesData.opennessToLongDistance ? "yes" : "no";
+      }
+      if (preferencesData.lookingToDate) {
+        newFieldValues.lookingFor = preferencesData.lookingToDate;
+      }
 
       setFieldValues((prev) => ({ ...prev, ...newFieldValues }));
     }
@@ -232,7 +298,7 @@ export const useProfileInfoLogic = ({ navigation }: ProfileInfoScreenProps) => {
 
         // Show local image immediately while uploading
         setPhotos((prev) =>
-          prev.map((photo, idx) => (idx === index ? localUri : photo))
+          prev.map((photo, idx) => (idx === index ? localUri : photo)),
         );
 
         // Upload to Cloudinary
@@ -249,7 +315,7 @@ export const useProfileInfoLogic = ({ navigation }: ProfileInfoScreenProps) => {
               // Update with Cloudinary URL
               setPhotos((prev) => {
                 const newPhotos = prev.map((photo, idx) =>
-                  idx === index ? imageUrl : photo
+                  idx === index ? imageUrl : photo,
                 );
 
                 // Save to backend
@@ -294,7 +360,7 @@ export const useProfileInfoLogic = ({ navigation }: ProfileInfoScreenProps) => {
             // });
             // Revert to previous photo on error
             setPhotos((prev) =>
-              prev.map((photo, idx) => (idx === index ? null : photo))
+              prev.map((photo, idx) => (idx === index ? null : photo)),
             );
           } finally {
             setIsUploading(false);
@@ -302,7 +368,7 @@ export const useProfileInfoLogic = ({ navigation }: ProfileInfoScreenProps) => {
         }
       }
     },
-    [uploadUrlData, uploadToCloudinary, saveImages, user?.id]
+    [uploadUrlData, uploadToCloudinary, saveImages, user?.id],
   );
 
   // Debounced bio update - uses updateProfile endpoint
@@ -339,7 +405,7 @@ export const useProfileInfoLogic = ({ navigation }: ProfileInfoScreenProps) => {
         }
       }, 1000);
     },
-    [user?.id, updateProfile, dispatch]
+    [user?.id, updateProfile, dispatch],
   );
 
   // Cleanup debounce timer on unmount
@@ -361,7 +427,7 @@ export const useProfileInfoLogic = ({ navigation }: ProfileInfoScreenProps) => {
         const result = await updatePreference(
           String(preferencesData.id),
           user.id,
-          payload
+          payload,
         );
         if (result) {
           dispatch(setPreferences(result));
@@ -382,7 +448,7 @@ export const useProfileInfoLogic = ({ navigation }: ProfileInfoScreenProps) => {
         // });
       }
     },
-    [user?.id, preferencesData?.id, updatePreference, dispatch, getProfile]
+    [user?.id, preferencesData?.id, updatePreference, dispatch, getProfile],
   );
 
   // Helper to update profile field via API (for bio, interests)
@@ -410,7 +476,7 @@ export const useProfileInfoLogic = ({ navigation }: ProfileInfoScreenProps) => {
         // });
       }
     },
-    [user?.id, updateProfile, dispatch]
+    [user?.id, updateProfile, dispatch],
   );
 
   const sections: ProfileSection[] = useMemo(
@@ -537,12 +603,12 @@ export const useProfileInfoLogic = ({ navigation }: ProfileInfoScreenProps) => {
             value: "Empty",
             icon: "heart",
           },
-          {
-            id: "socialMediaActivity",
-            label: "Social Media Activity",
-            value: "Empty",
-            icon: "at",
-          },
+          // {
+          //   id: "socialMediaActivity",
+          //   label: "Social Media Activity",
+          //   value: "Empty",
+          //   icon: "at",
+          // },
           {
             id: "travelPlans",
             label: "Travel Plans",
@@ -570,7 +636,11 @@ export const useProfileInfoLogic = ({ navigation }: ProfileInfoScreenProps) => {
           {
             id: "lookingFor",
             label: "Looking For",
-            value: "Empty",
+            value:
+              preferencesData?.lookingToDate &&
+              preferencesData.lookingToDate.length > 0
+                ? preferencesData.lookingToDate.join(", ")
+                : "Empty",
             icon: "search",
           },
           {
@@ -603,7 +673,7 @@ export const useProfileInfoLogic = ({ navigation }: ProfileInfoScreenProps) => {
         ],
       },
     ],
-    [preferencesData]
+    [preferencesData],
   );
 
   const handlePreview = useCallback(() => {
@@ -637,19 +707,39 @@ export const useProfileInfoLogic = ({ navigation }: ProfileInfoScreenProps) => {
         familyPlans: "familyPlans",
         pronouns: "pronouns",
         gender: "gender",
+        jobTitle: "jobTitle",
+        company: "company",
+        school: "school",
+        sexuality: "sexuality",
+        bodyType: "bodyType",
+        dietaryPreference: "dietaryPreference",
+        sleepingHabits: "sleepingHabits",
+        workoutFrequency: "workoutFrequency",
+        loveLanguage: "loveLanguage",
+        travelPlans: "travelPlans",
+        personality: "personality",
+        relationshipStatus: "relationshipStatus",
+        willingToRelocate: "willingToRelocate",
+        opennessToLongDistance: "opennessToLongDistance",
       };
 
       const preferenceField = fieldToPreferenceMap[fieldId];
       if (preferenceField) {
-        // Convert smoking/drinking to boolean
+        // Convert boolean fields
         let apiValue: string | string[] | boolean = value;
         if (fieldId === "smoking" || fieldId === "drinking") {
           apiValue = value !== "never";
         }
+        if (
+          fieldId === "willingToRelocate" ||
+          fieldId === "opennessToLongDistance"
+        ) {
+          apiValue = value === "yes";
+        }
         await updatePreferenceField(preferenceField, apiValue);
       }
     },
-    [updatePreferenceField]
+    [updatePreferenceField],
   );
 
   // Helper to get display value for a field
@@ -671,7 +761,7 @@ export const useProfileInfoLogic = ({ navigation }: ProfileInfoScreenProps) => {
       }
       return value;
     },
-    [fieldValues]
+    [fieldValues],
   );
 
   // Field click handlers
@@ -679,14 +769,15 @@ export const useProfileInfoLogic = ({ navigation }: ProfileInfoScreenProps) => {
     (fieldId: string) => {
       switch (fieldId) {
         case "languages":
+        case "language":
           SheetManager.show("profile-field-sheet", {
             payload: {
-              fieldId: "languages",
+              fieldId: "language",
               title: "Language",
               image: images.language,
               variant: "single-select",
               options: LANGUAGE_OPTIONS,
-              initialValue: fieldValues.languages || "",
+              initialValue: fieldValues.language || fieldValues.languages || "",
               onSubmit: (value) => updateFieldValue("languages", value),
             },
           });
@@ -861,12 +952,217 @@ export const useProfileInfoLogic = ({ navigation }: ProfileInfoScreenProps) => {
           });
           break;
 
+        case "jobTitle":
+          SheetManager.show("profile-field-sheet", {
+            payload: {
+              fieldId: "jobTitle",
+              title: "What is your job title?",
+              image: images.language,
+              variant: "text-input",
+              placeholder: "Enter your job title",
+              initialValue: fieldValues.jobTitle || "",
+              onSubmit: (value) => updateFieldValue("jobTitle", value),
+            },
+          });
+          break;
+
+        case "company":
+          SheetManager.show("profile-field-sheet", {
+            payload: {
+              fieldId: "company",
+              title: "Where do you work?",
+              image: images.language,
+              variant: "text-input",
+              placeholder: "Enter your company name",
+              initialValue: fieldValues.company || "",
+              onSubmit: (value) => updateFieldValue("company", value),
+            },
+          });
+          break;
+
+        case "sexuality":
+          SheetManager.show("profile-field-sheet", {
+            payload: {
+              fieldId: "sexuality",
+              title: "What is your sexuality?",
+              image: images.language,
+              variant: "single-select",
+              options: SEXUALITY_OPTIONS,
+              initialValue: fieldValues.sexuality || "",
+              onSubmit: (value) => updateFieldValue("sexuality", value),
+            },
+          });
+          break;
+
+        case "bodyType":
+          SheetManager.show("profile-field-sheet", {
+            payload: {
+              fieldId: "bodyType",
+              title: "What is your body type?",
+              image: images.language,
+              variant: "single-select",
+              options: BODY_TYPE_OPTIONS,
+              initialValue: fieldValues.bodyType || "",
+              onSubmit: (value) => updateFieldValue("bodyType", value),
+            },
+          });
+          break;
+
+        case "dietaryPreference":
+          SheetManager.show("profile-field-sheet", {
+            payload: {
+              fieldId: "dietaryPreference",
+              title: "What are your dietary preferences?",
+              image: images.language,
+              variant: "single-select",
+              options: DIETARY_PREFERENCE_OPTIONS,
+              initialValue: fieldValues.dietaryPreference || "",
+              onSubmit: (value) => updateFieldValue("dietaryPreference", value),
+            },
+          });
+          break;
+
+        case "sleepingHabits":
+          SheetManager.show("profile-field-sheet", {
+            payload: {
+              fieldId: "sleepingHabits",
+              title: "What are your sleeping habits?",
+              image: images.language,
+              variant: "single-select",
+              options: SLEEPING_HABITS_OPTIONS,
+              initialValue: fieldValues.sleepingHabits || "",
+              onSubmit: (value) => updateFieldValue("sleepingHabits", value),
+            },
+          });
+          break;
+
+        case "workoutFrequency":
+          SheetManager.show("profile-field-sheet", {
+            payload: {
+              fieldId: "workoutFrequency",
+              title: "How often do you work out?",
+              image: images.language,
+              variant: "single-select",
+              options: WORKOUT_FREQUENCY_OPTIONS,
+              initialValue: fieldValues.workoutFrequency || "",
+              onSubmit: (value) => updateFieldValue("workoutFrequency", value),
+            },
+          });
+          break;
+
+        case "loveLanguage":
+          SheetManager.show("profile-field-sheet", {
+            payload: {
+              fieldId: "loveLanguage",
+              title: "What is your love language?",
+              image: images.language,
+              variant: "single-select",
+              options: LOVE_LANGUAGE_OPTIONS,
+              initialValue: fieldValues.loveLanguage || "",
+              onSubmit: (value) => updateFieldValue("loveLanguage", value),
+            },
+          });
+          break;
+
+        case "travelPlans":
+          SheetManager.show("profile-field-sheet", {
+            payload: {
+              fieldId: "travelPlans",
+              title: "What are your travel plans?",
+              image: images.language,
+              variant: "single-select",
+              options: TRAVEL_PLANS_OPTIONS,
+              initialValue: fieldValues.travelPlans || "",
+              onSubmit: (value) => updateFieldValue("travelPlans", value),
+            },
+          });
+          break;
+
+        case "personality":
+          SheetManager.show("profile-field-sheet", {
+            payload: {
+              fieldId: "personality",
+              title: "What is your personality type?",
+              image: images.language,
+              variant: "single-select",
+              options: PERSONALITY_OPTIONS,
+              initialValue: fieldValues.personality || "",
+              onSubmit: (value) => updateFieldValue("personality", value),
+            },
+          });
+          break;
+
+        case "relationshipStatus":
+          SheetManager.show("profile-field-sheet", {
+            payload: {
+              fieldId: "relationshipStatus",
+              title: "What is your relationship status?",
+              image: images.language,
+              variant: "single-select",
+              options: RELATIONSHIP_STATUS_OPTIONS,
+              initialValue: fieldValues.relationshipStatus || "",
+              onSubmit: (value) =>
+                updateFieldValue("relationshipStatus", value),
+            },
+          });
+          break;
+
+        case "willingToRelocate":
+          SheetManager.show("profile-field-sheet", {
+            payload: {
+              fieldId: "willingToRelocate",
+              title: "Are you willing to relocate?",
+              image: images.language,
+              variant: "single-select",
+              options: WILLING_TO_RELOCATE_OPTIONS,
+              initialValue: fieldValues.willingToRelocate || "",
+              onSubmit: (value) => updateFieldValue("willingToRelocate", value),
+            },
+          });
+          break;
+
+        case "opennessToLongDistance":
+          SheetManager.show("profile-field-sheet", {
+            payload: {
+              fieldId: "opennessToLongDistance",
+              title: "Are you open to long distance?",
+              image: images.language,
+              variant: "single-select",
+              options: OPENNESS_TO_LONG_DISTANCE_OPTIONS,
+              initialValue: fieldValues.opennessToLongDistance || "",
+              onSubmit: (value) =>
+                updateFieldValue("opennessToLongDistance", value),
+            },
+          });
+          break;
+
+        case "lookingFor":
+          SheetManager.show("profile-field-sheet", {
+            payload: {
+              fieldId: "lookingFor",
+              title: "What are you looking for?",
+              image: images.language,
+              variant: "multi-select",
+              options: LOOKING_FOR_OPTIONS,
+              initialValue: preferencesData?.lookingToDate || [],
+              onSubmit: async (value) => {
+                const values = Array.isArray(value) ? value : [value];
+                setFieldValues((prev) => ({
+                  ...prev,
+                  lookingFor: values,
+                }));
+                await updatePreferenceField("lookingToDate", values);
+              },
+            },
+          });
+          break;
+
         default:
           // For other fields, do nothing for now
           break;
       }
     },
-    [fieldValues, updateFieldValue]
+    [fieldValues, updateFieldValue],
   );
 
   return {

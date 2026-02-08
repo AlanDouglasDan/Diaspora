@@ -4,6 +4,8 @@ import {
   TouchableOpacity,
   NativeScrollEvent,
   NativeSyntheticEvent,
+  View,
+  ActivityIndicator,
 } from "react-native";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
@@ -17,8 +19,10 @@ import { useGetUsers, UserListItem } from "@/src/api/user";
 import { useLikeUser, useDislikeUser, useGetLikes } from "@/src/api/likes";
 import { useCreateProfileView } from "@/src/api/profileViews";
 import { useGetPreference } from "@/src/api/preferences";
+import { useBoostProfile } from "@/src/api/boost";
 import { useStreamChat } from "@/src/providers";
 import { useAppSelector } from "@/src/store";
+import Rocket from "components/svg/Rocket";
 import { images } from "core/images";
 import { palette } from "core/styles";
 import type { MatchScreenProps, UserProfile } from "./Match.types";
@@ -54,7 +58,7 @@ const mapUserToProfile = (apiUser: UserListItem): UserProfile => {
   const profile = apiUser.profile;
 
   const sortedImages = [...(apiUser.images || [])].sort(
-    (a, b) => a.order - b.order
+    (a, b) => a.order - b.order,
   );
   const avatarUri = sortedImages[0]?.imageUrl || "";
   const galleryUris = sortedImages.map((img) => img.imageUrl);
@@ -150,18 +154,21 @@ export const useMatchLogic = (props: MatchScreenProps) => {
   const { dislikeUser } = useDislikeUser();
   const { getLikes, data: likesData } = useGetLikes();
   const { getPreference, data: preferencesData } = useGetPreference();
+  const { boostProfile } = useBoostProfile();
   const { sendLoveLetter, isConnected: isStreamConnected } = useStreamChat();
   const { createProfileView } = useCreateProfileView();
 
   const [cardIndex, setCardIndex] = useState(0);
   const [isSwipingEnabled, setIsSwipingEnabled] = useState(true);
   const [excludedUserIds, setExcludedUserIds] = useState<Set<string>>(
-    new Set()
+    new Set(),
   );
+  const [viewedUserIds, setViewedUserIds] = useState<Set<string>>(new Set());
   const [isActionLoading, setIsActionLoading] = useState(false);
   const [loveLetterText, setLoveLetterText] = useState("");
   const [isSendingLoveLetter, setIsSendingLoveLetter] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
+  const [isBoosting, setIsBoosting] = useState(false);
   const swiperRef = useRef<Swiper<UserProfile>>(null);
 
   // Build getUsers params from applied filters and user preferences
@@ -173,9 +180,9 @@ export const useMatchLogic = (props: MatchScreenProps) => {
     };
 
     // Use gender from preferences if not explicitly set in filters
-    if (appliedFilters?.gender && appliedFilters.gender !== "all") {
+    if (appliedFilters?.gender?.length) {
       params.gender = appliedFilters.gender;
-    } 
+    }
     // else if (preferencesData?.lookingToDate?.length) {
     //   // Use the first value in lookingToDate as gender preference
     //   const lookingFor = preferencesData.lookingToDate[0]?.toLowerCase();
@@ -190,7 +197,7 @@ export const useMatchLogic = (props: MatchScreenProps) => {
 
     console.log("params", params);
 
-    if (appliedFilters?.activity && appliedFilters.activity !== "all") {
+    if (appliedFilters?.activity?.length) {
       params.activity = appliedFilters.activity;
     }
     if (appliedFilters?.country && appliedFilters.country !== "all") {
@@ -206,16 +213,16 @@ export const useMatchLogic = (props: MatchScreenProps) => {
       advancedFilters.zodiac = appliedFilters.starSign;
     if (appliedFilters?.height) advancedFilters.height = appliedFilters.height;
 
-    if (appliedFilters?.drinking) {
+    if (appliedFilters?.drinking?.length) {
       advancedFilters.drinking =
-        appliedFilters.drinking === "socially" ||
-        appliedFilters.drinking === "regularly";
+        appliedFilters.drinking.includes("socially") ||
+        appliedFilters.drinking.includes("regularly");
     }
 
-    if (appliedFilters?.smoking) {
+    if (appliedFilters?.smoking?.length) {
       advancedFilters.smoking =
-        appliedFilters.smoking === "socially" ||
-        appliedFilters.smoking === "regularly";
+        appliedFilters.smoking.includes("socially") ||
+        appliedFilters.smoking.includes("regularly");
     }
 
     if (appliedFilters?.educationLevel)
@@ -283,13 +290,15 @@ export const useMatchLogic = (props: MatchScreenProps) => {
     }
   }, [likesData]);
 
-  // Map API users to UserProfile format and filter out excluded users
+  // Map API users to UserProfile format and filter out excluded and viewed users
   const users: UserProfile[] = useMemo(() => {
     if (!usersData?.users?.length) return [];
     return usersData.users
-      .filter((user) => !excludedUserIds.has(user.id))
+      .filter(
+        (user) => !excludedUserIds.has(user.id) && !viewedUserIds.has(user.id),
+      )
       .map(mapUserToProfile);
-  }, [usersData, excludedUserIds]);
+  }, [usersData, excludedUserIds, viewedUserIds]);
 
   const currentUser: UserProfile | null = useMemo(() => {
     if (!users.length) return null;
@@ -306,7 +315,7 @@ export const useMatchLogic = (props: MatchScreenProps) => {
     }
   }, [currentUser?.id, clerkUser?.id, createProfileView]);
 
-  console.log(users.length);
+  console.log(usersData?.users[0]);
 
   const handleRefresh = useCallback(async () => {
     if (!clerkUser?.id) return;
@@ -319,6 +328,28 @@ export const useMatchLogic = (props: MatchScreenProps) => {
     }
   }, [clerkUser?.id, getUsers, getLikes, buildGetUsersParams]);
 
+  const handleBoostProfile = useCallback(async () => {
+    if (!clerkUser?.id || isBoosting) return;
+
+    setIsBoosting(true);
+    try {
+      await boostProfile(clerkUser.id);
+      // Toast.show({
+      //   type: "success",
+      //   text1: "Profile Boosted! 🚀",
+      //   text2: "Your profile is now more visible",
+      // });
+    } catch (error) {
+      Toast.show({
+        type: "error",
+        text1: "Failed to boost profile",
+        text2: "Please try again",
+      });
+    } finally {
+      setIsBoosting(false);
+    }
+  }, [clerkUser?.id, isBoosting, boostProfile]);
+
   useEffect(() => {
     navigation.setOptions({
       headerShown: true,
@@ -330,26 +361,40 @@ export const useMatchLogic = (props: MatchScreenProps) => {
           resizeMode="contain"
         />
       ),
-      headerLeft: () => (
-        <TouchableOpacity
-          style={styles.headerButton}
-          activeOpacity={0.7}
-          onPress={handleRefresh}
-        >
-          <MaterialIcons name="refresh" size={24} color={palette.GREY2} />
-        </TouchableOpacity>
-      ),
+      // headerLeft: () => (
+      //   <TouchableOpacity
+      //     style={styles.headerButton}
+      //     activeOpacity={0.7}
+      //     onPress={handleRefresh}
+      //   >
+      //     <MaterialIcons name="refresh" size={24} color={palette.GREY2} />
+      //   </TouchableOpacity>
+      // ),
       headerRight: () => (
-        <TouchableOpacity
-          style={styles.headerButton}
-          activeOpacity={0.7}
-          onPress={() => rootNavigation.navigate("FilterSettings")}
-        >
-          <Ionicons name="options-outline" size={24} color={palette.GREY2} />
-        </TouchableOpacity>
+        <View style={styles.flexedRow}>
+          <TouchableOpacity
+            onPress={handleBoostProfile}
+            disabled={isBoosting}
+            activeOpacity={0.7}
+          >
+            {isBoosting ? (
+              <ActivityIndicator size="small" color={palette.PINK} />
+            ) : (
+              <Rocket />
+            )}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.headerButton}
+            activeOpacity={0.7}
+            onPress={() => rootNavigation.navigate("FilterSettings")}
+          >
+            <Ionicons name="options-outline" size={24} color={palette.GREY2} />
+          </TouchableOpacity>
+        </View>
       ),
     });
-  }, [navigation, handleRefresh]);
+  }, [navigation, handleRefresh, handleBoostProfile, isBoosting]);
 
   const handleSeePlans = useCallback(() => {
     rootNavigation.navigate("Upgrade");
@@ -370,8 +415,19 @@ export const useMatchLogic = (props: MatchScreenProps) => {
     });
   }, [rootNavigation, currentUser]);
 
+  const handleOpenSendLoveLetter = useCallback(() => {
+    if (!currentUser) return;
+    rootNavigation.navigate("SendLoveLetter", {
+      userId: currentUser.id,
+      userName: currentUser.name,
+      userAge: currentUser.age,
+      userImages: currentUser.galleryImages,
+    });
+  }, [rootNavigation, currentUser]);
+
   const excludeUser = useCallback((userId: string) => {
     setExcludedUserIds((prev) => new Set([...prev, userId]));
+    setViewedUserIds((prev) => new Set([...prev, userId]));
   }, []);
 
   const handleLikeAction = useCallback(
@@ -386,13 +442,13 @@ export const useMatchLogic = (props: MatchScreenProps) => {
           superLike,
         });
 
-        Toast.show({
-          type: "success",
-          text1: superLike ? "Super Like Sent! 💖" : "Like Sent! ❤️",
-          text2: `You ${superLike ? "super liked" : "liked"} ${
-            currentUser.name
-          }`,
-        });
+        // Toast.show({
+        //   type: "success",
+        //   text1: superLike ? "Super Like Sent! 💖" : "Like Sent! ❤️",
+        //   text2: `You ${superLike ? "super liked" : "liked"} ${
+        //     currentUser.name
+        //   }`,
+        // });
 
         excludeUser(currentUser.id);
         return true;
@@ -407,7 +463,7 @@ export const useMatchLogic = (props: MatchScreenProps) => {
         setIsActionLoading(false);
       }
     },
-    [currentUser, clerkUser?.id, likeUser, excludeUser]
+    [currentUser, clerkUser?.id, likeUser, excludeUser],
   );
 
   const handleDislikeAction = useCallback(async (): Promise<boolean> => {
@@ -420,11 +476,11 @@ export const useMatchLogic = (props: MatchScreenProps) => {
         dislikerId: clerkUser.id,
       });
 
-      Toast.show({
-        type: "success",
-        text1: "Passed 👋",
-        text2: `You passed on ${currentUser.name}`,
-      });
+      // Toast.show({
+      //   type: "success",
+      //   text1: "Passed 👋",
+      //   text2: `You passed on ${currentUser.name}`,
+      // });
 
       excludeUser(currentUser.id);
       return true;
@@ -458,7 +514,8 @@ export const useMatchLogic = (props: MatchScreenProps) => {
   }, [handleLikeAction]);
 
   const handleSwipedAll = useCallback(() => {
-    setCardIndex(0);
+    // Don't reset - let it show empty state when all profiles are viewed
+    // The empty state will be shown when users.length === 0
   }, []);
 
   const handleScroll = useCallback(
@@ -469,7 +526,7 @@ export const useMatchLogic = (props: MatchScreenProps) => {
         setIsSwipingEnabled(shouldEnableSwiping);
       }
     },
-    [isSwipingEnabled]
+    [isSwipingEnabled],
   );
 
   const swipeLeft = useCallback(async () => {
@@ -541,11 +598,12 @@ export const useMatchLogic = (props: MatchScreenProps) => {
     users,
     currentUser,
     cardIndex,
-    isLoading: isInitializing,
+    isLoading: isInitializing || isLoading,
     isActionLoading,
     isSwipingEnabled,
     swiperRef,
     handleOpenImages,
+    handleOpenSendLoveLetter,
     handleDislike: swipeLeft,
     handleSuperLike,
     handleLike: swipeRight,

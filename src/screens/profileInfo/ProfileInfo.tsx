@@ -1,5 +1,11 @@
-import React, { FC } from "react";
-import { View, Text, TouchableOpacity, TextInput } from "react-native";
+import React, { FC, useRef } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  TextInput,
+  Keyboard,
+} from "react-native";
 import { Image } from "expo-image";
 import { Ionicons, FontAwesome5, Entypo } from "@expo/vector-icons";
 
@@ -30,6 +36,13 @@ const ProfileInfo: FC<ProfileInfoScreenProps> = (props) => {
     handleFieldPress,
     getFieldDisplayValue,
   } = useProfileInfoLogic(props);
+
+  const bioInputRef = useRef<TextInput>(null);
+
+  const handleFieldPressWithBlur = (fieldId: string) => {
+    Keyboard.dismiss();
+    handleFieldPress(fieldId);
+  };
 
   const renderFieldIcon = (iconName: string) => {
     return (
@@ -83,7 +96,11 @@ const ProfileInfo: FC<ProfileInfoScreenProps> = (props) => {
   };
 
   return (
-    <LayoutContainer style={styles.container} edges={["top", "bottom"]}>
+    <LayoutContainer
+      style={styles.container}
+      edges={["top", "bottom"]}
+      keyboardShouldPersistTaps="handled"
+    >
       {/* Custom Header */}
       <View style={styles.header}>
         <TouchableOpacity
@@ -102,9 +119,10 @@ const ProfileInfo: FC<ProfileInfoScreenProps> = (props) => {
           />
         </View>
 
-        <TouchableOpacity onPress={handlePreview}>
+        <View style={{ width: 24 }} />
+        {/* <TouchableOpacity onPress={handlePreview}>
           <Text style={styles.previewButton}>Preview</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
 
       {/* Photos Grid - 3x3 with first slot being 2x2 */}
@@ -137,20 +155,20 @@ const ProfileInfo: FC<ProfileInfoScreenProps> = (props) => {
         </View>
 
         <View style={styles.flexedRow}>
-          <Ionicons name="location-outline" size={20} color={palette.GREY2} />
+          {/* <Ionicons name="location-outline" size={20} color={palette.GREY2} />
 
           <Text style={[styles.semiheader14, { flex: 1 }]}>
             {userData.location}
-          </Text>
+          </Text> */}
 
-          <Ionicons name="chevron-forward" size={16} color={palette.GREY2} />
+          {/* <Ionicons name="chevron-forward" size={16} color={palette.GREY2} /> */}
         </View>
 
-        <View style={styles.flexedRow}>
+        {/* <View style={styles.flexedRow}>
           <Text style={[styles.semiheader14, { flex: 1 }]}>
             {userData.countryFlag} {userData.country}
           </Text>
-        </View>
+        </View> */}
       </TouchableOpacity>
 
       {/* Why You're Here Section */}
@@ -162,7 +180,9 @@ const ProfileInfo: FC<ProfileInfoScreenProps> = (props) => {
               <View>
                 <Text style={styles.sectionTitle}>Why You're Here</Text>
 
-                <Text style={styles.fieldValue}>{section.fields[0]?.value}</Text>
+                <Text style={styles.fieldValue}>
+                  {section.fields[0]?.value}
+                </Text>
               </View>
 
               <Ionicons
@@ -183,6 +203,7 @@ const ProfileInfo: FC<ProfileInfoScreenProps> = (props) => {
 
         <View style={styles.sectionContent}>
           <TextInput
+            ref={bioInputRef}
             style={styles.bioInput}
             value={bio}
             onChangeText={setBio}
@@ -210,7 +231,7 @@ const ProfileInfo: FC<ProfileInfoScreenProps> = (props) => {
                 <TouchableOpacity
                   key={field.id}
                   style={styles.fieldRow}
-                  onPress={() => handleFieldPress(field.id)}
+                  onPress={() => handleFieldPressWithBlur(field.id)}
                   activeOpacity={0.7}
                 >
                   <View style={styles.fieldLeft}>

@@ -135,6 +135,11 @@ export const typography = StyleSheet.create({
     lineHeight: 15,
   },
 
+  text28: {
+    fontFamily: font.regular,
+    fontSize: 28,
+    lineHeight: 24,
+  },
   text20: {
     fontFamily: font.regular,
     fontSize: 20,

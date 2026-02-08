@@ -4,7 +4,13 @@ import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useUser } from "@clerk/clerk-expo";
 
-import { useGetProfile, useGetPlans } from "@/src/api";
+import {
+  useGetProfile,
+  useGetPlans,
+  useBoostProfile,
+  useGetPreference,
+} from "@/src/api";
+import Toast from "react-native-toast-message";
 import { images } from "core/images";
 import { palette } from "core/styles";
 import type { RootStackParamList } from "navigation/RootNavigator";
@@ -19,6 +25,7 @@ export const useProfileLogic = () => {
   const [activeTab, setActiveTab] = useState("plans");
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
+  const [isBoosting, setIsBoosting] = useState(false);
 
   const {
     data: profileData,
@@ -27,12 +34,15 @@ export const useProfileLogic = () => {
   } = useGetProfile();
 
   const { data: plansData, isLoading: plansLoading, getPlans } = useGetPlans();
+  const { boostProfile } = useBoostProfile();
+  const { data: preferencesData, getPreference } = useGetPreference();
 
   useEffect(() => {
     if (user?.id) {
       getProfile(user.id);
+      getPreference(user.id);
     }
-  }, [user?.id, getProfile]);
+  }, [user?.id, getProfile, getPreference]);
 
   useEffect(() => {
     getPlans();
@@ -58,7 +68,7 @@ export const useProfileLogic = () => {
       { label: "Due date", value: "30 September 2025" },
       { label: "Plan", value: "$46/month" },
     ],
-    []
+    [],
   );
 
   const handleCloseModal = useCallback(() => {
@@ -130,6 +140,28 @@ export const useProfileLogic = () => {
     navigation.navigate("ProfileInfo");
   }, [navigation]);
 
+  const handleTakeOff = useCallback(async () => {
+    if (!user?.id || isBoosting) return;
+
+    setIsBoosting(true);
+    try {
+      await boostProfile(user.id);
+      Toast.show({
+        type: "success",
+        text1: "Profile Boosted! 🚀",
+        text2: "Your profile is now more visible",
+      });
+    } catch (error) {
+      Toast.show({
+        type: "error",
+        text1: "Failed to boost profile",
+        text2: "Please try again",
+      });
+    } finally {
+      setIsBoosting(false);
+    }
+  }, [user?.id, isBoosting, boostProfile]);
+
   return {
     activeTab,
     tabs,
@@ -147,5 +179,8 @@ export const useProfileLogic = () => {
     profileData,
     profileLoading,
     plansLoading,
+    handleTakeOff,
+    isBoosting,
+    preferencesData,
   };
 };

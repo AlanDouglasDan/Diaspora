@@ -10,3 +10,4 @@ export * from "./subscription";
 export * from "./stream";
 export * from "./match";
 export * from "./roulette";
+export * from "./boost";

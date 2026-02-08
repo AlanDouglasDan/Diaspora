@@ -60,6 +60,14 @@ export const SELECT_ROWS: SelectRowItem[] = [
   { key: "children", label: "Children" },
   { key: "religion", label: "Religion" },
   { key: "sexuality", label: "Sexuality" },
+  { key: "workoutFrequency", label: "Workout Frequency" },
+  { key: "personality", label: "Personality" },
+  { key: "personalityProfile", label: "Personality Profile" },
+  { key: "bodyType", label: "Body Type" },
+  { key: "language", label: "Language" },
+  { key: "opennessToLongDistance", label: "Openness to Long Distance" },
+  { key: "willingToRelocate", label: "Willing to Relocate" },
+  { key: "loveLanguage", label: "Love Language" },
 ];
 
 const LOOKING_FOR_OPTIONS: FilterSelectOption[] = [
@@ -137,6 +145,15 @@ const RELIGION_OPTIONS: FilterSelectOption[] = [
   { id: "prefer_not_say", label: "Prefer not to say" },
 ];
 
+const HEIGHT_FILTER_OPTIONS: FilterSelectOption[] = [
+  { id: "Under 5'0\"", label: "Under 5'0\"" },
+  { id: "5'0\"-5'3\"", label: "5'0\"-5'3\"" },
+  { id: "5'4\"-5'7\"", label: "5'4\"-5'7\"" },
+  { id: "5'8\"-5'11\"", label: "5'8\"-5'11\"" },
+  { id: "6'0\"-6'3\"", label: "6'0\"-6'3\"" },
+  { id: "Over 6'3\"", label: "Over 6'3\"" },
+];
+
 const SEXUALITY_OPTIONS: FilterSelectOption[] = [
   { id: "straight", label: "Straight" },
   { id: "gay", label: "Gay" },
@@ -146,6 +163,83 @@ const SEXUALITY_OPTIONS: FilterSelectOption[] = [
   { id: "asexual", label: "Asexual" },
   { id: "other", label: "Other" },
   { id: "prefer_not_say", label: "Prefer not to say" },
+];
+
+const WORKOUT_FREQUENCY_FILTER_OPTIONS: FilterSelectOption[] = [
+  { id: "Every day", label: "Every day" },
+  { id: "Often", label: "Often" },
+  { id: "Sometimes", label: "Sometimes" },
+  { id: "Rarely", label: "Rarely" },
+  { id: "Never", label: "Never" },
+];
+
+const PERSONALITY_FILTER_OPTIONS: FilterSelectOption[] = [
+  { id: "Introvert", label: "Introvert" },
+  { id: "Extrovert", label: "Extrovert" },
+  { id: "Ambivert", label: "Ambivert" },
+];
+
+const PERSONALITY_PROFILE_FILTER_OPTIONS: FilterSelectOption[] = [
+  { id: "INTJ", label: "INTJ" },
+  { id: "INTP", label: "INTP" },
+  { id: "ENTJ", label: "ENTJ" },
+  { id: "ENTP", label: "ENTP" },
+  { id: "INFJ", label: "INFJ" },
+  { id: "INFP", label: "INFP" },
+  { id: "ENFJ", label: "ENFJ" },
+  { id: "ENFP", label: "ENFP" },
+  { id: "ISTJ", label: "ISTJ" },
+  { id: "ISFJ", label: "ISFJ" },
+  { id: "ESTJ", label: "ESTJ" },
+  { id: "ESFJ", label: "ESFJ" },
+  { id: "ISTP", label: "ISTP" },
+  { id: "ISFP", label: "ISFP" },
+  { id: "ESTP", label: "ESTP" },
+  { id: "ESFP", label: "ESFP" },
+];
+
+const BODY_TYPE_FILTER_OPTIONS: FilterSelectOption[] = [
+  { id: "Slim", label: "Slim" },
+  { id: "Athletic", label: "Athletic" },
+  { id: "Average", label: "Average" },
+  { id: "Curvy", label: "Curvy" },
+  { id: "Plus size", label: "Plus size" },
+  { id: "Muscular", label: "Muscular" },
+  { id: "Prefer not to say", label: "Prefer not to say" },
+];
+
+const LANGUAGE_FILTER_OPTIONS: FilterSelectOption[] = [
+  { id: "English", label: "English" },
+  { id: "Spanish", label: "Spanish" },
+  { id: "French", label: "French" },
+  { id: "Mandarin", label: "Mandarin" },
+  { id: "Hindi", label: "Hindi" },
+  { id: "Arabic", label: "Arabic" },
+  { id: "Portuguese", label: "Portuguese" },
+  { id: "German", label: "German" },
+  { id: "Japanese", label: "Japanese" },
+  { id: "Russian", label: "Russian" },
+  { id: "Other", label: "Other" },
+];
+
+const OPENNESS_TO_LONG_DISTANCE_FILTER_OPTIONS: FilterSelectOption[] = [
+  { id: "yes", label: "Yes" },
+  { id: "no", label: "No" },
+  { id: "maybe", label: "Maybe" },
+];
+
+const WILLING_TO_RELOCATE_FILTER_OPTIONS: FilterSelectOption[] = [
+  { id: "yes", label: "Yes" },
+  { id: "no", label: "No" },
+  { id: "maybe", label: "Maybe" },
+];
+
+const LOVE_LANGUAGE_FILTER_OPTIONS: FilterSelectOption[] = [
+  { id: "Words of affirmation", label: "Words of affirmation" },
+  { id: "Quality time", label: "Quality time" },
+  { id: "Physical touch", label: "Physical touch" },
+  { id: "Acts of service", label: "Acts of service" },
+  { id: "Receiving gifts", label: "Receiving gifts" },
 ];
 
 interface FieldConfig {
@@ -173,37 +267,78 @@ const FIELD_CONFIG: Record<string, FieldConfig> = {
   },
   height: {
     title: "Height",
-    variant: "height",
+    variant: "multi-select",
+    options: HEIGHT_FILTER_OPTIONS,
   },
   drinking: {
     title: "Drinking",
-    variant: "single-select",
+    variant: "multi-select",
     options: DRINKING_OPTIONS,
   },
   smoking: {
     title: "Smoking",
-    variant: "single-select",
+    variant: "multi-select",
     options: SMOKING_OPTIONS,
   },
   educationLevel: {
     title: "Education level",
-    variant: "single-select",
+    variant: "multi-select",
     options: EDUCATION_OPTIONS,
   },
   children: {
     title: "Children",
-    variant: "single-select",
+    variant: "multi-select",
     options: CHILDREN_OPTIONS,
   },
   religion: {
     title: "Religion",
-    variant: "single-select",
+    variant: "multi-select",
     options: RELIGION_OPTIONS,
   },
   sexuality: {
     title: "Sexuality",
-    variant: "single-select",
+    variant: "multi-select",
     options: SEXUALITY_OPTIONS,
+  },
+  workoutFrequency: {
+    title: "Workout Frequency",
+    variant: "multi-select",
+    options: WORKOUT_FREQUENCY_FILTER_OPTIONS,
+  },
+  personality: {
+    title: "Personality",
+    variant: "multi-select",
+    options: PERSONALITY_FILTER_OPTIONS,
+  },
+  personalityProfile: {
+    title: "Personality Profile",
+    variant: "multi-select",
+    options: PERSONALITY_PROFILE_FILTER_OPTIONS,
+  },
+  bodyType: {
+    title: "Body Type",
+    variant: "multi-select",
+    options: BODY_TYPE_FILTER_OPTIONS,
+  },
+  language: {
+    title: "Language",
+    variant: "multi-select",
+    options: LANGUAGE_FILTER_OPTIONS,
+  },
+  opennessToLongDistance: {
+    title: "Openness to Long Distance",
+    variant: "multi-select",
+    options: OPENNESS_TO_LONG_DISTANCE_FILTER_OPTIONS,
+  },
+  willingToRelocate: {
+    title: "Willing to Relocate",
+    variant: "multi-select",
+    options: WILLING_TO_RELOCATE_FILTER_OPTIONS,
+  },
+  loveLanguage: {
+    title: "Love Language",
+    variant: "multi-select",
+    options: LOVE_LANGUAGE_FILTER_OPTIONS,
   },
 };
 
@@ -221,20 +356,18 @@ export const useFilterSettingsLogic = (props: FilterSettingsScreenProps) => {
     }
   }, [user?.id, getPreference]);
 
-  // Set default gender from lookingToDate if gender is "all" or empty
+  // Set default gender from lookingToDate if gender filter is empty
   useEffect(() => {
     if (
-      (filters.gender === "all" || !filters.gender) &&
+      (!filters.gender || filters.gender.length === 0) &&
       preferencesData?.lookingToDate?.length
     ) {
-      const lookingFor = preferencesData.lookingToDate[0]?.toLowerCase();
-      if (
-        lookingFor === "man" ||
-        lookingFor === "woman" ||
-        lookingFor === "nonbinary"
-      ) {
-        dispatch(updateFilterAction({ key: "gender", value: lookingFor }));
-      }
+      dispatch(
+        updateFilterAction({
+          key: "gender",
+          value: preferencesData.lookingToDate.map((v) => v.toLowerCase()),
+        }),
+      );
     }
   }, [preferencesData, filters.gender, dispatch]);
 
@@ -260,7 +393,7 @@ export const useFilterSettingsLogic = (props: FilterSettingsScreenProps) => {
     <K extends keyof FilterState>(key: K, value: FilterState[K]) => {
       dispatch(updateFilterAction({ key, value }));
     },
-    [dispatch]
+    [dispatch],
   );
 
   const isFilterChanged = useMemo(() => {
@@ -294,13 +427,13 @@ export const useFilterSettingsLogic = (props: FilterSettingsScreenProps) => {
           onSubmit: (value) => {
             updateFilter(
               field as keyof FilterState,
-              value as FilterState[keyof FilterState]
+              value as FilterState[keyof FilterState],
             );
           },
         },
       });
     },
-    [filters, updateFilter]
+    [filters, updateFilter],
   );
 
   return {

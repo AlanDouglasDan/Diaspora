@@ -6,12 +6,15 @@ import {
   TouchableOpacity,
   TextInput,
   ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { Image } from "expo-image";
 import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
 import Swiper from "react-native-deck-swiper";
 
 import LoveLetterSend from "components/svg/LoveLetterSend";
+import LoveLetter2 from "components/svg/LoveLetter2";
 import { Button } from "components/button";
 import { images } from "core/images";
 import { common, layout, palette, spacing } from "core/styles";
@@ -30,6 +33,7 @@ const Match: FC<MatchScreenProps> = (props) => {
     isSwipingEnabled,
     swiperRef,
     handleOpenImages,
+    handleOpenSendLoveLetter,
     handleDislike,
     handleSuperLike,
     handleLike,
@@ -94,16 +98,22 @@ const Match: FC<MatchScreenProps> = (props) => {
             </View>
 
             <View style={styles.bottomSection} pointerEvents="box-none">
-              <View style={styles.onlineIndicator} pointerEvents="none">
-                <View
-                  style={[
-                    styles.onlineDot,
-                    !user.isOnline && styles.offlineDot,
-                  ]}
-                />
-                <Text style={styles.onlineText}>
-                  {user.isOnline ? "Online" : "Offline"}
-                </Text>
+              <View style={layout.spacedRow}>
+                <View style={styles.onlineIndicator} pointerEvents="none">
+                  <View
+                    style={[
+                      styles.onlineDot,
+                      !user.isOnline && styles.offlineDot,
+                    ]}
+                  />
+                  <Text style={styles.onlineText}>
+                    {user.isOnline ? "Online" : "Offline"}
+                  </Text>
+                </View>
+
+                <TouchableOpacity onPress={handleOpenSendLoveLetter}>
+                  <LoveLetter2 />
+                </TouchableOpacity>
               </View>
 
               <View style={styles.actionButtons}>
@@ -167,7 +177,7 @@ const Match: FC<MatchScreenProps> = (props) => {
       handleSuperLike,
       handleLike,
       isActionLoading,
-    ]
+    ],
   );
 
   if (isLoading) {
@@ -217,12 +227,17 @@ const Match: FC<MatchScreenProps> = (props) => {
   }
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
+    >
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
         onScroll={handleScroll}
         scrollEventThrottle={16}
+        keyboardShouldPersistTaps="handled"
       >
         <View style={styles.swiperContainer}>
           <Swiper
@@ -294,164 +309,207 @@ const Match: FC<MatchScreenProps> = (props) => {
           />
         </View>
 
-        {currentUser.bio && currentUser.bio !== "No bio yet" && (
-          <View style={spacing.marginTop12}>
-            <Text style={styles.text14}>My bio</Text>
-            <Text style={styles.semiheader16}>{currentUser.bio}</Text>
-          </View>
-        )}
-
-        {/* Info Tags */}
-        {currentUser.compatibility.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Compatibility</Text>
-            <View style={styles.tagsRow}>
-              {currentUser.compatibility.map((item, index) => (
-                <View key={index} style={styles.basicTag}>
-                  <Text style={styles.tagText}>{item}</Text>
-                </View>
-              ))}
-            </View>
-          </View>
-        )}
-
-        {currentUser.aboutMe.length > 0 &&
-          currentUser.aboutMe[0] !== "No details yet" && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>About me</Text>
-              <View style={styles.tagsRow}>
-                {currentUser.aboutMe.map((item, index) => (
-                  <View key={index} style={styles.basicTag}>
-                    <Text style={styles.tagText}>{item}</Text>
-                  </View>
-                ))}
+        {/* Bio + Compatibility + About Me card */}
+        {(currentUser?.bio && currentUser?.bio !== "No bio yet") ||
+        currentUser?.compatibility.length > 0 ||
+        (currentUser?.aboutMe.length > 0 &&
+          currentUser?.aboutMe[0] !== "No details yet") ? (
+          <View style={styles.sectionCard}>
+            {currentUser?.bio && currentUser?.bio !== "No bio yet" && (
+              <View>
+                <Text style={styles.text14}>My bio</Text>
+                <Text style={styles.semiheader16}>{currentUser?.bio}</Text>
               </View>
-            </View>
-          )}
+            )}
 
-        {currentUser.school && currentUser.school !== "Not specified" && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>School</Text>
-            <Text style={styles.sectionValue}>{currentUser.school}</Text>
+            {currentUser?.compatibility.length > 0 && (
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Compatibility</Text>
+                <View style={styles.tagsRow}>
+                  {currentUser?.compatibility.map((item, index) => (
+                    <View key={index} style={styles.basicTag}>
+                      <Text style={styles.tagText}>{item}</Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            )}
+
+            {currentUser?.aboutMe.length > 0 &&
+              currentUser?.aboutMe[0] !== "No details yet" && (
+                <View style={styles.section}>
+                  <Text style={styles.sectionTitle}>About me</Text>
+                  <View style={styles.tagsRow}>
+                    {currentUser?.aboutMe.map((item, index) => (
+                      <View key={index} style={styles.basicTag}>
+                        <Text style={styles.tagText}>{item}</Text>
+                      </View>
+                    ))}
+                  </View>
+                </View>
+              )}
           </View>
-        )}
+        ) : null}
 
-        {currentUser.workTitle && currentUser.workTitle !== "Not specified" && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Work title</Text>
-            <Text style={styles.sectionValue}>{currentUser.workTitle}</Text>
-          </View>
-        )}
+        {/* School / Work / Company card */}
+        {((currentUser?.school && currentUser?.school !== "Not specified") ||
+          (currentUser?.workTitle &&
+            currentUser?.workTitle !== "Not specified") ||
+          (currentUser?.company &&
+            currentUser?.company !== "Not specified")) && (
+          <View style={styles.sectionCard}>
+            {currentUser?.school && currentUser?.school !== "Not specified" && (
+              <View>
+                <Text style={styles.sectionTitle}>School</Text>
+                <Text style={styles.sectionValue}>{currentUser?.school}</Text>
+              </View>
+            )}
 
-        {currentUser.company && currentUser.company !== "Not specified" && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Company</Text>
-            <Text style={styles.sectionValue}>{currentUser.company}</Text>
+            {currentUser?.workTitle &&
+              currentUser?.workTitle !== "Not specified" && (
+                <View style={styles.section}>
+                  <Text style={styles.sectionTitle}>Work title</Text>
+                  <Text style={styles.sectionValue}>
+                    {currentUser?.workTitle}
+                  </Text>
+                </View>
+              )}
+
+            {currentUser?.company &&
+              currentUser?.company !== "Not specified" && (
+                <View style={styles.section}>
+                  <Text style={styles.sectionTitle}>Company</Text>
+                  <Text style={styles.sectionValue}>
+                    {currentUser?.company}
+                  </Text>
+                </View>
+              )}
           </View>
         )}
 
         <Image
-          source={currentUser.avatar}
+          source={currentUser?.avatar}
           style={styles.galleryPhoto}
           contentFit="cover"
         />
 
-        {currentUser.ethnicity.length > 0 &&
-          currentUser.ethnicity[0] !== "Not specified" && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>My ethnicity</Text>
-              <View style={styles.tagsRow}>
-                {currentUser.ethnicity.map((item, index) => (
-                  <View key={index} style={styles.basicTag}>
-                    <Text style={styles.tagText}>{item}</Text>
+        {/* Ethnicity + Nationalities + Languages card */}
+        {((currentUser?.ethnicity.length > 0 &&
+          currentUser?.ethnicity[0] !== "Not specified") ||
+          (currentUser?.nationalities.length > 0 &&
+            currentUser?.nationalities[0] !== "Not specified") ||
+          currentUser?.languages.length > 0) && (
+          <View style={styles.sectionCard}>
+            {currentUser?.ethnicity.length > 0 &&
+              currentUser?.ethnicity[0] !== "Not specified" && (
+                <View>
+                  <Text style={styles.sectionTitle}>My ethnicity</Text>
+                  <View style={styles.tagsRow}>
+                    {currentUser?.ethnicity.map((item, index) => (
+                      <View key={index} style={styles.basicTag}>
+                        <Text style={styles.tagText}>{item}</Text>
+                      </View>
+                    ))}
                   </View>
-                ))}
-              </View>
-            </View>
-          )}
-
-        {currentUser.nationalities.length > 0 &&
-          currentUser.nationalities[0] !== "Not specified" && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>My nationalities</Text>
-              <View style={styles.tagsRow}>
-                {currentUser.nationalities.map((item, index) => (
-                  <View key={index} style={styles.basicTag}>
-                    <Text style={styles.tagText}>{item}</Text>
-                  </View>
-                ))}
-              </View>
-            </View>
-          )}
-
-        {currentUser.languages.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Languages I know</Text>
-            <View style={styles.tagsRow}>
-              {currentUser.languages.map((lang, index) => (
-                <View
-                  key={index}
-                  style={[
-                    styles.basicTag,
-                    lang.isShared && { backgroundColor: palette.PINK },
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.tagText,
-                      lang.isShared && { color: palette.WHITE },
-                    ]}
-                  >
-                    {lang.name}
-                  </Text>
                 </View>
-              ))}
-            </View>
+              )}
+
+            {currentUser?.nationalities.length > 0 &&
+              currentUser?.nationalities[0] !== "Not specified" && (
+                <View style={styles.section}>
+                  <Text style={styles.sectionTitle}>My nationalities</Text>
+                  <View style={styles.tagsRow}>
+                    {currentUser?.nationalities.map((item, index) => (
+                      <View key={index} style={styles.basicTag}>
+                        <Text style={styles.tagText}>{item}</Text>
+                      </View>
+                    ))}
+                  </View>
+                </View>
+              )}
+
+            {currentUser?.languages.length > 0 && (
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Languages I know</Text>
+                <View style={styles.tagsRow}>
+                  {currentUser?.languages.map((lang, index) => (
+                    <View
+                      key={index}
+                      style={[
+                        styles.basicTag,
+                        lang.isShared && { backgroundColor: palette.PINK },
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.tagText,
+                          lang.isShared && { color: palette.WHITE },
+                        ]}
+                      >
+                        {lang.name}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            )}
           </View>
         )}
 
-        {currentUser.galleryImages.length > 1 && (
+        {currentUser?.galleryImages.length > 1 && (
           <Image
-            source={currentUser.galleryImages[1]}
+            source={currentUser?.galleryImages[1]}
             style={styles.galleryPhoto}
             contentFit="cover"
           />
         )}
 
-        {currentUser.interests.length > 0 &&
-          currentUser.interests[0]?.name !== "No interests yet" && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>My interests</Text>
-              <View style={styles.tagsRow}>
-                {currentUser.interests.map((interest, index) => (
-                  <View
-                    key={index}
-                    style={[
-                      styles.basicTag,
-                      interest.isShared && { backgroundColor: palette.PINK },
-                    ]}
-                  >
-                    <Text
-                      style={[
-                        styles.tagText,
-                        interest.isShared && { color: palette.WHITE },
-                      ]}
-                    >
-                      {interest.name}
-                    </Text>
+        {/* Interests + Location card */}
+        {((currentUser?.interests.length > 0 &&
+          currentUser?.interests[0]?.name !== "No interests yet") ||
+          (currentUser?.location &&
+            currentUser?.location !== "Location not available")) && (
+          <View style={styles.sectionCard}>
+            {currentUser?.interests.length > 0 &&
+              currentUser?.interests[0]?.name !== "No interests yet" && (
+                <View>
+                  <Text style={styles.sectionTitle}>My interests</Text>
+                  <View style={styles.tagsRow}>
+                    {currentUser?.interests.map((interest, index) => (
+                      <View
+                        key={index}
+                        style={[
+                          styles.basicTag,
+                          interest.isShared && {
+                            backgroundColor: palette.PINK,
+                          },
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.tagText,
+                            interest.isShared && { color: palette.WHITE },
+                          ]}
+                        >
+                          {interest.name}
+                        </Text>
+                      </View>
+                    ))}
                   </View>
-                ))}
-              </View>
-            </View>
-          )}
+                </View>
+              )}
 
-        {currentUser.location &&
-          currentUser.location !== "Location not available" && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>My location</Text>
-              <Text style={styles.sectionValue}>{currentUser.location}</Text>
-            </View>
-          )}
+            {currentUser?.location &&
+              currentUser?.location !== "Location not available" && (
+                <View style={styles.section}>
+                  <Text style={styles.sectionTitle}>My location</Text>
+                  <Text style={styles.sectionValue}>
+                    {currentUser?.location}
+                  </Text>
+                </View>
+              )}
+          </View>
+        )}
 
         <View style={styles.loveLetterContainer}>
           <View style={layout.flex1}>
@@ -490,7 +548,7 @@ const Match: FC<MatchScreenProps> = (props) => {
         />
 
         <Text style={styles.text11}>
-          Pour out your mind to {currentUser.name} the old fashioned way
+          Pour out your mind to {currentUser?.name} the old fashioned way
         </Text>
 
         <View style={spacing.marginTop44}>
@@ -500,12 +558,12 @@ const Match: FC<MatchScreenProps> = (props) => {
 
           <TouchableOpacity style={styles.footerButton}>
             <Text style={styles.footerButtonText}>
-              Block & Report | {currentUser.name}
+              Block & Report | {currentUser?.name}
             </Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 

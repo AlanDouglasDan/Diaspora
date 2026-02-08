@@ -10,7 +10,7 @@ export const styles = StyleSheet.create({
   content: {
     flex: 1,
     alignItems: "center",
-    paddingTop: 60
+    paddingTop: 60,
   },
   title: {
     ...typography.header22,
@@ -31,6 +31,13 @@ export const styles = StyleSheet.create({
     borderRadius: 24,
     marginBottom: 32,
     overflow: "hidden",
+  },
+  profileIconContainer: {
+    width: "100%",
+    height: 250,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 32,
   },
   actionsRow: {
     flexDirection: "row",

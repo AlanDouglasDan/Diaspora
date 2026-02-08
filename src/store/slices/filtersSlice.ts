@@ -1,43 +1,59 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 export interface FilterState {
-  gender: string;
-  activity: string;
+  gender: string[];
+  activity: string[];
   country: string;
   distanceRange: [number, number];
   ageRange: [number, number];
   hasBio: boolean;
-  ethnicity: string;
-  starSign: string;
-  height: string;
-  drinking: string;
-  smoking: string;
-  educationLevel: string;
-  children: string;
-  lookingFor: string;
-  sexuality: string;
+  ethnicity: string[];
+  starSign: string[];
+  height: string[];
+  drinking: string[];
+  smoking: string[];
+  educationLevel: string[];
+  children: string[];
+  lookingFor: string[];
+  sexuality: string[];
   minPhotos: number;
-  religion: string;
+  religion: string[];
+  workoutFrequency: string[];
+  personality: string[];
+  personalityProfile: string[];
+  bodyType: string[];
+  language: string[];
+  opennessToLongDistance: string[];
+  willingToRelocate: string[];
+  loveLanguage: string[];
 }
 
 export const INITIAL_FILTER_STATE: FilterState = {
-  gender: "all",
-  activity: "all",
+  gender: [],
+  activity: [],
   country: "all",
   distanceRange: [1, 500],
   ageRange: [18, 99],
   hasBio: false,
-  ethnicity: "",
-  starSign: "",
-  height: "",
-  drinking: "",
-  smoking: "",
-  educationLevel: "",
-  children: "",
-  lookingFor: "",
-  sexuality: "",
+  ethnicity: [],
+  starSign: [],
+  height: [],
+  drinking: [],
+  smoking: [],
+  educationLevel: [],
+  children: [],
+  lookingFor: [],
+  sexuality: [],
   minPhotos: 1,
-  religion: "",
+  religion: [],
+  workoutFrequency: [],
+  personality: [],
+  personalityProfile: [],
+  bodyType: [],
+  language: [],
+  opennessToLongDistance: [],
+  willingToRelocate: [],
+  loveLanguage: [],
 };
 
 interface FiltersStoreState {
@@ -59,7 +75,7 @@ const filtersSlice = createSlice({
     },
     updateFilter: (
       state,
-      action: PayloadAction<{ key: keyof FilterState; value: any }>
+      action: PayloadAction<{ key: keyof FilterState; value: any }>,
     ) => {
       state.filters[action.payload.key] = action.payload.value as never;
     },

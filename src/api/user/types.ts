@@ -101,13 +101,3 @@ export interface UserListItem {
 export interface GetUsersResponse {
   users: UserListItem[];
 }
-
-export interface ProfileView {
-  isNew: boolean;
-  viewedAt: string;
-  viewer: {
-    id: string;
-    displayName: string;
-    image: string;
-  };
-}

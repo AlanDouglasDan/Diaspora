@@ -33,7 +33,7 @@ export const useCruiseCallLogic = (props: CruiseCallScreenProps) => {
   const [isSearching, setIsSearching] = useState<boolean>(true);
   const [isConnecting, setIsConnecting] = useState<boolean>(false);
   const [searchTimeRemaining, setSearchTimeRemaining] = useState(
-    SEARCH_TIMEOUT_SECONDS
+    SEARCH_TIMEOUT_SECONDS,
   );
   const [call, setCall] = useState<Call | null>(null);
   const [matchData, setMatchData] = useState<RouletteMatch | null>(null);
@@ -174,7 +174,7 @@ export const useCruiseCallLogic = (props: CruiseCallScreenProps) => {
         if (userId) {
           console.log(
             "❌ Cancelling roulette due to timeout for user:",
-            userId
+            userId,
           );
           cancelRoulette(userId).catch(console.error);
         }
@@ -229,7 +229,7 @@ export const useCruiseCallLogic = (props: CruiseCallScreenProps) => {
         } else {
           console.log(
             "⏳ Still waiting for match. Status:",
-            status?.session?.status
+            status?.session?.status,
           );
         }
       } catch (error) {
@@ -354,8 +354,11 @@ export const useCruiseCallLogic = (props: CruiseCallScreenProps) => {
 
   const handleEndCall = useCallback(async () => {
     await cleanupCall();
-    navigation.navigate("CruiseResult");
-  }, [cleanupCall, navigation]);
+    navigation.navigate("CruiseResult", {
+      partnerId: matchData?.partnerId || "",
+      partnerName: matchData?.partner?.displayName || "Partner",
+    });
+  }, [cleanupCall, navigation, matchData]);
 
   // Keep ref updated for timer callback
   useEffect(() => {

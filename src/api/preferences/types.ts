@@ -23,6 +23,20 @@ export interface Preference {
   hasBio: boolean;
   minNumberOfPhotos: string;
   connections: string;
+  jobTitle: string;
+  company: string;
+  school: string;
+  sexuality: string;
+  bodyType: string;
+  dietaryPreference: string;
+  sleepingHabits: string;
+  workoutFrequency: string;
+  loveLanguage: string;
+  travelPlans: string;
+  personality: string;
+  relationshipStatus: string;
+  willingToRelocate: boolean;
+  opennessToLongDistance: boolean;
 }
 
 export interface CreatePreferencePayload {
@@ -48,4 +62,18 @@ export interface UpdatePreferencePayload {
   familyPlans?: string;
   gender?: string;
   height?: string;
+  jobTitle?: string;
+  company?: string;
+  school?: string;
+  sexuality?: string;
+  bodyType?: string;
+  dietaryPreference?: string;
+  sleepingHabits?: string;
+  workoutFrequency?: string;
+  loveLanguage?: string;
+  travelPlans?: string;
+  personality?: string;
+  relationshipStatus?: string;
+  willingToRelocate?: boolean;
+  opennessToLongDistance?: boolean;
 }

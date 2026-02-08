@@ -47,6 +47,7 @@ export const styles = StyleSheet.create({
   },
   sliderContainer: {
     marginTop: 32,
+    paddingHorizontal: 12,
   },
   cabinCrewSection: {
     marginTop: 32,
@@ -118,5 +119,8 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: 24,
     backgroundColor: palette.WHITE,
+  },
+  filterDropdown: {
+    marginTop: 16,
   },
 });

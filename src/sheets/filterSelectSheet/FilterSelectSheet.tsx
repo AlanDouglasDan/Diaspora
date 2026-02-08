@@ -5,7 +5,6 @@ import { Feather } from "@expo/vector-icons";
 
 import { palette } from "core/styles";
 import { Button } from "components/button";
-import { GradientSlider } from "components/gradientSlider";
 
 import { styles } from "./FilterSelectSheet.styles";
 import { useFilterSelectSheetLogic } from "./useFilterSelectSheetLogic";
@@ -31,10 +30,7 @@ const FilterSelectSheet: FC<SheetProps<"filter-select-sheet">> = (props) => {
     switch (variant) {
       case "single-select":
         return (
-          <ScrollView
-            style={styles.singleSelectContainer}
-            showsVerticalScrollIndicator={false}
-          >
+          <View style={styles.singleSelectContainer}>
             {options.map((option) => {
               const isSelected = selectedSingle === option.id;
               return (
@@ -58,15 +54,12 @@ const FilterSelectSheet: FC<SheetProps<"filter-select-sheet">> = (props) => {
                 </TouchableOpacity>
               );
             })}
-          </ScrollView>
+          </View>
         );
 
       case "multi-select":
         return (
-          <ScrollView
-            style={styles.multiSelectContainer}
-            showsVerticalScrollIndicator={false}
-          >
+          <View style={styles.multiSelectContainer}>
             {options.map((option) => {
               const isSelected = selectedMulti.includes(option.id);
               return (
@@ -90,26 +83,6 @@ const FilterSelectSheet: FC<SheetProps<"filter-select-sheet">> = (props) => {
                 </TouchableOpacity>
               );
             })}
-          </ScrollView>
-        );
-
-      case "height":
-        return (
-          <View style={styles.heightContainer}>
-            <Text style={styles.heightValueText}>
-              {formatHeight(heightRange)}
-            </Text>
-            <GradientSlider
-              value={heightRange}
-              onValueChange={(value) =>
-                setHeightRange(value as [number, number])
-              }
-              minimumValue={100}
-              maximumValue={220}
-              step={1}
-              isRange
-              showValue={false}
-            />
           </View>
         );
 
@@ -121,10 +94,14 @@ const FilterSelectSheet: FC<SheetProps<"filter-select-sheet">> = (props) => {
   return (
     <ActionSheet
       id={sheetId}
-      gestureEnabled
+      // gestureEnabled
       containerStyle={{ borderTopLeftRadius: 32, borderTopRightRadius: 32 }}
     >
-      <View style={styles.container}>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.header}>
           <Text style={styles.title}>{title}</Text>
         </View>
@@ -136,7 +113,7 @@ const FilterSelectSheet: FC<SheetProps<"filter-select-sheet">> = (props) => {
           onPress={handleSubmit}
           style={styles.submitButton}
         />
-      </View>
+      </ScrollView>
     </ActionSheet>
   );
 };

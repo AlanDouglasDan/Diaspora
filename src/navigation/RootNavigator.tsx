@@ -33,7 +33,11 @@ import {
   VideoCall,
   LoveLetterSent,
   Loading,
+  SendLoveLetter,
+  UserProfileView,
 } from "screens";
+import type { SendLoveLetterParams } from "screens/sendLoveLetter";
+import type { UserProfileViewParams } from "screens/userProfileView";
 import type { ConversationParams } from "screens/conversation";
 import type { AudioCallParams } from "screens/audioCall";
 import type { VideoCallParams } from "screens/videoCall";
@@ -64,7 +68,10 @@ export type RootStackParamList = {
   EditInterests: undefined;
   CruiseCamera: undefined;
   CruiseCall: undefined;
-  CruiseResult: undefined;
+  CruiseResult: {
+    partnerId: string;
+    partnerName: string;
+  };
   Upgrade: undefined;
   UpgradeSuccess: undefined;
   MatchResult: undefined;
@@ -79,6 +86,8 @@ export type RootStackParamList = {
     recipientName: string;
     recipientImage: { uri: string };
   };
+  SendLoveLetter: SendLoveLetterParams;
+  UserProfileView: UserProfileViewParams;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -268,6 +277,22 @@ export default function RootNavigator() {
       <Stack.Screen
         name="LoveLetterSent"
         component={LoveLetterSent}
+        options={{
+          headerShown: false,
+        }}
+      />
+
+      <Stack.Screen
+        name="SendLoveLetter"
+        component={SendLoveLetter}
+        options={{
+          headerShown: false,
+        }}
+      />
+
+      <Stack.Screen
+        name="UserProfileView"
+        component={UserProfileView}
         options={{
           headerShown: false,
         }}

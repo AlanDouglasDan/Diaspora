@@ -107,6 +107,114 @@ export const FAMILY_PLANS_OPTIONS = [
   { id: "Not sure yet", label: "NOT SURE YET" },
 ];
 
+export const SEXUALITY_OPTIONS = [
+  { id: "Straight", label: "STRAIGHT" },
+  { id: "Gay", label: "GAY" },
+  { id: "Lesbian", label: "LESBIAN" },
+  { id: "Bisexual", label: "BISEXUAL" },
+  { id: "Pansexual", label: "PANSEXUAL" },
+  { id: "Asexual", label: "ASEXUAL" },
+  { id: "Queer", label: "QUEER" },
+  { id: "Questioning", label: "QUESTIONING" },
+  { id: "Prefer not to say", label: "PREFER NOT TO SAY" },
+];
+
+export const BODY_TYPE_OPTIONS = [
+  { id: "Slim", label: "SLIM" },
+  { id: "Athletic", label: "ATHLETIC" },
+  { id: "Average", label: "AVERAGE" },
+  { id: "Curvy", label: "CURVY" },
+  { id: "Plus size", label: "PLUS SIZE" },
+  { id: "Muscular", label: "MUSCULAR" },
+  { id: "Prefer not to say", label: "PREFER NOT TO SAY" },
+];
+
+export const DIETARY_PREFERENCE_OPTIONS = [
+  { id: "Omnivore", label: "OMNIVORE" },
+  { id: "Vegetarian", label: "VEGETARIAN" },
+  { id: "Vegan", label: "VEGAN" },
+  { id: "Pescatarian", label: "PESCATARIAN" },
+  { id: "Keto", label: "KETO" },
+  { id: "Halal", label: "HALAL" },
+  { id: "Kosher", label: "KOSHER" },
+  { id: "Gluten-free", label: "GLUTEN-FREE" },
+  { id: "No preference", label: "NO PREFERENCE" },
+];
+
+export const SLEEPING_HABITS_OPTIONS = [
+  { id: "Early bird", label: "EARLY BIRD" },
+  { id: "Night owl", label: "NIGHT OWL" },
+  { id: "Flexible", label: "FLEXIBLE" },
+  { id: "Light sleeper", label: "LIGHT SLEEPER" },
+  { id: "Heavy sleeper", label: "HEAVY SLEEPER" },
+];
+
+export const WORKOUT_FREQUENCY_OPTIONS = [
+  { id: "Every day", label: "EVERY DAY" },
+  { id: "Often", label: "OFTEN" },
+  { id: "Sometimes", label: "SOMETIMES" },
+  { id: "Rarely", label: "RARELY" },
+  { id: "Never", label: "NEVER" },
+];
+
+export const LOVE_LANGUAGE_OPTIONS = [
+  { id: "Words of affirmation", label: "WORDS OF AFFIRMATION" },
+  { id: "Quality time", label: "QUALITY TIME" },
+  { id: "Physical touch", label: "PHYSICAL TOUCH" },
+  { id: "Acts of service", label: "ACTS OF SERVICE" },
+  { id: "Receiving gifts", label: "RECEIVING GIFTS" },
+];
+
+export const TRAVEL_PLANS_OPTIONS = [
+  { id: "Love to travel", label: "LOVE TO TRAVEL" },
+  { id: "Occasional traveler", label: "OCCASIONAL TRAVELER" },
+  { id: "Homebody", label: "HOMEBODY" },
+  { id: "Want to travel more", label: "WANT TO TRAVEL MORE" },
+  { id: "Digital nomad", label: "DIGITAL NOMAD" },
+];
+
+export const PERSONALITY_OPTIONS = [
+  { id: "Introvert", label: "INTROVERT" },
+  { id: "Extrovert", label: "EXTROVERT" },
+  { id: "Ambivert", label: "AMBIVERT" },
+  { id: "INTJ", label: "INTJ" },
+  { id: "INTP", label: "INTP" },
+  { id: "ENTJ", label: "ENTJ" },
+  { id: "ENTP", label: "ENTP" },
+  { id: "INFJ", label: "INFJ" },
+  { id: "INFP", label: "INFP" },
+  { id: "ENFJ", label: "ENFJ" },
+  { id: "ENFP", label: "ENFP" },
+  { id: "ISTJ", label: "ISTJ" },
+  { id: "ISFJ", label: "ISFJ" },
+  { id: "ESTJ", label: "ESTJ" },
+  { id: "ESFJ", label: "ESFJ" },
+  { id: "ISTP", label: "ISTP" },
+  { id: "ISFP", label: "ISFP" },
+  { id: "ESTP", label: "ESTP" },
+  { id: "ESFP", label: "ESFP" },
+];
+
+export const RELATIONSHIP_STATUS_OPTIONS = [
+  { id: "Single", label: "SINGLE" },
+  { id: "Divorced", label: "DIVORCED" },
+  { id: "Widowed", label: "WIDOWED" },
+  { id: "Separated", label: "SEPARATED" },
+  { id: "It's complicated", label: "IT'S COMPLICATED" },
+];
+
+export const WILLING_TO_RELOCATE_OPTIONS = [
+  { id: "yes", label: "YES" },
+  { id: "no", label: "NO" },
+  { id: "maybe", label: "MAYBE" },
+];
+
+export const OPENNESS_TO_LONG_DISTANCE_OPTIONS = [
+  { id: "yes", label: "YES" },
+  { id: "no", label: "NO" },
+  { id: "maybe", label: "MAYBE" },
+];
+
 // Icon to emoji mapping for interests
 export const ICON_TO_EMOJI: Record<string, string> = {
   "airplane-outline": "✈️",
