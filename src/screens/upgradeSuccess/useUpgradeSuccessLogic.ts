@@ -6,11 +6,11 @@ export const useUpgradeSuccessLogic = (props: UpgradeSuccessScreenProps) => {
   const { navigation } = props;
 
   const handleClose = useCallback(() => {
-    navigation.goBack();
+    navigation.navigate("MainTabs");
   }, [navigation]);
 
   const handleContinue = useCallback(() => {
-    navigation.popToTop();
+    navigation.navigate("MainTabs");
   }, [navigation]);
 
   const handleSeeAllBenefits = useCallback(() => {

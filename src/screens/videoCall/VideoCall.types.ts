@@ -7,6 +7,7 @@ export type VideoCallScreenProps = NativeStackScreenProps<
 >;
 
 export interface VideoCallParams {
+  recipientId: string;
   recipientName: string;
   recipientAvatar: any;
 }

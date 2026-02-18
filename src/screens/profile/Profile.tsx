@@ -1,10 +1,10 @@
 import React, { FC } from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, ActivityIndicator } from "react-native";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { MaterialCommunityIcons, Ionicons } from "@expo/vector-icons";
 
-import { images } from "core/images";
+import { calculateAge, calculateProfileProgress } from "core/utils";
 import { palette } from "core/styles";
 import { LayoutContainer } from "components/layoutContainer";
 import TabNav from "components/tabNav/TabNav";
@@ -27,12 +27,25 @@ const Profile: FC<ProfileScreenProps> = () => {
     handleViewAllFeatures,
     handleCloseModal,
     getModalFeatures,
-    userData,
     planItems,
     subscriptionPlans,
     handleOpenSettings,
     handleOpenProfileInfo,
+    profileData,
+    profileLoading,
+    handleTakeOff,
+    isBoosting,
+    preferencesData,
   } = useProfileLogic();
+
+  if (profileLoading || !profileData) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={palette.RED} />
+        <Text style={styles.loadingText}>Loading profile...</Text>
+      </View>
+    );
+  }
 
   return (
     <LayoutContainer
@@ -61,10 +74,10 @@ const Profile: FC<ProfileScreenProps> = () => {
           <CircularProgress
             size={140}
             strokeWidth={6}
-            progress={userData.profileCompletion}
+            progress={calculateProfileProgress(profileData, preferencesData)}
           >
             <Image
-              source={images.avatar}
+              source={{ uri: profileData?.images?.[0] || "" }}
               style={styles.avatar}
               contentFit="cover"
             />
@@ -86,12 +99,12 @@ const Profile: FC<ProfileScreenProps> = () => {
           style={styles.progressBadge}
         >
           <Text style={styles.progressText}>
-            {userData.profileCompletion}% Complete
+            {calculateProfileProgress(profileData, preferencesData)}% Complete
           </Text>
         </LinearGradient>
 
         <Text style={styles.userName}>
-          {userData.name}, {userData.age}
+          {profileData?.user?.name}, {calculateAge(profileData?.user?.age)}
         </Text>
       </View>
 
@@ -111,6 +124,8 @@ const Profile: FC<ProfileScreenProps> = () => {
           onViewAllFeatures={handleViewAllFeatures}
           onCloseModal={handleCloseModal}
           getModalFeatures={getModalFeatures}
+          onTakeOff={handleTakeOff}
+          isBoosting={isBoosting}
         />
       ) : (
         <SafetyTab />

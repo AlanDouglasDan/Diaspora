@@ -6,15 +6,9 @@ export type MessagesScreenProps = BottomTabScreenProps<
   "Messages"
 >;
 
-export interface Match {
-  id: string;
-  name: string;
-  avatar: any;
-  countryFlag: string;
-}
-
 export interface Message {
   id: string;
+  recipientId?: string;
   name: string;
   avatar: any;
   countryFlag: string;

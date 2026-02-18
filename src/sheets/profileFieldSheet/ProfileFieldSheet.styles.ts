@@ -5,6 +5,9 @@ import { palette, typography } from "core/styles";
 export const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 20,
+    // maxHeight: "80%",
+  },
+  scrollContent: {
     paddingBottom: 40,
   },
   header: {
@@ -43,6 +46,10 @@ export const styles = StyleSheet.create({
   },
   textInput: {
     marginTop: 16,
+    borderWidth: 1,
+    borderRadius: 4,
+    borderColor: palette.TEXT_COLOR,
+    color: palette.INPUT_TEXT,
   },
   selectContainer: {
     marginTop: 16,

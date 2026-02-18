@@ -1,5 +1,11 @@
 import React, { FC } from "react";
-import { Text, View, TouchableOpacity, Platform } from "react-native";
+import {
+  Text,
+  View,
+  TouchableOpacity,
+  Platform,
+  ActivityIndicator,
+} from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { FontAwesome6, Entypo } from "@expo/vector-icons";
 
@@ -12,7 +18,7 @@ import { styles } from "./DisplayName.styles";
 import { useDisplayNameLogic } from "./useDisplayNameLogic";
 
 const DisplayName: FC<DisplayNameScreenProps> = (props) => {
-  const { displayName, setDisplayName, handleGoBack, handleSubmit } =
+  const { displayName, setDisplayName, handleGoBack, handleSubmit, isLoading } =
     useDisplayNameLogic(props);
 
   return (
@@ -49,14 +55,28 @@ const DisplayName: FC<DisplayNameScreenProps> = (props) => {
           Note: You can't change it later, so choose wisely!
         </Text>
 
-        <TouchableOpacity disabled={!displayName} onPress={handleSubmit}>
+        <TouchableOpacity
+          disabled={!displayName || isLoading}
+          onPress={handleSubmit}
+        >
           <LinearGradient
             colors={[palette.RED2, palette.RED]}
             start={{ x: 0.5, y: 0 }}
             end={{ x: 0.5, y: 1 }}
-            style={[styles.submitButton, { opacity: displayName ? 1 : 0.5 }]}
+            style={[
+              styles.submitButton,
+              { opacity: displayName && !isLoading ? 1 : 0.5 },
+            ]}
           >
-            <FontAwesome6 name="arrow-right" size={20} color={palette.WHITE} />
+            {isLoading ? (
+              <ActivityIndicator size="small" color={palette.WHITE} />
+            ) : (
+              <FontAwesome6
+                name="arrow-right"
+                size={20}
+                color={palette.WHITE}
+              />
+            )}
           </LinearGradient>
         </TouchableOpacity>
       </View>

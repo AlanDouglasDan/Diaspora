@@ -1,20 +1,26 @@
 import { useState, useEffect } from "react";
+import { useUser } from "@clerk/clerk-expo";
+import Toast from "react-native-toast-message";
 import type {
   DatingPreferenceScreenProps,
   PreferenceOption,
 } from "./DatingPreference.types";
+import { useCreatePreference } from "@/src/api/preferences";
 
 export function useDatingPreferenceLogic({
   navigation,
 }: DatingPreferenceScreenProps) {
+  const { user } = useUser();
+  const { createPreference, isLoading } = useCreatePreference();
+
   const [openToEveryone, setOpenToEveryone] = useState(true);
   const [selectedPreferences, setSelectedPreferences] = useState<
     PreferenceOption[]
-  >(["WOMEN", "MEN", "NONBINARY"]);
+  >(["woman", "man", "nonbinary"]);
 
   useEffect(() => {
     if (openToEveryone) {
-      setSelectedPreferences(["WOMEN", "MEN", "NONBINARY"]);
+      setSelectedPreferences([]);
     }
   }, [openToEveryone]);
 
@@ -41,11 +47,37 @@ export function useDatingPreferenceLogic({
     return selectedPreferences.includes(preference);
   };
 
-  const handleSubmit = () => {
-    navigation.navigate("Interests");
+  const handleSubmit = async () => {
+    if (!user || (selectedPreferences.length === 0 && !openToEveryone)) {
+      return;
+    }
+
+    try {
+      await createPreference({
+        lookingToDate: selectedPreferences,
+        userId: user.id,
+      });
+
+      // Toast.show({
+      //   type: "success",
+      //   text1: "Preferences Saved!",
+      //   text2: "Your dating preferences have been updated",
+      // });
+
+      navigation.navigate("Interests");
+    } catch (error: any) {
+      console.error("Update dating preference error:", error);
+      const errorMessage =
+        error?.message || "Could not update preferences. Please try again.";
+      Toast.show({
+        type: "error",
+        text1: "Update Failed",
+        text2: errorMessage,
+      });
+    }
   };
 
-  const isValid = selectedPreferences.length > 0;
+  const isValid = selectedPreferences.length > 0 || openToEveryone;
 
   return {
     openToEveryone,
@@ -55,5 +87,6 @@ export function useDatingPreferenceLogic({
     isPreferenceSelected,
     handleSubmit,
     isValid,
+    isLoading,
   };
 }

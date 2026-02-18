@@ -26,9 +26,10 @@ export const styles = StyleSheet.create({
   },
   matchesList: {
     flexDirection: "row",
+    gap: 16,
+    paddingHorizontal: 6,
   },
   matchItem: {
-    marginRight: 16,
     alignItems: "center",
     width: 80,
   },
@@ -43,8 +44,8 @@ export const styles = StyleSheet.create({
   },
   matchFlagContainer: {
     position: "absolute",
-    bottom: -4,
-    left: -4,
+    bottom: 0,
+    left: 4,
     backgroundColor: palette.WHITE,
     borderRadius: 10,
     width: 20,
@@ -56,6 +57,7 @@ export const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 2,
     elevation: 2,
+    zIndex: 99,
   },
   matchFlag: {
     fontSize: 12,
@@ -153,5 +155,45 @@ export const styles = StyleSheet.create({
   messageDividerLine: {
     flex: 1,
     width: undefined,
+  },
+  loadingContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 40,
+  },
+  emptyStateContainer: {
+    flex: 1,
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 32,
+    paddingVertical: 40,
+  },
+  emptyStateImageContainer: {
+    flex: 1,
+    alignItems: "center",
+  },
+  emptyStateImage: {
+    width: 280,
+    height: 350,
+  },
+  emptyStateBottomSection: {
+    width: "100%",
+    alignItems: "center",
+  },
+  emptyStateMessage: {
+    ...typography.text14,
+    textAlign: "center",
+    color: palette.GREY2,
+    lineHeight: 22,
+    marginBottom: 24,
+  },
+  emptyTitle: {
+    ...typography.header22,
+    color: palette.TEXT_COLOR,
+    textAlign: "center",
+    marginBottom: 8,
+  },
+  emptyButton: {
+    width: "100%",
   },
 });

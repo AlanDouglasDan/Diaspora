@@ -1,5 +1,5 @@
 import React, { FC } from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity, ActivityIndicator } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 import { palette } from "core/styles";
@@ -10,7 +10,7 @@ import { styles } from "./Settings.styles";
 import { useSettingsLogic } from "./useSettingsLogic";
 
 const Settings: FC<SettingsScreenProps> = (props) => {
-  const { handleSignOut, handleDeleteAccount, sections } =
+  const { handleSignOut, handleDeleteAccount, sections, isSigningOut } =
     useSettingsLogic(props);
 
   return (
@@ -48,8 +48,16 @@ const Settings: FC<SettingsScreenProps> = (props) => {
 
       {/* Footer */}
       <View style={styles.footer}>
-        <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
-          <Text style={styles.signOutText}>Sign out</Text>
+        <TouchableOpacity
+          style={styles.signOutButton}
+          onPress={handleSignOut}
+          disabled={isSigningOut}
+        >
+          {isSigningOut ? (
+            <ActivityIndicator size="small" color={palette.RED} />
+          ) : (
+            <Text style={styles.signOutText}>Sign out</Text>
+          )}
         </TouchableOpacity>
 
         <TouchableOpacity

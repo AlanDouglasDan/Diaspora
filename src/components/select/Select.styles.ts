@@ -42,4 +42,8 @@ export const styles = StyleSheet.create({
     height: 20,
     tintColor: palette.GREY2,
   },
+  selectedItemStyle: {
+    borderRadius: 14,
+    backgroundColor: `${palette.PINK}20`,
+  },
 });

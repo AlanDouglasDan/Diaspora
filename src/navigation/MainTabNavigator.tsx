@@ -13,10 +13,27 @@ import { Match } from "screens/match";
 import { Messages } from "screens/messages";
 import { Profile } from "screens/profile";
 
+export interface MatchFilterParams {
+  gender?: "man" | "woman" | "nonbinary";
+  activity?: "justJoined";
+  country?: string;
+  radius?: [number, number];
+  age?: [number, number];
+  hasBio?: boolean;
+  ethnicity?: string;
+  zodiac?: string;
+  height?: string;
+  drinking?: boolean;
+  smoking?: boolean;
+  educationLevel?: string;
+  familyPlans?: string;
+  lookingFor?: string;
+}
+
 export type MainTabParamList = {
   Cruise: undefined;
   Likes: undefined;
-  Match: undefined;
+  Match: { filters?: MatchFilterParams } | undefined;
   Messages: undefined;
   Profile: undefined;
 };

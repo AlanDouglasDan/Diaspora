@@ -65,6 +65,16 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "flex-end",
   },
+  uploadingContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginRight: 16,
+  },
+  uploadingText: {
+    ...typography.text14,
+    color: palette.TEXT_COLOR,
+    marginLeft: 8,
+  },
   submitButton: {
     width: 44,
     height: 44,

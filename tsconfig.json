@@ -6,6 +6,7 @@
     "strictNullChecks": true,
     "baseUrl": ".",
     "paths": {
+      "@/*": ["./*"],
       "@src/*": ["src/*"],
       "@navigation/*": ["src/navigation/*"],
       "@components/*": ["src/components/*"],
@@ -16,6 +17,8 @@
       "@store/*": ["src/store/*"],
       "@http/*": ["src/http/*"],
       "@sheets/*": ["src/sheets/*"],
+      "@services/*": ["src/services/*"],
+      "@lib/*": ["src/lib/*"],
       "*": ["src/*"]
     }
   }

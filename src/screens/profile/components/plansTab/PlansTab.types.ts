@@ -31,4 +31,6 @@ export interface PlansTabProps {
   onViewAllFeatures: (planId: string) => void;
   onCloseModal: () => void;
   getModalFeatures: () => FeatureDetail[];
+  onTakeOff?: () => void;
+  isBoosting?: boolean;
 }

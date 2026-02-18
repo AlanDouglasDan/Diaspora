@@ -1,58 +1,131 @@
-import { useCallback, useState } from "react";
+import { useCallback, useState, useEffect, useRef } from "react";
 import { ActionSheetIOS, Alert, Platform } from "react-native";
+import { useUser } from "@clerk/clerk-expo";
+import type {
+  Channel as ChannelType,
+  MessageResponse,
+  Event,
+} from "stream-chat";
 
-import { images } from "core/images";
+import { useStreamChat } from "@/src/providers";
+import { useGetProfile } from "@/src/api";
 
 import type {
   ConversationScreenProps,
   ChatMessage,
 } from "./Conversation.types";
 
-const MOCK_MESSAGES: ChatMessage[] = [
-  {
-    id: "1",
-    text: "Hi",
-    isMe: false,
-    timestamp: new Date(),
-  },
-  {
-    id: "2",
-    text: "Hello, How are you doing?",
-    isMe: true,
-    timestamp: new Date(),
-  },
-  {
-    id: "3",
-    text: "I'm doing great, how about you?",
-    isMe: false,
-    timestamp: new Date(),
-  },
-  {
-    id: "4",
-    text: "Hello, How are you doing?",
-    isMe: true,
-    timestamp: new Date(),
-  },
-  {
-    id: "5",
-    text: "I'm doing great, how about you?\nhow about you?",
-    isMe: false,
-    timestamp: new Date(),
-  },
-  {
-    id: "6",
-    image: images.avatar2,
-    isMe: false,
-    timestamp: new Date(),
-  },
-];
-
 export const useConversationLogic = (props: ConversationScreenProps) => {
   const { navigation, route } = props;
-  const { recipientName, recipientAvatar, matchDate } = route.params;
+  const { recipientId, recipientName, recipientAvatar, matchDate } =
+    route.params;
 
-  const [messages, setMessages] = useState<ChatMessage[]>(MOCK_MESSAGES);
+  const { user: clerkUser } = useUser();
+  const { client, startChat, isConnected } = useStreamChat();
+  const { data: profileData, getProfile } = useGetProfile();
+
+  // Fetch logged in user's profile for avatar
+  useEffect(() => {
+    if (clerkUser?.id) {
+      getProfile(clerkUser.id);
+    }
+  }, [clerkUser?.id, getProfile]);
+
+  // Get logged in user's avatar from profile data
+  const myAvatar = profileData?.images?.[0]
+    ? { uri: profileData.images[0] }
+    : undefined;
+
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputText, setInputText] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSending, setIsSending] = useState(false);
+  const channelRef = useRef<ChannelType | null>(null);
+
+  // Convert Stream message to ChatMessage format
+  const convertMessage = useCallback(
+    (msg: MessageResponse): ChatMessage => ({
+      id: msg.id,
+      text: msg.text,
+      image: msg.attachments?.[0]?.image_url,
+      isMe: msg.user?.id === clerkUser?.id,
+      timestamp: new Date(msg.created_at || Date.now()),
+      isLoveLetter: (msg as any)?.isLoveLetter === true,
+      isCall: (msg as any)?.isCall === true,
+      callType: (msg as any)?.callType as "voice" | "video" | undefined,
+      callDuration: (msg as any)?.callDuration as number | undefined,
+    }),
+    [clerkUser?.id],
+  );
+
+  // Initialize channel and load messages
+  useEffect(() => {
+    if (!isConnected || !recipientId || !clerkUser?.id) {
+      return;
+    }
+
+    let isMounted = true;
+
+    const initializeChannel = async () => {
+      setIsLoading(true);
+
+      try {
+        // Create or get existing channel
+        const channel = await startChat(recipientId);
+
+        if (!channel || !isMounted) {
+          setIsLoading(false);
+          return;
+        }
+
+        channelRef.current = channel;
+
+        // Load existing messages
+        const state = await channel.query({
+          messages: { limit: 50 },
+        });
+
+        if (isMounted && state.messages) {
+          const convertedMessages = state.messages.map(convertMessage);
+          setMessages(convertedMessages);
+        }
+
+        // Listen for new messages
+        const handleNewMessage = (event: Event) => {
+          if (event.message && isMounted) {
+            const newMessage = convertMessage(event.message as MessageResponse);
+            setMessages((prev) => {
+              // Avoid duplicates
+              if (prev.some((m) => m.id === newMessage.id)) {
+                return prev;
+              }
+              return [...prev, newMessage];
+            });
+          }
+        };
+
+        channel.on("message.new", handleNewMessage);
+
+        // Cleanup listener on unmount
+        return () => {
+          channel.off("message.new", handleNewMessage);
+        };
+      } catch (error) {
+        console.error("Error initializing channel:", error);
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    const cleanup = initializeChannel();
+
+    return () => {
+      isMounted = false;
+      cleanup?.then((cleanupFn) => cleanupFn?.());
+    };
+  }, [isConnected, recipientId, clerkUser?.id, startChat, convertMessage]);
 
   const handleGoBack = useCallback(() => {
     navigation.goBack();
@@ -60,21 +133,31 @@ export const useConversationLogic = (props: ConversationScreenProps) => {
 
   const handleCall = useCallback(() => {
     navigation.navigate("AudioCall", {
+      recipientId,
       recipientName,
       recipientAvatar,
     });
-  }, [navigation, recipientName, recipientAvatar]);
+  }, [navigation, recipientId, recipientName, recipientAvatar]);
 
   const handleVideoCall = useCallback(() => {
     navigation.navigate("VideoCall", {
+      recipientId,
       recipientName,
       recipientAvatar,
     });
-  }, [navigation, recipientName, recipientAvatar]);
+  }, [navigation, recipientId, recipientName, recipientAvatar]);
 
   const handleViewProfile = useCallback(() => {
-    console.log("View profile pressed");
-  }, []);
+    const imageUri =
+      typeof recipientAvatar === "object" && recipientAvatar?.uri
+        ? recipientAvatar.uri
+        : "";
+    navigation.navigate("UserProfileView", {
+      userId: recipientId,
+      avatar: imageUri,
+      userName: recipientName,
+    });
+  }, [navigation, recipientId, recipientAvatar, recipientName]);
 
   const handleUnmatch = useCallback(() => {
     console.log("Unmatch pressed");
@@ -104,7 +187,7 @@ export const useConversationLogic = (props: ConversationScreenProps) => {
             console.log("Block & report confirmed");
             navigation.goBack();
           }
-        }
+        },
       );
       return;
     }
@@ -126,27 +209,17 @@ export const useConversationLogic = (props: ConversationScreenProps) => {
   }, [handleUnmatch, navigation, recipientName]);
 
   const handleMore = useCallback(() => {
-    const destructiveLabel = `Block & report ${recipientName}`;
-
     if (Platform.OS === "ios") {
       ActionSheetIOS.showActionSheetWithOptions(
         {
-          options: ["View profile", "Unmatch", destructiveLabel],
-          destructiveButtonIndex: 2,
+          options: ["View profile", "Cancel"],
+          cancelButtonIndex: 1,
         },
         (buttonIndex) => {
           if (buttonIndex === 0) {
             handleViewProfile();
           }
-
-          if (buttonIndex === 1) {
-            handleUnmatch();
-          }
-
-          if (buttonIndex === 2) {
-            showBlockAndReportConfirm();
-          }
-        }
+        },
       );
       return;
     }
@@ -157,44 +230,42 @@ export const useConversationLogic = (props: ConversationScreenProps) => {
         onPress: handleViewProfile,
       },
       {
-        text: "Unmatch",
-        onPress: handleUnmatch,
-      },
-      {
-        text: destructiveLabel,
-        style: "destructive",
-        onPress: showBlockAndReportConfirm,
+        text: "Cancel",
+        style: "cancel",
       },
     ]);
-  }, [
-    handleUnmatch,
-    handleViewProfile,
-    recipientName,
-    showBlockAndReportConfirm,
-  ]);
+  }, [handleViewProfile]);
 
   const handleAddMedia = useCallback(() => {
     console.log("Add media pressed");
   }, []);
 
-  const handleSend = useCallback(() => {
-    if (!inputText.trim()) return;
+  const handleSend = useCallback(async () => {
+    if (!inputText.trim() || !channelRef.current || isSending) return;
 
-    const newMessage: ChatMessage = {
-      id: Date.now().toString(),
-      text: inputText.trim(),
-      isMe: true,
-      timestamp: new Date(),
-    };
-
-    setMessages((prev) => [...prev, newMessage]);
+    setIsSending(true);
+    const messageText = inputText.trim();
     setInputText("");
-  }, [inputText]);
+
+    try {
+      await channelRef.current.sendMessage({
+        text: messageText,
+      });
+    } catch (error) {
+      console.error("Error sending message:", error);
+      // Restore input text on error
+      setInputText(messageText);
+      Alert.alert("Error", "Failed to send message. Please try again.");
+    } finally {
+      setIsSending(false);
+    }
+  }, [inputText, isSending]);
 
   return {
     recipientName,
     recipientAvatar,
-    matchDate,
+    myAvatar,
+    matchDate: matchDate || "",
     messages,
     inputText,
     setInputText,
@@ -204,5 +275,8 @@ export const useConversationLogic = (props: ConversationScreenProps) => {
     handleMore,
     handleAddMedia,
     handleSend,
+    isLoading,
+    isSending,
+    isConnected,
   };
 };

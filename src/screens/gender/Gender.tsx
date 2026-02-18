@@ -1,5 +1,5 @@
 import React, { FC } from "react";
-import { Text, View, TouchableOpacity } from "react-native";
+import { Text, View, TouchableOpacity, ActivityIndicator } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { FontAwesome6, Entypo } from "@expo/vector-icons";
 import Checkbox from "expo-checkbox";
@@ -26,6 +26,7 @@ const Gender: FC<GenderScreenProps> = (props) => {
     handleSelectGender,
     handleSubmit,
     isValid,
+    isLoading,
   } = useGenderLogic(props);
 
   return (
@@ -78,14 +79,28 @@ const Gender: FC<GenderScreenProps> = (props) => {
           <Text style={styles.checkboxLabel}>Show my gender on my profile</Text>
         </View>
 
-        <TouchableOpacity disabled={!isValid} onPress={handleSubmit}>
+        <TouchableOpacity
+          disabled={!isValid || isLoading}
+          onPress={handleSubmit}
+        >
           <LinearGradient
             colors={[palette.RED2, palette.RED]}
             start={{ x: 0.5, y: 0 }}
             end={{ x: 0.5, y: 1 }}
-            style={[styles.submitButton, { opacity: isValid ? 1 : 0.5 }]}
+            style={[
+              styles.submitButton,
+              { opacity: isValid && !isLoading ? 1 : 0.5 },
+            ]}
           >
-            <FontAwesome6 name="arrow-right" size={20} color={palette.WHITE} />
+            {isLoading ? (
+              <ActivityIndicator size="small" color={palette.WHITE} />
+            ) : (
+              <FontAwesome6
+                name="arrow-right"
+                size={20}
+                color={palette.WHITE}
+              />
+            )}
           </LinearGradient>
         </TouchableOpacity>
       </View>

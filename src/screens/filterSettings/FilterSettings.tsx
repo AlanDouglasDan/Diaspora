@@ -1,8 +1,13 @@
-import React, { FC } from "react";
-import { View, Text, ScrollView, TouchableOpacity, Switch } from "react-native";
+import React, { FC, useState } from "react";
+import { View, Text, TouchableOpacity, Switch } from "react-native";
+import CountryPicker, {
+  Country,
+  CountryCode,
+} from "react-native-country-picker-modal";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 
+import { LayoutContainer } from "components/layoutContainer";
 import { Button } from "components/button";
 import { Select } from "components/select";
 import { GradientSlider } from "components/gradientSlider";
@@ -14,48 +19,101 @@ import {
   useFilterSettingsLogic,
   GENDER_OPTIONS,
   ACTIVITY_OPTIONS,
-  COUNTRY_OPTIONS,
   SELECT_ROWS,
 } from "./useFilterSettingsLogic";
 
 const FilterSettings: FC<FilterSettingsScreenProps> = (props) => {
-  const { filters, updateFilter, handleApply, handleSelectRowPress } =
-    useFilterSettingsLogic(props);
+  const {
+    filters,
+    updateFilter,
+    handleApply,
+    handleSelectRowPress,
+    isFilterChanged,
+  } = useFilterSettingsLogic(props);
+
+  const [showCountryPicker, setShowCountryPicker] = useState(false);
+
+  const handleCountrySelect = (country: Country) => {
+    updateFilter("country", country.cca2);
+    setShowCountryPicker(false);
+  };
+
+  const getCountryDisplayName = () => {
+    if (!filters.country || filters.country === "all") return "All";
+    return filters.country;
+  };
+
+  const getValidCountryCode = (): CountryCode => {
+    if (!filters.country || filters.country === "all") return "US";
+    return filters.country as CountryCode;
+  };
 
   return (
-    <View style={styles.container}>
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
+    <LayoutContainer
+      edges={[]}
+      footer={
+        isFilterChanged && (
+          <View style={styles.footer}>
+            <Button
+              title="Apply changes"
+              onPress={handleApply}
+              style={styles.applyButton}
+            />
+          </View>
+        )
+      }
+    >
+      <View style={styles.scrollContent}>
         <View style={styles.row}>
           <Select
-            label="Gender"
+            label="Looking for"
             value={filters.gender}
-            onChange={(value) => updateFilter("gender", value)}
+            onChange={(value) => updateFilter("gender", value as string[])}
             options={GENDER_OPTIONS}
             placeholder="All"
             style={styles.halfWidth}
+            multiple
           />
 
           <Select
             label="Activity"
             value={filters.activity}
-            onChange={(value) => updateFilter("activity", value)}
+            onChange={(value) => updateFilter("activity", value as string[])}
             options={ACTIVITY_OPTIONS}
-            placeholder="Just Joined"
+            placeholder="All"
             style={styles.halfWidth}
+            multiple
           />
         </View>
 
-        <Select
-          label="Country"
-          value={filters.country}
-          onChange={(value) => updateFilter("country", value)}
-          options={COUNTRY_OPTIONS}
-          placeholder="All"
-          style={styles.selectContainer}
-        />
+        <View style={styles.selectContainer}>
+          <Text style={styles.selectLabel}>Country</Text>
+
+          <TouchableOpacity
+            style={styles.countryPickerButton}
+            onPress={() => setShowCountryPicker(true)}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.countryPickerText}>
+              {getCountryDisplayName()}
+            </Text>
+          </TouchableOpacity>
+
+          {showCountryPicker && (
+            <CountryPicker
+              countryCode={getValidCountryCode()}
+              withFilter
+              withFlag
+              withCountryNameButton={false}
+              withAlphaFilter
+              withCallingCode={false}
+              withEmoji
+              onSelect={handleCountrySelect}
+              visible={showCountryPicker}
+              onClose={() => setShowCountryPicker(false)}
+            />
+          )}
+        </View>
 
         <GradientSlider
           label="Distance (km)"
@@ -64,8 +122,8 @@ const FilterSettings: FC<FilterSettingsScreenProps> = (props) => {
             updateFilter("distanceRange", value as [number, number])
           }
           minimumValue={1}
-          maximumValue={100}
-          step={1}
+          maximumValue={1000}
+          step={10}
           isRange
           style={styles.sliderContainer}
         />
@@ -77,7 +135,7 @@ const FilterSettings: FC<FilterSettingsScreenProps> = (props) => {
             updateFilter("ageRange", value as [number, number])
           }
           minimumValue={18}
-          maximumValue={65}
+          maximumValue={100}
           step={1}
           isRange
           valueFormatter={(val) => {
@@ -109,8 +167,8 @@ const FilterSettings: FC<FilterSettingsScreenProps> = (props) => {
             onValueChange={(value) =>
               updateFilter("minPhotos", value as number)
             }
-            minimumValue={1}
-            maximumValue={10}
+            minimumValue={0}
+            maximumValue={4}
             step={1}
             style={styles.sliderContainer}
           />
@@ -134,7 +192,9 @@ const FilterSettings: FC<FilterSettingsScreenProps> = (props) => {
             >
               <Text style={styles.selectRowLabel}>{row.label}</Text>
               <View style={styles.selectRowRight}>
-                <Text style={styles.selectRowValue}>Select</Text>
+                <Text style={styles.selectRowValue}>
+                  {filters[row.key as keyof typeof filters] || "Select"}
+                </Text>
                 <Ionicons
                   name="chevron-forward"
                   size={18}
@@ -144,14 +204,8 @@ const FilterSettings: FC<FilterSettingsScreenProps> = (props) => {
             </TouchableOpacity>
           ))}
         </View>
-
-        <Button
-          title="Apply changes"
-          onPress={handleApply}
-          style={styles.applyButton}
-        />
-      </ScrollView>
-    </View>
+      </View>
+    </LayoutContainer>
   );
 };
 

@@ -1,5 +1,11 @@
 import React, { FC } from "react";
-import { Platform, Text, View, TouchableOpacity } from "react-native";
+import {
+  Platform,
+  Text,
+  View,
+  TouchableOpacity,
+  ActivityIndicator,
+} from "react-native";
 import { FontAwesome6, Entypo } from "@expo/vector-icons";
 
 import { LayoutContainer } from "components/layoutContainer";
@@ -19,6 +25,7 @@ const AddPhone: FC<AddPhoneScreenProps> = (props) => {
     handleSelectCountry,
     handleSubmit,
     handleSkip,
+    isLoading,
   } = useAddPhoneLogic(props);
 
   return (
@@ -51,16 +58,25 @@ const AddPhone: FC<AddPhoneScreenProps> = (props) => {
       </View>
 
       <View style={styles.footer}>
-        <TouchableOpacity onPress={handleSkip}>
-          <Text style={styles.skipText}>Skip</Text>
+        <TouchableOpacity onPress={handleSkip} disabled={isLoading}>
+          <Text style={[styles.skipText, { opacity: isLoading ? 0.5 : 1 }]}>
+            Skip
+          </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          disabled={!phoneNumber}
-          style={[styles.button, { opacity: phoneNumber ? 1 : 0.5 }]}
+          disabled={!phoneNumber || isLoading}
+          style={[
+            styles.button,
+            { opacity: phoneNumber && !isLoading ? 1 : 0.5 },
+          ]}
           onPress={handleSubmit}
         >
-          <FontAwesome6 name="arrow-right" size={20} color={palette.BLACK} />
+          {isLoading ? (
+            <ActivityIndicator size="small" color={palette.BLACK} />
+          ) : (
+            <FontAwesome6 name="arrow-right" size={20} color={palette.BLACK} />
+          )}
         </TouchableOpacity>
       </View>
     </LayoutContainer>

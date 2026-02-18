@@ -1,5 +1,11 @@
 import React, { FC } from "react";
-import { Platform, Text, View, TouchableOpacity } from "react-native";
+import {
+  Platform,
+  Text,
+  View,
+  TouchableOpacity,
+  ActivityIndicator,
+} from "react-native";
 import { FontAwesome6, Entypo } from "@expo/vector-icons";
 
 import { LayoutContainer } from "components/layoutContainer";
@@ -10,7 +16,7 @@ import { styles } from "./EmailAuth.styles";
 import { useEmailAuthLogic } from "./useEmailAuthLogic";
 
 const EmailAuth: FC<EmailAuthScreenProps> = (props) => {
-  const { email, setEmail, handleGoBack, handleSubmit } =
+  const { email, setEmail, handleGoBack, handleSubmit, isLoading } =
     useEmailAuthLogic(props);
 
   return (
@@ -44,11 +50,15 @@ const EmailAuth: FC<EmailAuthScreenProps> = (props) => {
       </View>
 
       <TouchableOpacity
-        disabled={!email}
-        style={[styles.button, { opacity: email ? 1 : 0.5 }]}
+        disabled={!email || isLoading}
+        style={[styles.button, { opacity: email && !isLoading ? 1 : 0.5 }]}
         onPress={handleSubmit}
       >
-        <FontAwesome6 name="arrow-right" size={20} color={palette.BLACK} />
+        {isLoading ? (
+          <ActivityIndicator size="small" color={palette.BLACK} />
+        ) : (
+          <FontAwesome6 name="arrow-right" size={20} color={palette.BLACK} />
+        )}
       </TouchableOpacity>
     </LayoutContainer>
   );

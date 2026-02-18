@@ -1,5 +1,11 @@
 import React, { FC } from "react";
-import { Text, View, TouchableOpacity, Platform } from "react-native";
+import {
+  Text,
+  View,
+  TouchableOpacity,
+  Platform,
+  ActivityIndicator,
+} from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { FontAwesome6, Entypo } from "@expo/vector-icons";
 
@@ -24,6 +30,7 @@ const Birthday: FC<BirthdayScreenProps> = (props) => {
     handleGoBack,
     handleSubmit,
     isValid,
+    isLoading,
   } = useBirthdayLogic(props);
 
   return (
@@ -77,14 +84,28 @@ const Birthday: FC<BirthdayScreenProps> = (props) => {
       <View style={layout.flex1} />
 
       <View style={styles.footer}>
-        <TouchableOpacity disabled={!isValid} onPress={handleSubmit}>
+        <TouchableOpacity
+          disabled={!isValid || isLoading}
+          onPress={handleSubmit}
+        >
           <LinearGradient
             colors={[palette.RED2, palette.RED]}
             start={{ x: 0.5, y: 0 }}
             end={{ x: 0.5, y: 1 }}
-            style={[styles.submitButton, { opacity: isValid ? 1 : 0.5 }]}
+            style={[
+              styles.submitButton,
+              { opacity: isValid && !isLoading ? 1 : 0.5 },
+            ]}
           >
-            <FontAwesome6 name="arrow-right" size={20} color={palette.WHITE} />
+            {isLoading ? (
+              <ActivityIndicator size="small" color={palette.WHITE} />
+            ) : (
+              <FontAwesome6
+                name="arrow-right"
+                size={20}
+                color={palette.WHITE}
+              />
+            )}
           </LinearGradient>
         </TouchableOpacity>
       </View>

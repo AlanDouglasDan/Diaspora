@@ -5,6 +5,9 @@ import { palette, typography } from "core/styles";
 export const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 20,
+    // maxHeight: "80%",
+  },
+  scrollContent: {
     paddingBottom: 40,
   },
   header: {

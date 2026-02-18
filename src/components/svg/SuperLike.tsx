@@ -34,7 +34,7 @@ const SuperLike: FC<SuperLikeProps> = () => {
           width="32"
           height="32"
           filterUnits="userSpaceOnUse"
-          color-interpolation-filters="sRGB"
+          colorInterpolation-filters="sRGB"
         >
           <FeFlood floodOpacity="0" result="BackgroundImageFix" />
           <FeColorMatrix

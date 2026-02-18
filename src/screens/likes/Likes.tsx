@@ -3,10 +3,14 @@ import {
   View,
   Text,
   FlatList,
-  Image,
   ListRenderItem,
   TouchableOpacity,
+  RefreshControl,
+  ActivityIndicator,
+  Image as RNImage,
+  ScrollView,
 } from "react-native";
+import { Image } from "expo-image";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { FontAwesome } from "@expo/vector-icons";
 
@@ -26,22 +30,47 @@ const Likes: FC = () => {
     handleTabChange,
     likes,
     getHeaderContent,
-    showHeartIcon,
+    showActionButtons,
     blurImages,
     handleOpenUpgradeSheet,
+    handleRefresh,
+    isRefreshing,
+    isLoading,
+    handleLikeFromViews,
+    isLikeLoading,
+    handleOpenConversation,
+    handleGetSwiping,
+    hasLikedUser,
   } = useLikesLogic();
 
   const { title, subtitle } = getHeaderContent();
 
   const renderItem: ListRenderItem<LikeItem> = useCallback(
     ({ item }) => {
+      // Determine image source - handle both string URLs and ImageSourcePropType
+      const imageSource =
+        typeof item.image === "string" ? { uri: item.image } : item.image;
+      const hasValidImage =
+        typeof item.image === "string" ? item.image.length > 0 : true;
+
       return (
-        <View style={styles.card}>
-          <Image
-            source={item.image}
-            style={styles.cardImage}
-            blurRadius={blurImages ? 16 : 0}
-          />
+        <TouchableOpacity
+          style={styles.card}
+          activeOpacity={0.9}
+          onPress={() => handleOpenConversation(item)}
+        >
+          {hasValidImage ? (
+            <Image
+              source={imageSource}
+              style={styles.cardImage}
+              blurRadius={blurImages ? 16 : 0}
+              contentFit="cover"
+            />
+          ) : (
+            <View
+              style={[styles.cardImage, { backgroundColor: palette.GREY }]}
+            />
+          )}
           <View style={styles.cardOverlay}>
             <View style={styles.badgeContainer}>
               {item.isRecentlyActive && (
@@ -51,34 +80,112 @@ const Likes: FC = () => {
                 </View>
               )}
             </View>
-            <View style={styles.likeIconContainer}>
-              <TouchableOpacity
-                activeOpacity={0.85}
-                onPress={() => handleOpenUpgradeSheet(item.image)}
-              >
-                <View style={styles.superLikeIcon}>
-                  <FontAwesome name="star" size={16} color={palette.WHITE} />
-                </View>
-              </TouchableOpacity>
 
-              {showHeartIcon ? (
+            {/* Bottom section with name and icons */}
+            <View style={styles.cardBottomSection}>
+              {/* User name display */}
+              {item.userName && (
+                <Text style={styles.cardUserName} numberOfLines={1}>
+                  {item.userName}
+                </Text>
+              )}
+
+              {/* Icon logic for Priority Aisles - now clickable */}
+              {activeTab === "priority" && (
                 <TouchableOpacity
+                  style={styles.priorityLikeIconBottom}
                   activeOpacity={0.85}
-                  onPress={() => handleOpenUpgradeSheet(item.image)}
+                  onPress={() => handleLikeFromViews(item, true)}
+                  disabled={isLikeLoading}
                 >
-                  <View style={styles.heartIcon}>
-                    <FontAwesome name="heart" size={16} color={palette.RED} />
+                  <View
+                    style={[
+                      styles.superLikeIcon,
+                      isLikeLoading && { opacity: 0.6 },
+                    ]}
+                  >
+                    {isLikeLoading ? (
+                      <ActivityIndicator size="small" color={palette.WHITE} />
+                    ) : (
+                      <FontAwesome
+                        name="star"
+                        size={16}
+                        color={palette.WHITE}
+                      />
+                    )}
                   </View>
                 </TouchableOpacity>
-              ) : (
-                <View />
               )}
+
+              {/* Views tab - show action buttons only if not already liked */}
+              {showActionButtons &&
+                item.userId &&
+                !hasLikedUser(item.userId) && (
+                  <View style={styles.likeIconContainerBottom}>
+                    <TouchableOpacity
+                      activeOpacity={0.85}
+                      onPress={() => handleLikeFromViews(item, true)}
+                      disabled={isLikeLoading}
+                    >
+                      <View
+                        style={[
+                          styles.superLikeIcon,
+                          isLikeLoading && { opacity: 0.6 },
+                        ]}
+                      >
+                        {isLikeLoading ? (
+                          <ActivityIndicator
+                            size="small"
+                            color={palette.WHITE}
+                          />
+                        ) : (
+                          <FontAwesome
+                            name="star"
+                            size={16}
+                            color={palette.WHITE}
+                          />
+                        )}
+                      </View>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      activeOpacity={0.85}
+                      onPress={() => handleLikeFromViews(item, false)}
+                      disabled={isLikeLoading}
+                    >
+                      <View
+                        style={[
+                          styles.heartIcon,
+                          isLikeLoading && { opacity: 0.6 },
+                        ]}
+                      >
+                        {isLikeLoading ? (
+                          <ActivityIndicator size="small" color={palette.RED} />
+                        ) : (
+                          <FontAwesome
+                            name="heart"
+                            size={16}
+                            color={palette.RED}
+                          />
+                        )}
+                      </View>
+                    </TouchableOpacity>
+                  </View>
+                )}
             </View>
           </View>
-        </View>
+        </TouchableOpacity>
       );
     },
-    [blurImages, handleOpenUpgradeSheet, showHeartIcon]
+    [
+      activeTab,
+      blurImages,
+      showActionButtons,
+      handleLikeFromViews,
+      isLikeLoading,
+      handleOpenConversation,
+      hasLikedUser,
+    ],
   );
 
   const keyExtractor = useCallback((item: LikeItem) => item.id, []);
@@ -90,31 +197,55 @@ const Likes: FC = () => {
         <Text style={styles.subtitle}>{subtitle}</Text>
       </View>
     ),
-    [title, subtitle]
+    [title, subtitle],
   );
 
   const EmptyState = useCallback(
     () => (
       <View style={styles.emptyStateContainer}>
-        <Image
+        <RNImage
           source={images.emptyState}
           style={styles.emptyStateImage}
           resizeMode="contain"
         />
 
-        <Text style={styles.emptyStateTitle}>oops! Its just you here</Text>
+        <Text style={styles.emptyStateTitle}>Oops! It's just you here</Text>
         <Text style={styles.emptyStateSubtitle}>
-          It's too quiet in here, let's find you some matches.
+          {activeTab === "priority"
+            ? "No one has super liked you yet. Keep your profile active!"
+            : activeTab === "likes"
+              ? "No one has liked you yet. Get out there and start swiping!"
+              : "No one has viewed your profile yet. Update your photos!"}
         </Text>
 
-        <Button title="Get Swiping" style={common.w100} />
+        <Button
+          title="Get Swiping"
+          style={common.w100}
+          onPress={handleGetSwiping}
+        />
       </View>
     ),
-    []
+    [activeTab, handleGetSwiping],
   );
 
-  const isEmpty = likes.length === 0;
+  const isEmpty = likes.length === 0 && !isLoading;
   const insets = useSafeAreaInsets();
+
+  if (isLoading && likes.length === 0) {
+    return (
+      <View style={[styles.container, { paddingTop: insets.top }]}>
+        <TabNav
+          tabs={tabs}
+          value={activeTab}
+          onChange={handleTabChange}
+          style={styles.tabNav}
+        />
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={palette.PINK} />
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -125,7 +256,19 @@ const Likes: FC = () => {
         style={styles.tabNav}
       />
       {isEmpty ? (
-        <EmptyState />
+        <ScrollView
+          contentContainerStyle={styles.emptyScrollContent}
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefreshing}
+              onRefresh={handleRefresh}
+              tintColor={palette.PINK}
+              colors={[palette.PINK]}
+            />
+          }
+        >
+          <EmptyState />
+        </ScrollView>
       ) : (
         <FlatList
           data={likes}
@@ -136,6 +279,14 @@ const Likes: FC = () => {
           contentContainerStyle={styles.listContent}
           columnWrapperStyle={styles.columnWrapper}
           showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefreshing}
+              onRefresh={handleRefresh}
+              tintColor={palette.PINK}
+              colors={[palette.PINK]}
+            />
+          }
         />
       )}
     </View>

@@ -110,6 +110,50 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  priorityLikeIcon: {
+    position: "absolute",
+    bottom: 12,
+    right: 12,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: palette.RED,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: palette.BLACK,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  cardBottomSection: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-end",
+    padding: 12,
+  },
+  cardUserName: {
+    ...typography.semiheader14,
+    color: palette.WHITE,
+    flex: 1,
+    marginRight: 8,
+    textShadowColor: "rgba(0, 0, 0, 0.75)",
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
+  },
+  priorityLikeIconBottom: {
+    alignSelf: "flex-end",
+  },
+  likeIconContainerBottom: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  // Loading state styles
+  loadingContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   // Empty state styles
   emptyStateContainer: {
     flex: 1,
@@ -132,6 +176,9 @@ export const styles = StyleSheet.create({
     color: palette.TEXT_COLOR,
     textAlign: "center",
     marginBottom: 32,
+  },
+  emptyScrollContent: {
+    flexGrow: 1,
   },
 });
 

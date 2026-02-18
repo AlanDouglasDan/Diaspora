@@ -188,6 +188,17 @@ export const styles = StyleSheet.create({
   section: {
     marginTop: 24,
   },
+  sectionCard: {
+    backgroundColor: palette.WHITE,
+    borderRadius: 12,
+    padding: 16,
+    marginTop: 16,
+    shadowColor: palette.BLACK,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 2,
+  },
   sectionTitle: {
     ...typography.semiheader14,
     color: palette.TEXT_COLOR,
@@ -214,9 +225,10 @@ export const styles = StyleSheet.create({
   },
   galleryPhoto: {
     flex: 1,
-    height: 500,
-    width: SCREEN_WIDTH,
-    marginHorizontal: -16,
+    height: 450,
+    borderRadius: 12,
+    // width: SCREEN_WIDTH,
+    // marginHorizontal: -16,
     marginTop: 32,
     marginBottom: 12,
   },
@@ -267,7 +279,51 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 20,
     width: "100%",
-    height: 40,
+    paddingVertical: 10,
+  },
+  emptyStateContainer: {
+    flex: 1,
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 32,
+    paddingTop: 100,
+    paddingBottom: 24,
+  },
+  emptyStateImageContainer: {
+    flex: 1,
+    // justifyContent: "center",
+    alignItems: "center",
+  },
+  emptyStateImage: {
+    width: 280,
+    height: 350,
+  },
+  emptyStateBottomSection: {
+    width: "100%",
+    alignItems: "center",
+  },
+  emptyStateMessage: {
+    textAlign: "center",
+    color: palette.GREY2,
+    lineHeight: 22,
+    marginBottom: 24,
+  },
+  emptyStateButton: {
+    width: "100%",
+  },
+  loadingStateMessage: {
+    marginTop: 16,
+    textAlign: "center",
+  },
+  loadingStateSubtext: {
+    marginTop: 8,
+    textAlign: "center",
+    color: palette.GREY2,
+  },
+  flexedRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
   },
 });
 

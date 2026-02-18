@@ -6,10 +6,12 @@ export interface SelectOption {
 }
 
 export interface SelectProps {
-  value: string | null;
-  onChange: (value: string) => void;
+  value: string | string[] | null;
+  onChange: (value: string | string[]) => void;
   options: SelectOption[];
   placeholder?: string;
   label?: string;
   style?: ViewStyle;
+  dropdownPosition?: "auto" | "top" | "bottom";
+  multiple?: boolean;
 }

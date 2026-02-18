@@ -9,7 +9,7 @@ export const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    paddingHorizontal: 16,
+    // paddingHorizontal: 16,
     paddingBottom: 32,
   },
   headerRight: {
@@ -30,8 +30,24 @@ export const styles = StyleSheet.create({
   selectContainer: {
     marginTop: 16,
   },
+  selectLabel: {
+    ...typography.semiheader14,
+    color: palette.TEXT_COLOR,
+    marginBottom: 8,
+  },
+  countryPickerButton: {
+    backgroundColor: palette.GREY,
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+  },
+  countryPickerText: {
+    ...typography.text14,
+    color: palette.TEXT_COLOR,
+  },
   sliderContainer: {
     marginTop: 32,
+    paddingHorizontal: 12,
   },
   cabinCrewSection: {
     marginTop: 32,
@@ -98,5 +114,13 @@ export const styles = StyleSheet.create({
   applyButton: {
     marginTop: 32,
     marginBottom: 16,
+  },
+  footer: {
+    paddingHorizontal: 16,
+    paddingBottom: 24,
+    backgroundColor: palette.WHITE,
+  },
+  filterDropdown: {
+    marginTop: 16,
   },
 });

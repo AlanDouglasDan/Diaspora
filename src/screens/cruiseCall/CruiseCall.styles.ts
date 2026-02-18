@@ -79,4 +79,32 @@ export const styles = StyleSheet.create({
     marginTop: 16,
     textAlign: "center",
   },
+  timerContainer: {
+    position: "absolute",
+    top: 60,
+    left: 0,
+    right: 0,
+    alignItems: "center",
+    zIndex: 10,
+  },
+  timerText: {
+    ...typography.text16,
+    color: palette.WHITE,
+    backgroundColor: `${palette.BLACK}60`,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    overflow: "hidden",
+  },
+  countdownText: {
+    ...typography.header28,
+    color: palette.WHITE,
+    marginTop: 12,
+  },
+  partnerNameText: {
+    ...typography.text16,
+    color: palette.WHITE,
+    marginTop: 8,
+    opacity: 0.8,
+  },
 });

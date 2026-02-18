@@ -1,15 +1,23 @@
 import React, { FC } from "react";
-import { View, Text, TouchableOpacity, FlatList } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  FlatList,
+  ActivityIndicator,
+} from "react-native";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 
 import { images } from "core/images";
 import { palette } from "core/styles";
+import { navigate } from "@/src/navigation/utils";
 import { Button } from "components/button";
 import { FeaturesModal } from "components/featuresModal";
 import LoveLetter from "components/svg/LoveLetter";
 import TakeOff from "components/svg/TakeOff";
+import SuperLike2 from "components/svg/SuperLike2";
 
 import type { PlansTabProps, PlansTabSubscriptionPlan } from "./PlansTab.types";
 import { styles } from "./PlansTab.styles";
@@ -23,13 +31,15 @@ const PlansTab: FC<PlansTabProps> = ({
   onViewAllFeatures,
   onCloseModal,
   getModalFeatures,
+  onTakeOff,
+  isBoosting,
 }) => {
   const renderPlanIcon = (id: string) => {
     switch (id) {
       case "love-letter":
         return <LoveLetter />;
       case "super-like":
-        return <LoveLetter />;
+        return <SuperLike2 />;
       case "take-off":
         return <TakeOff />;
       default:
@@ -97,6 +107,8 @@ const PlansTab: FC<PlansTabProps> = ({
           title={plan.buttonText}
           variant="white"
           style={styles.upgradeButton}
+          textStyle={styles.text14}
+          onPress={() => navigate("Upgrade")}
         />
       </>
     );
@@ -138,10 +150,16 @@ const PlansTab: FC<PlansTabProps> = ({
             key={item.id}
             style={styles.planItem}
             activeOpacity={0.7}
+            onPress={item.id === "take-off" ? onTakeOff : undefined}
+            disabled={item.id === "take-off" && isBoosting}
           >
-            {renderPlanIcon(item.id)}
+            {item.id === "take-off" && isBoosting ? (
+              <ActivityIndicator size="small" color={palette.PINK} />
+            ) : (
+              renderPlanIcon(item.id)
+            )}
             <Text style={styles.planItemLabel}>{item.label}</Text>
-            <Text style={styles.planItemCount}>{item.count} left</Text>
+            {/* <Text style={styles.planItemCount}>{item.count} left</Text> */}
           </TouchableOpacity>
         ))}
       </View>

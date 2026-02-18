@@ -1,5 +1,11 @@
 import React, { FC } from "react";
-import { Text, View, TouchableOpacity, Switch } from "react-native";
+import {
+  Text,
+  View,
+  TouchableOpacity,
+  Switch,
+  ActivityIndicator,
+} from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { FontAwesome6, Entypo } from "@expo/vector-icons";
 import Checkbox from "expo-checkbox";
@@ -15,9 +21,9 @@ import { styles } from "./DatingPreference.styles";
 import { useDatingPreferenceLogic } from "./useDatingPreferenceLogic";
 
 const PREFERENCE_OPTIONS: { value: PreferenceOption; label: string }[] = [
-  { value: "WOMEN", label: "WOMEN" },
-  { value: "MEN", label: "MEN" },
-  { value: "NONBINARY", label: "NONBINARY" },
+  { label: "WOMEN", value: "woman" },
+  { label: "MEN", value: "man" },
+  { label: "NONBINARY", value: "nonbinary" },
 ];
 
 const DatingPreference: FC<DatingPreferenceScreenProps> = (props) => {
@@ -29,6 +35,7 @@ const DatingPreference: FC<DatingPreferenceScreenProps> = (props) => {
     isPreferenceSelected,
     handleSubmit,
     isValid,
+    isLoading,
   } = useDatingPreferenceLogic(props);
 
   return (
@@ -80,14 +87,28 @@ const DatingPreference: FC<DatingPreferenceScreenProps> = (props) => {
       <View style={layout.flex1} />
 
       <View style={styles.footer}>
-        <TouchableOpacity disabled={!isValid} onPress={handleSubmit}>
+        <TouchableOpacity
+          disabled={!isValid || isLoading}
+          onPress={handleSubmit}
+        >
           <LinearGradient
             colors={[palette.RED2, palette.RED]}
             start={{ x: 0.5, y: 0 }}
             end={{ x: 0.5, y: 1 }}
-            style={[styles.submitButton, { opacity: isValid ? 1 : 0.5 }]}
+            style={[
+              styles.submitButton,
+              { opacity: isValid && !isLoading ? 1 : 0.5 },
+            ]}
           >
-            <FontAwesome6 name="arrow-right" size={20} color={palette.WHITE} />
+            {isLoading ? (
+              <ActivityIndicator size="small" color={palette.WHITE} />
+            ) : (
+              <FontAwesome6
+                name="arrow-right"
+                size={20}
+                color={palette.WHITE}
+              />
+            )}
           </LinearGradient>
         </TouchableOpacity>
       </View>
