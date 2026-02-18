@@ -126,6 +126,28 @@ export const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
+  cardBottomSection: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-end",
+    padding: 12,
+  },
+  cardUserName: {
+    ...typography.semiheader14,
+    color: palette.WHITE,
+    flex: 1,
+    marginRight: 8,
+    textShadowColor: "rgba(0, 0, 0, 0.75)",
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
+  },
+  priorityLikeIconBottom: {
+    alignSelf: "flex-end",
+  },
+  likeIconContainerBottom: {
+    flexDirection: "row",
+    gap: 8,
+  },
   // Loading state styles
   loadingContainer: {
     flex: 1,
@@ -154,6 +176,9 @@ export const styles = StyleSheet.create({
     color: palette.TEXT_COLOR,
     textAlign: "center",
     marginBottom: 32,
+  },
+  emptyScrollContent: {
+    flexGrow: 1,
   },
 });
 

@@ -11,6 +11,7 @@ import {
   useGetPreference,
 } from "@/src/api";
 import Toast from "react-native-toast-message";
+import { SheetManager } from "react-native-actions-sheet";
 import { images } from "core/images";
 import { palette } from "core/styles";
 import type { RootStackParamList } from "navigation/RootNavigator";
@@ -146,10 +147,11 @@ export const useProfileLogic = () => {
     setIsBoosting(true);
     try {
       await boostProfile(user.id);
-      Toast.show({
-        type: "success",
-        text1: "Profile Boosted! 🚀",
-        text2: "Your profile is now more visible",
+      // Show boost success sheet
+      SheetManager.show("boost-sheet", {
+        payload: {
+          onKeepSwiping: () => {},
+        },
       });
     } catch (error) {
       Toast.show({

@@ -33,11 +33,11 @@ export function useGenderLogic({ navigation }: GenderScreenProps) {
         gender: selectedGender,
       });
 
-      Toast.show({
-        type: "success",
-        text1: "Gender Saved!",
-        text2: "Your gender has been updated",
-      });
+      // Toast.show({
+      //   type: "success",
+      //   text1: "Gender Saved!",
+      //   text2: "Your gender has been updated",
+      // });
 
       navigation.navigate("DatingPreference");
     } catch (error: any) {

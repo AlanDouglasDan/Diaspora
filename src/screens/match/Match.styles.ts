@@ -225,9 +225,10 @@ export const styles = StyleSheet.create({
   },
   galleryPhoto: {
     flex: 1,
-    height: 500,
-    width: SCREEN_WIDTH,
-    marginHorizontal: -16,
+    height: 450,
+    borderRadius: 12,
+    // width: SCREEN_WIDTH,
+    // marginHorizontal: -16,
     marginTop: 32,
     marginBottom: 12,
   },

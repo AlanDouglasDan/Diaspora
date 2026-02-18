@@ -70,11 +70,11 @@ export function useInterestsLogic({ navigation }: InterestsScreenProps) {
         interests: selectedInterests,
       });
 
-      Toast.show({
-        type: "success",
-        text1: "Interests Saved!",
-        text2: "Your interests have been updated",
-      });
+      // Toast.show({
+      //   type: "success",
+      //   text1: "Interests Saved!",
+      //   text2: "Your interests have been updated",
+      // });
 
       navigation.navigate("AddPhotos");
     } catch (error: any) {

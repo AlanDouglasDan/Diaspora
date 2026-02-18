@@ -92,6 +92,8 @@ export function useLikesLogic() {
     fetchData();
   }, [user?.id, getReceivedLikes, getLikes, getProfileViews]);
 
+  console.log(profileViewsData);
+
   // Pull to refresh handler
   const handleRefresh = useCallback(async () => {
     if (!user?.id) return;
@@ -229,13 +231,21 @@ export function useLikesLogic() {
     [user?.id, likeUser],
   );
 
+  // Check if I have already liked this user
+  const hasLikedUser = useCallback(
+    (userId: string): boolean => {
+      if (!userId) return false;
+      return likesData?.some((like) => like.likedId === userId) || false;
+    },
+    [likesData],
+  );
+
   // Check if there is a mutual like (both users liked each other)
   const isMutualLike = useCallback(
     (userId: string): boolean => {
       if (!userId) return false;
       // Check if I have liked this user
-      const iLikedThem =
-        likesData?.some((like) => like.likedId === userId) || false;
+      const iLikedThem = hasLikedUser(userId);
       // Check if this user has liked me
       const theyLikedMe =
         receivedLikesData?.some(
@@ -243,13 +253,25 @@ export function useLikesLogic() {
         ) || false;
       return iLikedThem && theyLikedMe;
     },
-    [likesData, receivedLikesData],
+    [hasLikedUser, receivedLikesData],
   );
 
   // Navigate to conversation if mutual like, otherwise open profile view
+  // Views tab always opens profile screen regardless of mutual match status
   const handleOpenConversation = useCallback(
     (item: LikeItem) => {
       if (!item.userId) return;
+
+      // Views tab always opens profile screen
+      if (activeTab === "views") {
+        const imageUri = typeof item.image === "string" ? item.image : "";
+        navigation.navigate("UserProfileView", {
+          userId: item.userId,
+          avatar: imageUri,
+          userName: item.userName || "User",
+        });
+        return;
+      }
 
       if (isMutualLike(item.userId)) {
         // Mutual like - open conversation
@@ -276,7 +298,7 @@ export function useLikesLogic() {
         });
       }
     },
-    [navigation, isMutualLike],
+    [navigation, isMutualLike, activeTab],
   );
 
   const handleGetSwiping = useCallback(() => {
@@ -299,5 +321,6 @@ export function useLikesLogic() {
     isLikeLoading,
     handleOpenConversation,
     handleGetSwiping,
+    hasLikedUser,
   };
 }

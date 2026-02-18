@@ -58,11 +58,11 @@ export function useDatingPreferenceLogic({
         userId: user.id,
       });
 
-      Toast.show({
-        type: "success",
-        text1: "Preferences Saved!",
-        text2: "Your dating preferences have been updated",
-      });
+      // Toast.show({
+      //   type: "success",
+      //   text1: "Preferences Saved!",
+      //   text2: "Your dating preferences have been updated",
+      // });
 
       navigation.navigate("Interests");
     } catch (error: any) {

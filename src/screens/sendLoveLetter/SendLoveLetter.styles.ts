@@ -10,6 +10,9 @@ export const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: palette.WHITE,
   },
+  scrollContent: {
+    flexGrow: 1,
+  },
   closeButton: {
     left: 16,
     zIndex: 10,

@@ -10,12 +10,15 @@ import { FilterSelectSheet } from "./filterSelectSheet";
 import type { FilterSelectSheetPayload } from "./filterSelectSheet";
 import { MatchUpgradeSheet } from "./matchUpgradeSheet";
 import type { MatchUpgradeSheetPayload } from "./matchUpgradeSheet";
+import { BoostSheet } from "./boostSheet";
+import type { BoostSheetPayload } from "./boostSheet";
 
 registerSheet("profile-field-sheet", ProfileFieldSheet);
 registerSheet("likes-upgrade-sheet", LikesUpgradeSheet);
 registerSheet("match-action-sheet", MatchActionSheet);
 registerSheet("filter-select-sheet", FilterSelectSheet);
 registerSheet("match-upgrade-sheet", MatchUpgradeSheet);
+registerSheet("boost-sheet", BoostSheet);
 
 declare module "react-native-actions-sheet" {
   interface Sheets {
@@ -33,6 +36,9 @@ declare module "react-native-actions-sheet" {
     }>;
     "match-upgrade-sheet": SheetDefinition<{
       payload: MatchUpgradeSheetPayload;
+    }>;
+    "boost-sheet": SheetDefinition<{
+      payload: BoostSheetPayload;
     }>;
   }
 }

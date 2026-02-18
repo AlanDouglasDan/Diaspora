@@ -8,6 +8,7 @@ import {
   RefreshControl,
   ActivityIndicator,
   Image as RNImage,
+  ScrollView,
 } from "react-native";
 import { Image } from "expo-image";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -39,6 +40,7 @@ const Likes: FC = () => {
     isLikeLoading,
     handleOpenConversation,
     handleGetSwiping,
+    hasLikedUser,
   } = useLikesLogic();
 
   const { title, subtitle } = getHeaderContent();
@@ -79,16 +81,19 @@ const Likes: FC = () => {
               )}
             </View>
 
-            {/* Icon logic for Priority Aisles and Your Likes */}
-            {activeTab === "priority" && !item.superLike && (
-              <View style={styles.priorityLikeIcon}>
-                <FontAwesome name="star" size={16} color={palette.WHITE} />
-              </View>
-            )}
+            {/* Bottom section with name and icons */}
+            <View style={styles.cardBottomSection}>
+              {/* User name display */}
+              {item.userName && (
+                <Text style={styles.cardUserName} numberOfLines={1}>
+                  {item.userName}
+                </Text>
+              )}
 
-            {showActionButtons && (
-              <View style={styles.likeIconContainer}>
+              {/* Icon logic for Priority Aisles - now clickable */}
+              {activeTab === "priority" && (
                 <TouchableOpacity
+                  style={styles.priorityLikeIconBottom}
                   activeOpacity={0.85}
                   onPress={() => handleLikeFromViews(item, true)}
                   disabled={isLikeLoading}
@@ -110,38 +115,77 @@ const Likes: FC = () => {
                     )}
                   </View>
                 </TouchableOpacity>
+              )}
 
-                <TouchableOpacity
-                  activeOpacity={0.85}
-                  onPress={() => handleLikeFromViews(item, false)}
-                  disabled={isLikeLoading}
-                >
-                  <View
-                    style={[
-                      styles.heartIcon,
-                      isLikeLoading && { opacity: 0.6 },
-                    ]}
-                  >
-                    {isLikeLoading ? (
-                      <ActivityIndicator size="small" color={palette.RED} />
-                    ) : (
-                      <FontAwesome name="heart" size={16} color={palette.RED} />
-                    )}
+              {/* Views tab - show action buttons only if not already liked */}
+              {showActionButtons &&
+                item.userId &&
+                !hasLikedUser(item.userId) && (
+                  <View style={styles.likeIconContainerBottom}>
+                    <TouchableOpacity
+                      activeOpacity={0.85}
+                      onPress={() => handleLikeFromViews(item, true)}
+                      disabled={isLikeLoading}
+                    >
+                      <View
+                        style={[
+                          styles.superLikeIcon,
+                          isLikeLoading && { opacity: 0.6 },
+                        ]}
+                      >
+                        {isLikeLoading ? (
+                          <ActivityIndicator
+                            size="small"
+                            color={palette.WHITE}
+                          />
+                        ) : (
+                          <FontAwesome
+                            name="star"
+                            size={16}
+                            color={palette.WHITE}
+                          />
+                        )}
+                      </View>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      activeOpacity={0.85}
+                      onPress={() => handleLikeFromViews(item, false)}
+                      disabled={isLikeLoading}
+                    >
+                      <View
+                        style={[
+                          styles.heartIcon,
+                          isLikeLoading && { opacity: 0.6 },
+                        ]}
+                      >
+                        {isLikeLoading ? (
+                          <ActivityIndicator size="small" color={palette.RED} />
+                        ) : (
+                          <FontAwesome
+                            name="heart"
+                            size={16}
+                            color={palette.RED}
+                          />
+                        )}
+                      </View>
+                    </TouchableOpacity>
                   </View>
-                </TouchableOpacity>
-              </View>
-            )}
+                )}
+            </View>
           </View>
         </TouchableOpacity>
       );
     },
     [
+      activeTab,
       blurImages,
       showActionButtons,
       handleLikeFromViews,
       isLikeLoading,
       handleOpenConversation,
-    ]
+      hasLikedUser,
+    ],
   );
 
   const keyExtractor = useCallback((item: LikeItem) => item.id, []);
@@ -153,7 +197,7 @@ const Likes: FC = () => {
         <Text style={styles.subtitle}>{subtitle}</Text>
       </View>
     ),
-    [title, subtitle]
+    [title, subtitle],
   );
 
   const EmptyState = useCallback(
@@ -181,7 +225,7 @@ const Likes: FC = () => {
         />
       </View>
     ),
-    [activeTab, handleGetSwiping]
+    [activeTab, handleGetSwiping],
   );
 
   const isEmpty = likes.length === 0 && !isLoading;
@@ -212,7 +256,19 @@ const Likes: FC = () => {
         style={styles.tabNav}
       />
       {isEmpty ? (
-        <EmptyState />
+        <ScrollView
+          contentContainerStyle={styles.emptyScrollContent}
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefreshing}
+              onRefresh={handleRefresh}
+              tintColor={palette.PINK}
+              colors={[palette.PINK]}
+            />
+          }
+        >
+          <EmptyState />
+        </ScrollView>
       ) : (
         <FlatList
           data={likes}

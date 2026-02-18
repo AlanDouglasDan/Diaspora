@@ -169,7 +169,9 @@ export const useMatchLogic = (props: MatchScreenProps) => {
   const [isSendingLoveLetter, setIsSendingLoveLetter] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
   const [isBoosting, setIsBoosting] = useState(false);
-  const swiperRef = useRef<Swiper<UserProfile>>(null);
+  // Commented out - no longer using deck swiper
+  // const swiperRef = useRef<Swiper<UserProfile>>(null);
+  // const isProgrammaticSwipe = useRef(false);
 
   // Build getUsers params from applied filters and user preferences
   const buildGetUsersParams = useCallback(() => {
@@ -315,7 +317,7 @@ export const useMatchLogic = (props: MatchScreenProps) => {
     }
   }, [currentUser?.id, clerkUser?.id, createProfileView]);
 
-  console.log(usersData?.users[0]);
+  console.log(users.length);
 
   const handleRefresh = useCallback(async () => {
     if (!clerkUser?.id) return;
@@ -334,11 +336,12 @@ export const useMatchLogic = (props: MatchScreenProps) => {
     setIsBoosting(true);
     try {
       await boostProfile(clerkUser.id);
-      // Toast.show({
-      //   type: "success",
-      //   text1: "Profile Boosted! 🚀",
-      //   text2: "Your profile is now more visible",
-      // });
+      // Show boost success sheet
+      SheetManager.show("boost-sheet", {
+        payload: {
+          onKeepSwiping: () => {},
+        },
+      });
     } catch (error) {
       Toast.show({
         type: "error",
@@ -434,34 +437,19 @@ export const useMatchLogic = (props: MatchScreenProps) => {
     async (superLike: boolean = false): Promise<boolean> => {
       if (!currentUser || !clerkUser?.id) return false;
 
-      setIsActionLoading(true);
-      try {
-        await likeUser({
-          likedId: currentUser.id,
-          likerId: clerkUser.id,
-          superLike,
-        });
+      // Run API call in background without loading indicator
+      excludeUser(currentUser.id);
 
-        // Toast.show({
-        //   type: "success",
-        //   text1: superLike ? "Super Like Sent! 💖" : "Like Sent! ❤️",
-        //   text2: `You ${superLike ? "super liked" : "liked"} ${
-        //     currentUser.name
-        //   }`,
-        // });
+      // Fire and forget - don't await, run in background
+      likeUser({
+        likedId: currentUser.id,
+        likerId: clerkUser.id,
+        superLike,
+      }).catch((error) => {
+        console.error("Failed to send like:", error);
+      });
 
-        excludeUser(currentUser.id);
-        return true;
-      } catch (error) {
-        Toast.show({
-          type: "error",
-          text1: "Failed to send like",
-          text2: "Please try again",
-        });
-        return false;
-      } finally {
-        setIsActionLoading(false);
-      }
+      return true;
     },
     [currentUser, clerkUser?.id, likeUser, excludeUser],
   );
@@ -469,40 +457,29 @@ export const useMatchLogic = (props: MatchScreenProps) => {
   const handleDislikeAction = useCallback(async (): Promise<boolean> => {
     if (!currentUser || !clerkUser?.id) return false;
 
-    setIsActionLoading(true);
-    try {
-      await dislikeUser({
-        dislikedId: currentUser.id,
-        dislikerId: clerkUser.id,
-      });
+    // Run API call in background without loading indicator
+    excludeUser(currentUser.id);
 
-      // Toast.show({
-      //   type: "success",
-      //   text1: "Passed 👋",
-      //   text2: `You passed on ${currentUser.name}`,
-      // });
+    // Fire and forget - don't await, run in background
+    dislikeUser({
+      dislikedId: currentUser.id,
+      dislikerId: clerkUser.id,
+    }).catch((error) => {
+      console.error("Failed to pass:", error);
+    });
 
-      excludeUser(currentUser.id);
-      return true;
-    } catch (error) {
-      Toast.show({
-        type: "error",
-        text1: "Failed to pass",
-        text2: "Please try again",
-      });
-      return false;
-    } finally {
-      setIsActionLoading(false);
-    }
+    return true;
   }, [currentUser, clerkUser?.id, dislikeUser, excludeUser]);
 
+  // Updated for SwipeableCard - no longer using swiperRef
   const handleSuperLike = useCallback(async () => {
     const success = await handleLikeAction(true);
     if (success) {
-      swiperRef.current?.swipeRight();
+      setCardIndex((prev) => prev + 1);
     }
   }, [handleLikeAction]);
 
+  // Updated for SwipeableCard - always call API since SwipeableCard handles its own swipe gestures
   const handleSwipedLeft = useCallback(async () => {
     await handleDislikeAction();
     setCardIndex((prev) => prev + 1);
@@ -529,17 +506,18 @@ export const useMatchLogic = (props: MatchScreenProps) => {
     [isSwipingEnabled],
   );
 
+  // Updated for SwipeableCard - no longer using swiperRef
   const swipeLeft = useCallback(async () => {
     const success = await handleDislikeAction();
     if (success) {
-      swiperRef.current?.swipeLeft();
+      setCardIndex((prev) => prev + 1);
     }
   }, [handleDislikeAction]);
 
   const swipeRight = useCallback(async () => {
     const success = await handleLikeAction(false);
     if (success) {
-      swiperRef.current?.swipeRight();
+      setCardIndex((prev) => prev + 1);
     }
   }, [handleLikeAction]);
 
@@ -601,7 +579,7 @@ export const useMatchLogic = (props: MatchScreenProps) => {
     isLoading: isInitializing || isLoading,
     isActionLoading,
     isSwipingEnabled,
-    swiperRef,
+    // swiperRef, // Commented out - no longer using deck swiper
     handleOpenImages,
     handleOpenSendLoveLetter,
     handleDislike: swipeLeft,

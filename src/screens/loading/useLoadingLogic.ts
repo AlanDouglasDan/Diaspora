@@ -4,12 +4,13 @@ import Toast from "react-native-toast-message";
 import * as Location from "expo-location";
 
 import useAbly from "hooks/useAbly";
-import { useUpdateLocation } from "@/src/api/user";
+import { useUpdateLocation, useGetUser } from "@/src/api/user";
 import type { LoadingScreenProps } from "./Loading.types";
 
 export const useLoadingLogic = ({ navigation }: LoadingScreenProps) => {
   const { user: clerkUser } = useUser();
   const { updateLocation } = useUpdateLocation();
+  const { getUser } = useGetUser();
   const [isInitialized, setIsInitialized] = useState(false);
 
   // Initialize Ably
@@ -18,7 +19,18 @@ export const useLoadingLogic = ({ navigation }: LoadingScreenProps) => {
   const initializeApp = useCallback(async () => {
     if (!clerkUser?.id || isInitialized) return;
 
+    // Check if user exists in backend
+    const userData = await getUser(clerkUser.id);
+
+    if (!userData) {
+      // User doesn't exist in backend - navigate to onboarding
+      setIsInitialized(true);
+      navigation.navigate("AddPhone");
+      return;
+    }
+
     try {
+      // User exists - continue with location and navigate to MainTabs
       // Request location permission
       const { status } = await Location.requestForegroundPermissionsAsync();
 
@@ -57,7 +69,7 @@ export const useLoadingLogic = ({ navigation }: LoadingScreenProps) => {
         routes: [{ name: "MainTabs" }],
       });
     }
-  }, [clerkUser?.id, updateLocation, navigation, isInitialized]);
+  }, [clerkUser?.id, updateLocation, getUser, navigation, isInitialized]);
 
   useEffect(() => {
     initializeApp();

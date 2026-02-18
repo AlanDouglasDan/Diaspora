@@ -9,7 +9,7 @@ WebBrowser.maybeCompleteAuthSession();
 
 export function useWelcomeLogic({ navigation }: WelcomeScreenProps) {
   const [authState, setAuthState] = useState<"welcome" | "sign-in" | "sign-up">(
-    "welcome"
+    "welcome",
   );
 
   const { signOut, session, loaded: clerkLoaded } = useClerk();
@@ -52,6 +52,8 @@ export function useWelcomeLogic({ navigation }: WelcomeScreenProps) {
     // Prevent multiple redirects
     if (hasRedirected.current) return;
 
+    // console.log(data);
+
     // Redirect if authenticated with complete profile
     if (data?.displayName) {
       hasRedirected.current = true;
@@ -65,6 +67,12 @@ export function useWelcomeLogic({ navigation }: WelcomeScreenProps) {
       navigation.navigate("DisplayName");
       return;
     }
+
+    // if (!data) {
+    //   hasRedirected.current = true;
+    //   navigation.navigate("AddPhone");
+    //   return;
+    // }
 
     if (data || isError) {
       setShowSplash(false);

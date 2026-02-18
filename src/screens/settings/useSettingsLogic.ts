@@ -75,7 +75,7 @@ export const useSettingsLogic = ({ navigation }: SettingsScreenProps) => {
         id: "account",
         items: [
           { id: "email", label: "Email", value: userEmail },
-          { id: "phone", label: "Phone number", value: userPhone },
+          // { id: "phone", label: "Phone number", value: userPhone },
         ],
       },
       {

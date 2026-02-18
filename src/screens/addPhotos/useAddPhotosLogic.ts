@@ -120,11 +120,11 @@ export function useAddPhotosLogic({ navigation }: AddPhotosScreenProps) {
         images: uploadedImageUrls,
       });
 
-      Toast.show({
-        type: "success",
-        text1: "Photos Saved!",
-        text2: "Your photos have been uploaded successfully",
-      });
+      // Toast.show({
+      //   type: "success",
+      //   text1: "Photos Saved!",
+      //   text2: "Your photos have been uploaded successfully",
+      // });
 
       navigation.navigate("SetupComplete");
     } catch (error: any) {

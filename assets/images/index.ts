@@ -38,4 +38,5 @@ export default {
   matched: require("./matched.png"),
   splashIcon: require("./splash-icon.png"),
   loveLetter: require("./loveLetter.png"),
+  boost: require("./boost.png"),
 };

@@ -25,6 +25,7 @@ const Conversation: FC<ConversationScreenProps> = (props) => {
   const {
     recipientName,
     recipientAvatar,
+    myAvatar,
     matchDate,
     messages,
     inputText,
@@ -198,7 +199,7 @@ const Conversation: FC<ConversationScreenProps> = (props) => {
                 ) : message.isLoveLetter ? (
                   <LoveLetterMessage
                     senderName={message.isMe ? "You" : recipientName}
-                    senderAvatar={message.isMe ? undefined : recipientAvatar}
+                    senderAvatar={message.isMe ? myAvatar : recipientAvatar}
                     message={message.text || ""}
                     isMe={message.isMe}
                   />

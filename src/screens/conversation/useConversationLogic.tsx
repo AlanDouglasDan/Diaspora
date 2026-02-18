@@ -8,6 +8,7 @@ import type {
 } from "stream-chat";
 
 import { useStreamChat } from "@/src/providers";
+import { useGetProfile } from "@/src/api";
 
 import type {
   ConversationScreenProps,
@@ -21,6 +22,19 @@ export const useConversationLogic = (props: ConversationScreenProps) => {
 
   const { user: clerkUser } = useUser();
   const { client, startChat, isConnected } = useStreamChat();
+  const { data: profileData, getProfile } = useGetProfile();
+
+  // Fetch logged in user's profile for avatar
+  useEffect(() => {
+    if (clerkUser?.id) {
+      getProfile(clerkUser.id);
+    }
+  }, [clerkUser?.id, getProfile]);
+
+  // Get logged in user's avatar from profile data
+  const myAvatar = profileData?.images?.[0]
+    ? { uri: profileData.images[0] }
+    : undefined;
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputText, setInputText] = useState("");
@@ -41,7 +55,7 @@ export const useConversationLogic = (props: ConversationScreenProps) => {
       callType: (msg as any)?.callType as "voice" | "video" | undefined,
       callDuration: (msg as any)?.callDuration as number | undefined,
     }),
-    [clerkUser?.id]
+    [clerkUser?.id],
   );
 
   // Initialize channel and load messages
@@ -134,8 +148,16 @@ export const useConversationLogic = (props: ConversationScreenProps) => {
   }, [navigation, recipientId, recipientName, recipientAvatar]);
 
   const handleViewProfile = useCallback(() => {
-    console.log("View profile pressed");
-  }, []);
+    const imageUri =
+      typeof recipientAvatar === "object" && recipientAvatar?.uri
+        ? recipientAvatar.uri
+        : "";
+    navigation.navigate("UserProfileView", {
+      userId: recipientId,
+      avatar: imageUri,
+      userName: recipientName,
+    });
+  }, [navigation, recipientId, recipientAvatar, recipientName]);
 
   const handleUnmatch = useCallback(() => {
     console.log("Unmatch pressed");
@@ -165,7 +187,7 @@ export const useConversationLogic = (props: ConversationScreenProps) => {
             console.log("Block & report confirmed");
             navigation.goBack();
           }
-        }
+        },
       );
       return;
     }
@@ -187,27 +209,17 @@ export const useConversationLogic = (props: ConversationScreenProps) => {
   }, [handleUnmatch, navigation, recipientName]);
 
   const handleMore = useCallback(() => {
-    const destructiveLabel = `Block & report ${recipientName}`;
-
     if (Platform.OS === "ios") {
       ActionSheetIOS.showActionSheetWithOptions(
         {
-          options: ["View profile", "Unmatch", destructiveLabel],
-          destructiveButtonIndex: 2,
+          options: ["View profile", "Cancel"],
+          cancelButtonIndex: 1,
         },
         (buttonIndex) => {
           if (buttonIndex === 0) {
             handleViewProfile();
           }
-
-          if (buttonIndex === 1) {
-            handleUnmatch();
-          }
-
-          if (buttonIndex === 2) {
-            showBlockAndReportConfirm();
-          }
-        }
+        },
       );
       return;
     }
@@ -218,21 +230,11 @@ export const useConversationLogic = (props: ConversationScreenProps) => {
         onPress: handleViewProfile,
       },
       {
-        text: "Unmatch",
-        onPress: handleUnmatch,
-      },
-      {
-        text: destructiveLabel,
-        style: "destructive",
-        onPress: showBlockAndReportConfirm,
+        text: "Cancel",
+        style: "cancel",
       },
     ]);
-  }, [
-    handleUnmatch,
-    handleViewProfile,
-    recipientName,
-    showBlockAndReportConfirm,
-  ]);
+  }, [handleViewProfile]);
 
   const handleAddMedia = useCallback(() => {
     console.log("Add media pressed");
@@ -262,6 +264,7 @@ export const useConversationLogic = (props: ConversationScreenProps) => {
   return {
     recipientName,
     recipientAvatar,
+    myAvatar,
     matchDate: matchDate || "",
     messages,
     inputText,

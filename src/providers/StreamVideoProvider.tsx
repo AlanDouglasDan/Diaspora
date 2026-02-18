@@ -20,7 +20,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useUser } from "@clerk/clerk-expo";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useGetStreamToken, useGetProfile } from "@/src/api";
+import { useGetStreamToken, useGetProfile, useGetUser } from "@/src/api";
 import { requestNotificationPermission } from "@/src/core/requestNotificationPermission";
 
 interface StreamVideoContextType {
@@ -31,7 +31,7 @@ interface StreamVideoContextType {
   activeCall: Call | null;
   startCall: (
     recipientId: string,
-    isVideoCall: boolean
+    isVideoCall: boolean,
   ) => Promise<Call | null>;
   joinCall: (callId: string, callType: string) => Promise<Call | null>;
   endCall: () => Promise<void>;
@@ -60,6 +60,7 @@ export const StreamVideoProvider: React.FC<StreamVideoProviderProps> = ({
   const { user: clerkUser, isSignedIn } = useUser();
   const { getStreamToken } = useGetStreamToken();
   const { getProfile } = useGetProfile();
+  const { getUser } = useGetUser();
 
   const [client, setClient] = useState<StreamVideoClient | null>(null);
   const [isConnected, setIsConnected] = useState(false);
@@ -81,6 +82,25 @@ export const StreamVideoProvider: React.FC<StreamVideoProviderProps> = ({
       setConnectionError(null);
 
       try {
+        // First check if user exists in backend (skip during signup flow)
+        let userData;
+        try {
+          userData = await getUser(clerkUser.id);
+        } catch (userError: any) {
+          // User doesn't exist in backend yet (signup flow), skip connection
+          console.log(
+            "⏳ User not found in backend, skipping Stream Video connection (signup flow)",
+          );
+          setIsConnecting(false);
+          return;
+        }
+
+        if (!userData || !isMounted) {
+          // User doesn't exist, skip connection
+          setIsConnecting(false);
+          return;
+        }
+
         // Get Stream token from backend
         const tokenData = await getStreamToken(clerkUser.id);
 
@@ -150,7 +170,7 @@ export const StreamVideoProvider: React.FC<StreamVideoProviderProps> = ({
         });
       }
     };
-  }, [isSignedIn, clerkUser?.id, getStreamToken, getProfile]);
+  }, [isSignedIn, clerkUser?.id, getStreamToken, getProfile, getUser]);
 
   // Start a call with another user
   const startCall = useCallback(
@@ -193,14 +213,14 @@ export const StreamVideoProvider: React.FC<StreamVideoProviderProps> = ({
         return null;
       }
     },
-    [client, clerkUser?.id]
+    [client, clerkUser?.id],
   );
 
   // Join an existing call
   const joinCall = useCallback(
     async (
       callId: string,
-      callType: string = "default"
+      callType: string = "default",
     ): Promise<Call | null> => {
       if (!client) {
         console.error("Video client not connected");
@@ -220,7 +240,7 @@ export const StreamVideoProvider: React.FC<StreamVideoProviderProps> = ({
         return null;
       }
     },
-    [client]
+    [client],
   );
 
   // End the active call for all participants
@@ -259,7 +279,7 @@ export const StreamVideoProvider: React.FC<StreamVideoProviderProps> = ({
       startCall,
       joinCall,
       endCall,
-    ]
+    ],
   );
 
   // Wrap children with StreamVideo provider if client is ready

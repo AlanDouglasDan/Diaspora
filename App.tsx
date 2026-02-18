@@ -8,6 +8,7 @@ import { ClerkProvider, ClerkLoaded } from "@clerk/clerk-expo";
 import { Provider } from "react-redux";
 import BootSplash from "react-native-bootsplash";
 import Toast from "react-native-toast-message";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import { RootNavigator } from "@src/navigation";
 import { navigationRef } from "navigation/utils";
@@ -42,17 +43,19 @@ export default function App() {
       <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
         <ClerkLoaded>
           <SafeAreaProvider>
-            <NavigationContainer ref={navigationRef}>
-              <StreamChatProvider>
-                <StreamVideoProvider>
-                  <SheetProvider>
-                    <RootNavigator />
+            <GestureHandlerRootView>
+              <NavigationContainer ref={navigationRef}>
+                <StreamChatProvider>
+                  <StreamVideoProvider>
+                    <SheetProvider>
+                      <RootNavigator />
 
-                    <StatusBar style="auto" />
-                  </SheetProvider>
-                </StreamVideoProvider>
-              </StreamChatProvider>
-            </NavigationContainer>
+                      <StatusBar style="auto" />
+                    </SheetProvider>
+                  </StreamVideoProvider>
+                </StreamChatProvider>
+              </NavigationContainer>
+            </GestureHandlerRootView>
           </SafeAreaProvider>
 
           <Toast config={toastConfig} />

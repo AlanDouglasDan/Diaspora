@@ -159,7 +159,7 @@ const PlansTab: FC<PlansTabProps> = ({
               renderPlanIcon(item.id)
             )}
             <Text style={styles.planItemLabel}>{item.label}</Text>
-            <Text style={styles.planItemCount}>{item.count} left</Text>
+            {/* <Text style={styles.planItemCount}>{item.count} left</Text> */}
           </TouchableOpacity>
         ))}
       </View>

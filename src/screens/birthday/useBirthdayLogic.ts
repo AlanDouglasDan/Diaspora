@@ -83,11 +83,11 @@ export function useBirthdayLogic({ navigation }: BirthdayScreenProps) {
         // userId: user.id,
       });
 
-      Toast.show({
-        type: "success",
-        text1: "Birthday Saved!",
-        text2: "Your birthday has been updated",
-      });
+      // Toast.show({
+      //   type: "success",
+      //   text1: "Birthday Saved!",
+      //   text2: "Your birthday has been updated",
+      // });
 
       navigation.navigate("Gender");
     } catch (error: any) {

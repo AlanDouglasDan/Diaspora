@@ -35,9 +35,9 @@ const LoveLetterMessage: FC<LoveLetterMessageProps> = ({
       <View style={[styles.container, isMe && styles.containerMe]}>
         <View style={styles.cardContainer}>
           <Image
-            source={senderAvatar || images.avatar2}
+            source={senderAvatar || images.logo2}
             style={styles.backgroundImage}
-            contentFit="cover"
+            contentFit={senderAvatar ? "cover" : "contain"}
           />
           <View style={styles.overlay} />
           <View style={styles.content}>
@@ -74,9 +74,9 @@ const LoveLetterMessage: FC<LoveLetterMessageProps> = ({
         <View style={styles.modalOverlay}>
           <View style={styles.modalContainer}>
             <Image
-              source={senderAvatar || images.avatar2}
+              source={senderAvatar || images.logo2}
               style={styles.modalBackgroundImage}
-              contentFit="cover"
+              contentFit={senderAvatar ? "cover" : "contain"}
             />
             <LinearGradient
               colors={["rgba(220, 53, 69, 0.9)", "rgba(220, 53, 69, 0.95)"]}

@@ -45,11 +45,15 @@ const SendLoveLetter: FC<SendLoveLetterScreenProps> = (props) => {
 
   return (
     <SafeAreaView style={styles.container} edges={["bottom", "top"]}>
-      <ScrollView>
-        <KeyboardAvoidingView
-          style={styles.container}
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-          keyboardVerticalOffset={100}
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
+      >
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
         >
           <TouchableOpacity
             style={styles.closeButton}
@@ -107,8 +111,8 @@ const SendLoveLetter: FC<SendLoveLetterScreenProps> = (props) => {
               </TouchableOpacity>
             </View>
           </View>
-        </KeyboardAvoidingView>
-      </ScrollView>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };

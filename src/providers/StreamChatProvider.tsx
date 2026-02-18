@@ -10,7 +10,12 @@ import React, {
 import { StreamChat, Channel as ChannelType } from "stream-chat";
 import { OverlayProvider, Chat } from "stream-chat-expo";
 import { useUser } from "@clerk/clerk-expo";
-import { useGetStreamToken, clearStreamToken, useGetProfile } from "@/src/api";
+import {
+  useGetStreamToken,
+  clearStreamToken,
+  useGetProfile,
+  useGetUser,
+} from "@/src/api";
 
 export type CallType = "voice" | "video";
 
@@ -21,13 +26,13 @@ interface StreamChatContextType {
   connectionError: string | null;
   startChat: (
     recipientId: string,
-    initialMessage?: string
+    initialMessage?: string,
   ) => Promise<ChannelType | null>;
   sendLoveLetter: (recipientId: string, message: string) => Promise<boolean>;
   sendCallMessage: (
     recipientId: string,
     callType: CallType,
-    durationSeconds: number
+    durationSeconds: number,
   ) => Promise<boolean>;
   disconnectUser: () => Promise<void>;
 }
@@ -55,6 +60,7 @@ export const StreamChatProvider: React.FC<StreamChatProviderProps> = ({
   const { user: clerkUser, isSignedIn } = useUser();
   const { getStreamToken } = useGetStreamToken();
   const { getProfile } = useGetProfile();
+  const { getUser } = useGetUser();
 
   const [client, setClient] = useState<StreamChat | null>(null);
   const [isConnected, setIsConnected] = useState(false);
@@ -75,6 +81,25 @@ export const StreamChatProvider: React.FC<StreamChatProviderProps> = ({
       setConnectionError(null);
 
       try {
+        // First check if user exists in backend (skip during signup flow)
+        let userData;
+        try {
+          userData = await getUser(clerkUser.id);
+        } catch (userError: any) {
+          // User doesn't exist in backend yet (signup flow), skip connection
+          console.log(
+            "⏳ User not found in backend, skipping Stream Chat connection (signup flow)",
+          );
+          setIsConnecting(false);
+          return;
+        }
+
+        if (!userData || !isMounted) {
+          // User doesn't exist, skip connection
+          setIsConnecting(false);
+          return;
+        }
+
         // Get Stream token from backend
         const tokenData = await getStreamToken(clerkUser.id);
 
@@ -103,7 +128,7 @@ export const StreamChatProvider: React.FC<StreamChatProviderProps> = ({
             name: userName,
             image: userImage,
           },
-          tokenData.token
+          tokenData.token,
         );
 
         if (isMounted) {
@@ -142,7 +167,7 @@ export const StreamChatProvider: React.FC<StreamChatProviderProps> = ({
         }, 0);
       }
     };
-  }, [isSignedIn, clerkUser?.id, getStreamToken, getProfile]);
+  }, [isSignedIn, clerkUser?.id, getStreamToken, getProfile, getUser]);
 
   // Disconnect user
   const disconnectUser = useCallback(async () => {
@@ -163,7 +188,7 @@ export const StreamChatProvider: React.FC<StreamChatProviderProps> = ({
   const startChat = useCallback(
     async (
       recipientId: string,
-      initialMessage?: string
+      initialMessage?: string,
     ): Promise<ChannelType | null> => {
       if (!client || !clerkUser?.id) {
         console.error("Chat client not connected or user not authenticated");
@@ -178,7 +203,7 @@ export const StreamChatProvider: React.FC<StreamChatProviderProps> = ({
         // This ensures the same channel is used regardless of who starts the chat
         const channelId = `dm_${memberIds[0].slice(0, 12)}_${memberIds[1].slice(
           0,
-          12
+          12,
         )}`;
 
         // First, try to query for an existing channel between these users
@@ -220,7 +245,7 @@ export const StreamChatProvider: React.FC<StreamChatProviderProps> = ({
         return null;
       }
     },
-    [client, clerkUser?.id]
+    [client, clerkUser?.id],
   );
 
   // Send a love letter to another user
@@ -254,7 +279,7 @@ export const StreamChatProvider: React.FC<StreamChatProviderProps> = ({
         return false;
       }
     },
-    [client, clerkUser?.id, startChat]
+    [client, clerkUser?.id, startChat],
   );
 
   // Send a call message to another user (after a call ends)
@@ -262,7 +287,7 @@ export const StreamChatProvider: React.FC<StreamChatProviderProps> = ({
     async (
       recipientId: string,
       callType: CallType,
-      durationSeconds: number
+      durationSeconds: number,
     ): Promise<boolean> => {
       if (!client || !clerkUser?.id) {
         console.error("Cannot send call message: missing requirements");
@@ -302,7 +327,7 @@ export const StreamChatProvider: React.FC<StreamChatProviderProps> = ({
         return false;
       }
     },
-    [client, clerkUser?.id, startChat]
+    [client, clerkUser?.id, startChat],
   );
 
   const contextValue = useMemo(
@@ -325,7 +350,7 @@ export const StreamChatProvider: React.FC<StreamChatProviderProps> = ({
       sendLoveLetter,
       sendCallMessage,
       disconnectUser,
-    ]
+    ],
   );
 
   // Don't render Chat component if client is not ready

@@ -11,7 +11,10 @@ import {
 } from "react-native";
 import { Image } from "expo-image";
 import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
-import Swiper from "react-native-deck-swiper";
+// Commented out deck swiper - replaced with SwipeableCard
+// import Swiper from "react-native-deck-swiper";
+
+import { SwipeableCard } from "./components";
 
 import LoveLetterSend from "components/svg/LoveLetterSend";
 import LoveLetter2 from "components/svg/LoveLetter2";
@@ -31,7 +34,7 @@ const Match: FC<MatchScreenProps> = (props) => {
     isLoading,
     isActionLoading,
     isSwipingEnabled,
-    swiperRef,
+    // swiperRef, // Commented out - no longer using deck swiper
     handleOpenImages,
     handleOpenSendLoveLetter,
     handleDislike,
@@ -239,7 +242,8 @@ const Match: FC<MatchScreenProps> = (props) => {
         scrollEventThrottle={16}
         keyboardShouldPersistTaps="handled"
       >
-        <View style={styles.swiperContainer}>
+        {/* Commented out deck swiper - replaced with SwipeableCard */}
+        {/* <View style={styles.swiperContainer}>
           <Swiper
             ref={swiperRef}
             cards={users}
@@ -307,6 +311,17 @@ const Match: FC<MatchScreenProps> = (props) => {
               },
             }}
           />
+        </View> */}
+
+        {/* New SwipeableCard implementation */}
+        <View style={styles.swiperContainer}>
+          <SwipeableCard
+            onSwipeLeft={handleSwipedLeft}
+            onSwipeRight={handleSwipedRight}
+            enabled={isSwipingEnabled}
+          >
+            {renderCard(currentUser)}
+          </SwipeableCard>
         </View>
 
         {/* Bio + Compatibility + About Me card */}
