@@ -1,7 +1,7 @@
 import React, { FC } from "react";
 import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import ActionSheet, { SheetProps } from "react-native-actions-sheet";
-import { Feather } from "@expo/vector-icons";
+import { Feather, Ionicons } from "@expo/vector-icons";
 
 import { palette } from "core/styles";
 import { Button } from "components/button";
@@ -22,6 +22,7 @@ const FilterSelectSheet: FC<SheetProps<"filter-select-sheet">> = (props) => {
     toggleMultiItem,
     heightRange,
     setHeightRange,
+    handleClose,
     handleSubmit,
     formatHeight,
   } = useFilterSelectSheetLogic(props);
@@ -103,6 +104,10 @@ const FilterSelectSheet: FC<SheetProps<"filter-select-sheet">> = (props) => {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.header}>
+          <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
+            <Ionicons name="close" size={24} color={palette.BLACK} />
+          </TouchableOpacity>
+
           <Text style={styles.title}>{title}</Text>
         </View>
 

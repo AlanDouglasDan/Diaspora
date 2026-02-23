@@ -95,11 +95,19 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 export default function RootNavigator() {
   return (
     <Stack.Navigator
-      // initialRouteName="AddPhone"
+      initialRouteName="Loading"
       screenOptions={{
         headerShown: false,
       }}
     >
+      <Stack.Screen
+        name="Loading"
+        component={Loading}
+        options={{
+          headerShown: false,
+        }}
+      />
+
       <Stack.Screen name="Welcome" component={Welcome} />
 
       <Stack.Screen name="EmailAuth" component={EmailAuth} />
@@ -125,14 +133,6 @@ export default function RootNavigator() {
       <Stack.Screen name="SetupComplete" component={SetupComplete} />
 
       <Stack.Screen name="MainTabs" component={MainTabNavigator} />
-
-      <Stack.Screen
-        name="Loading"
-        component={Loading}
-        options={{
-          headerShown: false,
-        }}
-      />
 
       <Stack.Screen
         name="Settings"

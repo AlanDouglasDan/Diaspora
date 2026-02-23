@@ -99,13 +99,13 @@ const Conversation: FC<ConversationScreenProps> = (props) => {
       keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
     >
       <View style={styles.inputContainer}>
-        <TouchableOpacity
+        {/* <TouchableOpacity
           style={styles.addButton}
           onPress={handleAddMedia}
           activeOpacity={0.7}
         >
           <Ionicons name="add" size={24} color={palette.WHITE} />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
         <View style={styles.textInputContainer}>
           <TextInput

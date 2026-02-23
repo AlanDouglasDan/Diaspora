@@ -38,6 +38,26 @@ export const useSwipeableCardLogic = ({
     onSwipeRight();
   }, [onSwipeRight]);
 
+  // Programmatic swipe left (dislike)
+  const swipeLeft = useCallback(() => {
+    translateX.value = withTiming(
+      -SCREEN_WIDTH * 1.5,
+      { duration: 300 },
+      () => {
+        runOnJS(handleSwipeLeft)();
+        translateX.value = 0;
+      },
+    );
+  }, [handleSwipeLeft, translateX]);
+
+  // Programmatic swipe right (like / superlike)
+  const swipeRight = useCallback(() => {
+    translateX.value = withTiming(SCREEN_WIDTH * 1.5, { duration: 300 }, () => {
+      runOnJS(handleSwipeRight)();
+      translateX.value = 0;
+    });
+  }, [handleSwipeRight, translateX]);
+
   const panGesture = Gesture.Pan()
     .enabled(enabled)
     .activeOffsetX([
@@ -126,5 +146,7 @@ export const useSwipeableCardLogic = ({
     cardStyle,
     likeOpacity,
     nopeOpacity,
+    swipeLeft,
+    swipeRight,
   };
 };

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { SheetManager } from "react-native-actions-sheet";
@@ -94,7 +94,7 @@ export const useMessagesLogic = () => {
               lastMessage: displayMessage,
               isOnline: otherUser?.online || false,
             };
-          }
+          },
         );
 
         setMessages(channelMessages);
@@ -105,7 +105,7 @@ export const useMessagesLogic = () => {
         setIsRefreshing(false);
       }
     },
-    [client, isConnected, clerkUser?.id]
+    [client, isConnected, clerkUser?.id],
   );
 
   // Pull to refresh handler
@@ -153,7 +153,7 @@ export const useMessagesLogic = () => {
         matchDate: new Date(match.match.matchedAt).toLocaleDateString(),
       });
     },
-    [navigation]
+    [navigation],
   );
 
   const handleMessagePress = useCallback(
@@ -165,7 +165,7 @@ export const useMessagesLogic = () => {
         matchDate: "",
       });
     },
-    [navigation]
+    [navigation],
   );
 
   const handleLoveLettersPress = useCallback(() => {
@@ -176,8 +176,17 @@ export const useMessagesLogic = () => {
     navigation.navigate("MainTabs", { screen: "Match" } as any);
   }, [navigation]);
 
+  // Filter out matches that already have a conversation in messages
+  const filteredMatches = useMemo(() => {
+    if (!matchesData?.length) return [];
+    const conversationUserIds = new Set(messages.map((msg) => msg.recipientId));
+    return matchesData.filter(
+      (match) => !conversationUserIds.has(match.user.id),
+    );
+  }, [matchesData, messages]);
+
   return {
-    matches: matchesData || [],
+    matches: filteredMatches,
     messages,
     isLoading: isLoading || isLoadingMatches,
     isRefreshing,

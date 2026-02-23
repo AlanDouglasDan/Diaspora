@@ -21,7 +21,6 @@ const Welcome: FC<WelcomeScreenProps> = (props) => {
     handleLogout,
     isGoogleLoading,
     isAppleLoading,
-    showSplash,
   } = useWelcomeLogic(props);
 
   useEffect(() => {
@@ -45,19 +44,6 @@ const Welcome: FC<WelcomeScreenProps> = (props) => {
       });
     }
   }, [authState, props.navigation, setAuthState]);
-
-  // Show splash extension while checking auth
-  if (showSplash) {
-    return (
-      <View style={styles.splashContainer}>
-        <Image
-          source={images.splashIcon}
-          style={styles.icon}
-          contentFit="contain"
-        />
-      </View>
-    );
-  }
 
   return (
     <ImageBackground

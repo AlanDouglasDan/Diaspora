@@ -12,8 +12,10 @@ import {
   useGetReceivedLikes,
   useGetProfileViews,
   useLikeUser,
+  useDislikeUser,
   useGetLikes,
 } from "@/src/api";
+import { useAppSelector } from "@/src/store";
 import type { Like } from "@/src/api/likes/types";
 import type { ProfileView } from "@/src/api/profileViews/types";
 
@@ -55,10 +57,24 @@ export function useLikesLogic() {
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const { user } = useUser();
+  const subscriptionType = useAppSelector(
+    (state) => state.subscription.subscriptionType,
+  );
+
+  // User is subscribed if subscriptionType exists and is not "free"
+  const isSubscribed = useMemo(
+    () => subscriptionType !== null && subscriptionType !== "free",
+    [subscriptionType],
+  );
 
   const [activeTab, setActiveTab] = useState<LikesTab>("priority");
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [isLikeLoading, setIsLikeLoading] = useState(false);
+  const [loadingUserId, setLoadingUserId] = useState<string | null>(null);
+  const [successInfo, setSuccessInfo] = useState<{
+    visible: boolean;
+    title: string;
+    message: string;
+  }>({ visible: false, title: "", message: "" });
 
   const {
     data: receivedLikesData,
@@ -72,6 +88,7 @@ export function useLikesLogic() {
     isLoading: profileViewsLoading,
   } = useGetProfileViews();
   const { likeUser } = useLikeUser();
+  const { dislikeUser } = useDislikeUser();
 
   // Fetch data on mount
   useEffect(() => {
@@ -176,8 +193,6 @@ export function useLikesLogic() {
   // Only show action buttons on views tab
   const showActionButtons = useMemo(() => activeTab === "views", [activeTab]);
 
-  const blurImages = useMemo(() => activeTab === "views", [activeTab]);
-
   const isLoading = useMemo(
     () => receivedLikesLoading || profileViewsLoading || likesLoading,
     [receivedLikesLoading, profileViewsLoading, likesLoading],
@@ -200,12 +215,36 @@ export function useLikesLogic() {
     [handleUpgrade],
   );
 
+  // Refetch data for the current active tab
+  const refetchCurrentTab = useCallback(async () => {
+    if (!user?.id) return;
+    try {
+      switch (activeTab) {
+        case "priority":
+          await getReceivedLikes(user.id);
+          break;
+        case "likes":
+          await getLikes(user.id);
+          break;
+        case "views":
+          await getProfileViews(user.id);
+          break;
+      }
+    } catch (error) {
+      console.log("Error refetching tab data:", error);
+    }
+  }, [user?.id, activeTab, getReceivedLikes, getLikes, getProfileViews]);
+
+  const hideSuccess = useCallback(() => {
+    setSuccessInfo((prev) => ({ ...prev, visible: false }));
+  }, []);
+
   // Handle like action for profile views
   const handleLikeFromViews = useCallback(
     async (item: LikeItem, superLike: boolean = false) => {
       if (!user?.id || !item.userId) return;
 
-      setIsLikeLoading(true);
+      setLoadingUserId(item.userId);
       try {
         await likeUser({
           likedId: item.userId,
@@ -213,11 +252,13 @@ export function useLikesLogic() {
           superLike,
         });
 
-        Toast.show({
-          type: "success",
-          text1: superLike ? "Super Like Sent! 💖" : "Like Sent! ❤️",
-          text2: `You ${superLike ? "super liked" : "liked"} this profile`,
+        setSuccessInfo({
+          visible: true,
+          title: superLike ? "Super Like Sent!" : "Like Sent!",
+          message: `You ${superLike ? "super liked" : "liked"} ${item.userName || "this profile"}`,
         });
+
+        await refetchCurrentTab();
       } catch (error) {
         Toast.show({
           type: "error",
@@ -225,10 +266,42 @@ export function useLikesLogic() {
           text2: "Please try again",
         });
       } finally {
-        setIsLikeLoading(false);
+        setLoadingUserId(null);
       }
     },
-    [user?.id, likeUser],
+    [user?.id, likeUser, refetchCurrentTab],
+  );
+
+  // Handle dislike action for profile views
+  const handleDislikeFromViews = useCallback(
+    async (item: LikeItem) => {
+      if (!user?.id || !item.userId) return;
+
+      setLoadingUserId(item.userId);
+      try {
+        await dislikeUser({
+          dislikedId: item.userId,
+          dislikerId: user.id,
+        });
+
+        setSuccessInfo({
+          visible: true,
+          title: "Passed",
+          message: `You passed on ${item.userName || "this profile"}`,
+        });
+
+        await refetchCurrentTab();
+      } catch (error) {
+        Toast.show({
+          type: "error",
+          text1: "Failed to pass",
+          text2: "Please try again",
+        });
+      } finally {
+        setLoadingUserId(null);
+      }
+    },
+    [user?.id, dislikeUser, refetchCurrentTab],
   );
 
   // Check if I have already liked this user
@@ -312,15 +385,18 @@ export function useLikesLogic() {
     likes: currentTabData,
     getHeaderContent,
     showActionButtons,
-    blurImages,
     handleOpenUpgradeSheet,
     handleRefresh,
     isRefreshing,
     isLoading,
     handleLikeFromViews,
-    isLikeLoading,
+    loadingUserId,
     handleOpenConversation,
     handleGetSwiping,
     hasLikedUser,
+    handleDislikeFromViews,
+    successInfo,
+    hideSuccess,
+    isSubscribed,
   };
 }

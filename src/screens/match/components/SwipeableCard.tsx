@@ -1,44 +1,55 @@
-import React from "react";
+import React, { forwardRef, useImperativeHandle } from "react";
 import { Text } from "react-native";
 import Animated from "react-native-reanimated";
 import { GestureDetector } from "react-native-gesture-handler";
 
 import { styles } from "./SwipeableCard.styles";
 import { useSwipeableCardLogic } from "./useSwipeableCardLogic";
-import type { SwipeableCardProps } from "./SwipeableCard.types";
+import type {
+  SwipeableCardProps,
+  SwipeableCardRef,
+} from "./SwipeableCard.types";
 
-const SwipeableCard: React.FC<SwipeableCardProps> = ({
-  children,
-  onSwipeLeft,
-  onSwipeRight,
-  enabled = true,
-}) => {
-  const { panGesture, cardStyle, likeOpacity, nopeOpacity } =
-    useSwipeableCardLogic({
+const SwipeableCard = forwardRef<SwipeableCardRef, SwipeableCardProps>(
+  ({ children, onSwipeLeft, onSwipeRight, enabled = true }, ref) => {
+    const {
+      panGesture,
+      cardStyle,
+      likeOpacity,
+      nopeOpacity,
+      swipeLeft,
+      swipeRight,
+    } = useSwipeableCardLogic({
       onSwipeLeft,
       onSwipeRight,
       enabled,
     });
 
-  return (
-    <GestureDetector gesture={panGesture}>
-      <Animated.View style={[styles.container, cardStyle]}>
-        {children}
+    useImperativeHandle(ref, () => ({
+      swipeLeft,
+      swipeRight,
+    }));
 
-        <Animated.View
-          style={[styles.labelContainer, styles.likeLabel, likeOpacity]}
-        >
-          <Text style={[styles.labelText, styles.likeLabelText]}>LIKE</Text>
-        </Animated.View>
+    return (
+      <GestureDetector gesture={panGesture}>
+        <Animated.View style={[styles.container, cardStyle]}>
+          {children}
 
-        <Animated.View
-          style={[styles.labelContainer, styles.nopeLabel, nopeOpacity]}
-        >
-          <Text style={[styles.labelText, styles.nopeLabelText]}>NOPE</Text>
+          <Animated.View
+            style={[styles.labelContainer, styles.likeLabel, likeOpacity]}
+          >
+            <Text style={[styles.labelText, styles.likeLabelText]}>LIKE</Text>
+          </Animated.View>
+
+          <Animated.View
+            style={[styles.labelContainer, styles.nopeLabel, nopeOpacity]}
+          >
+            <Text style={[styles.labelText, styles.nopeLabelText]}>NOPE</Text>
+          </Animated.View>
         </Animated.View>
-      </Animated.View>
-    </GestureDetector>
-  );
-};
+      </GestureDetector>
+    );
+  },
+);
 
 export default SwipeableCard;

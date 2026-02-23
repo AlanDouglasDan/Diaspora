@@ -11,6 +11,7 @@ import {
   preferencesReducer,
   matchesReducer,
   filtersReducer,
+  subscriptionReducer,
 } from "./slices";
 
 export const store = configureStore({
@@ -24,6 +25,7 @@ export const store = configureStore({
     preferences: preferencesReducer,
     matches: matchesReducer,
     filters: filtersReducer,
+    subscription: subscriptionReducer,
   },
 });
 

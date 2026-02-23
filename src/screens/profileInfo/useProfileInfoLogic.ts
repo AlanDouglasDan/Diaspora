@@ -40,6 +40,7 @@ import {
   LOVE_LANGUAGE_OPTIONS,
   TRAVEL_PLANS_OPTIONS,
   PERSONALITY_OPTIONS,
+  PERSONALITY_PROFILE_OPTIONS,
   RELATIONSHIP_STATUS_OPTIONS,
   WILLING_TO_RELOCATE_OPTIONS,
   OPENNESS_TO_LONG_DISTANCE_OPTIONS,
@@ -238,6 +239,9 @@ export const useProfileInfoLogic = ({ navigation }: ProfileInfoScreenProps) => {
       }
       if (preferencesData.personality) {
         newFieldValues.personality = preferencesData.personality;
+      }
+      if (preferencesData.personalityProfile) {
+        newFieldValues.personalityProfile = preferencesData.personalityProfile;
       }
       if (preferencesData.relationshipStatus) {
         newFieldValues.relationshipStatus = preferencesData.relationshipStatus;
@@ -621,6 +625,12 @@ export const useProfileInfoLogic = ({ navigation }: ProfileInfoScreenProps) => {
             value: "Empty",
             icon: "brain",
           },
+          {
+            id: "personalityProfile",
+            label: "Personality Profile",
+            value: "Empty",
+            icon: "brain",
+          },
         ],
       },
       {
@@ -718,6 +728,7 @@ export const useProfileInfoLogic = ({ navigation }: ProfileInfoScreenProps) => {
         loveLanguage: "loveLanguage",
         travelPlans: "travelPlans",
         personality: "personality",
+        personalityProfile: "personalityProfile",
         relationshipStatus: "relationshipStatus",
         willingToRelocate: "willingToRelocate",
         opennessToLongDistance: "opennessToLongDistance",
@@ -1082,12 +1093,27 @@ export const useProfileInfoLogic = ({ navigation }: ProfileInfoScreenProps) => {
           SheetManager.show("profile-field-sheet", {
             payload: {
               fieldId: "personality",
-              title: "What is your personality type?",
+              title: "What is your personality?",
               image: images.language,
               variant: "single-select",
               options: PERSONALITY_OPTIONS,
               initialValue: fieldValues.personality || "",
               onSubmit: (value) => updateFieldValue("personality", value),
+            },
+          });
+          break;
+
+        case "personalityProfile":
+          SheetManager.show("profile-field-sheet", {
+            payload: {
+              fieldId: "personalityProfile",
+              title: "What is your MBTI personality profile?",
+              image: images.language,
+              variant: "single-select",
+              options: PERSONALITY_PROFILE_OPTIONS,
+              initialValue: fieldValues.personalityProfile || "",
+              onSubmit: (value) =>
+                updateFieldValue("personalityProfile", value),
             },
           });
           break;

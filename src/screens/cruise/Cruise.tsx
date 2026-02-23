@@ -5,7 +5,7 @@ import { Image } from "expo-image";
 import { LayoutContainer } from "components/layoutContainer";
 import { Button } from "components/button";
 import { CruiseModal } from "components/cruiseModal";
-import Equalizer from "components/svg/Equalizer";
+// import Equalizer from "components/svg/Equalizer";
 import StopWatch from "components/svg/StopWatch";
 import Heart from "components/svg/Heart";
 import Shield from "components/svg/Shield";
@@ -25,19 +25,23 @@ const Cruise: FC<CruiseScreenProps> = (props) => {
     handleUpgrade,
   } = useCruiseLogic(props);
 
-  useEffect(() => {
-    props.navigation.setOptions({
-      headerRight: () => (
-        <TouchableOpacity onPress={handleOpenModal} style={styles.headerRight}>
-          <Equalizer />
-        </TouchableOpacity>
-      ),
-    });
-  }, [handleOpenModal]);
+  // useEffect(() => {
+  //   props.navigation.setOptions({
+  //     headerRight: () => (
+  //       <TouchableOpacity onPress={handleOpenModal} style={styles.headerRight}>
+  //         <Equalizer />
+  //       </TouchableOpacity>
+  //     ),
+  //   });
+  // }, [handleOpenModal]);
 
   return (
     <LayoutContainer style={styles.container} edges={["top"]}>
       <View style={layout.flex1}>
+        <View style={styles.badge}>
+          <Text style={styles.badgeText}>BETA</Text>
+        </View>
+
         <Image
           source={images.cruiseLogo}
           style={styles.image}
@@ -86,6 +90,12 @@ const Cruise: FC<CruiseScreenProps> = (props) => {
           onPress={handleReadyToGo}
           style={spacing.marginTop44}
         />
+
+        <Text style={styles.text10}>
+          <Text style={styles.header10}>Note:</Text> Cruise is currently in
+          beta, so your filters won't apply. You may be matched with people from
+          different countries, genders, and age ranges.
+        </Text>
       </View>
 
       <CruiseModal

@@ -39,4 +39,5 @@ export default {
   splashIcon: require("./splash-icon.png"),
   loveLetter: require("./loveLetter.png"),
   boost: require("./boost.png"),
+  icon: require("./icon.png"),
 };

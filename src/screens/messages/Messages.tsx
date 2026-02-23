@@ -9,10 +9,9 @@ import {
 } from "react-native";
 import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import { common, palette, spacing } from "core/styles";
-import { LayoutContainer } from "components/layoutContainer";
 
 import { Button } from "components/button";
 import { images } from "core/images";
@@ -36,12 +35,9 @@ const Messages: FC = () => {
   const isEmpty = matches.length === 0 && messages.length === 0 && !isLoading;
 
   return (
-    <LayoutContainer
-      style={styles.container}
-      edges={["top"]}
-      header={<Text style={styles.title}>Chats</Text>}
-      scrollEnabled={false}
-    >
+    <SafeAreaView style={styles.container} edges={["top"]}>
+      <Text style={styles.title}>Chats</Text>
+
       {isEmpty ? (
         <View style={styles.emptyStateContainer}>
           <View style={styles.emptyStateImageContainer}>
@@ -204,7 +200,7 @@ const Messages: FC = () => {
           )}
         </ScrollView>
       )}
-    </LayoutContainer>
+    </SafeAreaView>
   );
 };
 

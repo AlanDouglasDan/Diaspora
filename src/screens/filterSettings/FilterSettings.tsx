@@ -28,6 +28,8 @@ const FilterSettings: FC<FilterSettingsScreenProps> = (props) => {
     updateFilter,
     handleApply,
     handleSelectRowPress,
+    handleClearFilter,
+    getFilterDisplayValue,
     isFilterChanged,
   } = useFilterSettingsLogic(props);
 
@@ -153,12 +155,12 @@ const FilterSettings: FC<FilterSettingsScreenProps> = (props) => {
           </Text>
 
           <LinearGradient
-            colors={[palette.RED2, palette.RED]}
-            start={{ x: 0.5, y: 0 }}
-            end={{ x: 0.5, y: 1 }}
+            colors={["#EC6B82", "#BA5466FC", "#9A4655", "#692F3A"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 0.4, y: 1 }}
             style={styles.upgradeBadge}
           >
-            <Text style={styles.upgradeBadgeText}>Upgrade</Text>
+            <Text style={styles.upgradeBadgeText}>Diaspora First Class</Text>
           </LinearGradient>
 
           <GradientSlider
@@ -183,26 +185,55 @@ const FilterSettings: FC<FilterSettingsScreenProps> = (props) => {
             />
           </View>
 
-          {SELECT_ROWS.map((row) => (
-            <TouchableOpacity
-              key={row.key}
-              style={styles.selectRow}
-              onPress={() => handleSelectRowPress(row.key)}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.selectRowLabel}>{row.label}</Text>
-              <View style={styles.selectRowRight}>
-                <Text style={styles.selectRowValue}>
-                  {filters[row.key as keyof typeof filters] || "Select"}
-                </Text>
-                <Ionicons
-                  name="chevron-forward"
-                  size={18}
-                  color={palette.GREY2}
-                />
-              </View>
-            </TouchableOpacity>
-          ))}
+          {SELECT_ROWS.map((row) => {
+            const displayValue = getFilterDisplayValue(row.key);
+            const hasValue = displayValue.length > 0;
+
+            return (
+              <TouchableOpacity
+                key={row.key}
+                style={styles.selectRow}
+                onPress={() => handleSelectRowPress(row.key)}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.selectRowLabel}>{row.label}</Text>
+
+                <View style={styles.selectRowRight}>
+                  <Text
+                    style={[
+                      styles.selectRowValue,
+                      hasValue && styles.selectRowValueActive,
+                    ]}
+                    numberOfLines={1}
+                  >
+                    {hasValue ? displayValue : "Select"}
+                  </Text>
+
+                  {hasValue ? (
+                    <TouchableOpacity
+                      onPress={(e) => {
+                        e.stopPropagation();
+                        handleClearFilter(row.key as keyof typeof filters);
+                      }}
+                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                    >
+                      <Ionicons
+                        name="close-circle"
+                        size={20}
+                        color={palette.BLACK}
+                      />
+                    </TouchableOpacity>
+                  ) : (
+                    <Ionicons
+                      name="chevron-forward"
+                      size={18}
+                      color={palette.GREY2}
+                    />
+                  )}
+                </View>
+              </TouchableOpacity>
+            );
+          })}
         </View>
       </View>
     </LayoutContainer>

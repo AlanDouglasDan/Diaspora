@@ -1,8 +1,6 @@
 import React, { FC } from "react";
 import { View } from "react-native";
-import { Image } from "expo-image";
-
-import { images } from "core/images";
+import LottieView from "lottie-react-native";
 
 import type { LoadingScreenProps } from "./Loading.types";
 import { styles } from "./Loading.styles";
@@ -13,10 +11,11 @@ const Loading: FC<LoadingScreenProps> = (props) => {
 
   return (
     <View style={styles.container}>
-      <Image
-        source={images.splashIcon}
-        style={styles.icon}
-        contentFit="contain"
+      <LottieView
+        source={require("@/assets/animations/Splash.json")}
+        autoPlay
+        loop
+        style={styles.animation}
       />
     </View>
   );

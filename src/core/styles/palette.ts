@@ -13,6 +13,7 @@ export const palette = {
   TEXT_COLOR: "#545454",
   GREY: "rgba(30, 30, 30, 0.08)",
   GREY2: "#262626",
+  GREY3: "#8E8E93",
   LIGHT_GREY: "#D9D9D9",
   PURPLE: "#8B50FF",
   SUCCESS: "#12B76A",
