@@ -97,6 +97,7 @@ export const styles = StyleSheet.create({
     paddingVertical: 16,
     borderBottomWidth: 1,
     borderBottomColor: palette.GREY,
+    gap: 8,
   },
   selectRowLabel: {
     ...typography.text14,
@@ -105,11 +106,16 @@ export const styles = StyleSheet.create({
   selectRowRight: {
     flexDirection: "row",
     alignItems: "center",
+    flexShrink: 1,
   },
   selectRowValue: {
     ...typography.text14,
     color: palette.GREY2,
     marginRight: 4,
+    flexShrink: 1,
+  },
+  selectRowValueActive: {
+    color: palette.TEXT_COLOR,
   },
   applyButton: {
     marginTop: 32,

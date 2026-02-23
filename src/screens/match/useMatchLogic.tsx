@@ -28,6 +28,7 @@ import { palette } from "core/styles";
 import type { MatchScreenProps, UserProfile } from "./Match.types";
 import { styles } from "./Match.styles";
 import type { RootStackParamList } from "../../navigation";
+import type { SwipeableCardRef } from "./components";
 
 const calculateAge = (birthday: string): number => {
   const birthDate = new Date(birthday);
@@ -158,6 +159,8 @@ export const useMatchLogic = (props: MatchScreenProps) => {
   const { sendLoveLetter, isConnected: isStreamConnected } = useStreamChat();
   const { createProfileView } = useCreateProfileView();
 
+  const swipeableCardRef = useRef<SwipeableCardRef>(null);
+  const pendingSuperLike = useRef(false);
   const [cardIndex, setCardIndex] = useState(0);
   const [isSwipingEnabled, setIsSwipingEnabled] = useState(true);
   const [excludedUserIds, setExcludedUserIds] = useState<Set<string>>(
@@ -471,13 +474,14 @@ export const useMatchLogic = (props: MatchScreenProps) => {
     return true;
   }, [currentUser, clerkUser?.id, dislikeUser, excludeUser]);
 
-  // Updated for SwipeableCard - no longer using swiperRef
-  const handleSuperLike = useCallback(async () => {
-    const success = await handleLikeAction(true);
-    if (success) {
-      setCardIndex((prev) => prev + 1);
+  // Programmatic swipe triggers - animation calls onSwipeLeft/onSwipeRight which handle the action
+  const handleSuperLike = useCallback(() => {
+    // Mark that the next swipe right should be a super like
+    pendingSuperLike.current = true;
+    if (swipeableCardRef.current) {
+      swipeableCardRef.current.swipeRight();
     }
-  }, [handleLikeAction]);
+  }, []);
 
   // Updated for SwipeableCard - always call API since SwipeableCard handles its own swipe gestures
   const handleSwipedLeft = useCallback(async () => {
@@ -486,7 +490,9 @@ export const useMatchLogic = (props: MatchScreenProps) => {
   }, [handleDislikeAction]);
 
   const handleSwipedRight = useCallback(async () => {
-    await handleLikeAction(false);
+    const isSuperLike = pendingSuperLike.current;
+    pendingSuperLike.current = false;
+    await handleLikeAction(isSuperLike);
     setCardIndex((prev) => prev + 1);
   }, [handleLikeAction]);
 
@@ -506,20 +512,19 @@ export const useMatchLogic = (props: MatchScreenProps) => {
     [isSwipingEnabled],
   );
 
-  // Updated for SwipeableCard - no longer using swiperRef
-  const swipeLeft = useCallback(async () => {
-    const success = await handleDislikeAction();
-    if (success) {
-      setCardIndex((prev) => prev + 1);
+  // Button press handlers - trigger programmatic swipe animation
+  // The animation completion callback calls handleSwipedLeft/handleSwipedRight which do the action
+  const swipeLeft = useCallback(() => {
+    if (swipeableCardRef.current) {
+      swipeableCardRef.current.swipeLeft();
     }
-  }, [handleDislikeAction]);
+  }, []);
 
-  const swipeRight = useCallback(async () => {
-    const success = await handleLikeAction(false);
-    if (success) {
-      setCardIndex((prev) => prev + 1);
+  const swipeRight = useCallback(() => {
+    if (swipeableCardRef.current) {
+      swipeableCardRef.current.swipeRight();
     }
-  }, [handleLikeAction]);
+  }, []);
 
   const handleSendLoveLetter = useCallback(async () => {
     if (!currentUser || !loveLetterText.trim() || isSendingLoveLetter) return;
@@ -579,7 +584,7 @@ export const useMatchLogic = (props: MatchScreenProps) => {
     isLoading: isInitializing || isLoading,
     isActionLoading,
     isSwipingEnabled,
-    // swiperRef, // Commented out - no longer using deck swiper
+    swipeableCardRef,
     handleOpenImages,
     handleOpenSendLoveLetter,
     handleDislike: swipeLeft,

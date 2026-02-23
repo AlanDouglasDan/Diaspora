@@ -1,9 +1,8 @@
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { useOAuth, useClerk, useUser } from "@clerk/clerk-expo";
 import * as WebBrowser from "expo-web-browser";
 import Toast from "react-native-toast-message";
 import type { WelcomeScreenProps } from "./Welcome.types";
-import { useGetUser } from "@/src/api/user";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -12,14 +11,11 @@ export function useWelcomeLogic({ navigation }: WelcomeScreenProps) {
     "welcome",
   );
 
-  const { signOut, session, loaded: clerkLoaded } = useClerk();
-  const { user, isSignedIn } = useUser();
-  const { data, getUser, isLoading, error: isError } = useGetUser();
+  const { signOut, session } = useClerk();
+  const { user } = useUser();
 
   const [isGoogleLoading, setIsGoogleLoading] = useState<boolean>(false);
   const [isAppleLoading, setIsAppleLoading] = useState<boolean>(false);
-  const [showSplash, setShowSplash] = useState<boolean>(true);
-  const hasRedirected = useRef<boolean>(false);
 
   const { startOAuthFlow: startGoogleOAuthFlow } = useOAuth({
     strategy: "oauth_google",
@@ -27,64 +23,6 @@ export function useWelcomeLogic({ navigation }: WelcomeScreenProps) {
   const { startOAuthFlow: startAppleOAuthFlow } = useOAuth({
     strategy: "oauth_apple",
   });
-
-  // Check profile completeness on mount and when user changes
-  useEffect(() => {
-    if (isSignedIn && user?.id && clerkLoaded) {
-      getUser(user.id).catch(console.error);
-    }
-  }, [isSignedIn, user?.id, clerkLoaded]);
-
-  // Handle all auth checks and redirects
-  useEffect(() => {
-    // Wait for Clerk to load
-    if (!clerkLoaded) return;
-
-    // If not signed in, hide splash and show welcome screen
-    if (!isSignedIn) {
-      setShowSplash(false);
-      return;
-    }
-
-    // If signed in, wait for user data to load
-    if (isLoading) return;
-
-    // Prevent multiple redirects
-    if (hasRedirected.current) return;
-
-    // console.log(data);
-
-    // Redirect if authenticated with complete profile
-    if (data?.displayName) {
-      hasRedirected.current = true;
-      navigation.navigate("Loading");
-      return;
-    }
-
-    // If user is signed in but profile is incomplete, redirect to complete profile
-    if (data && !data?.displayName) {
-      hasRedirected.current = true;
-      navigation.navigate("DisplayName");
-      return;
-    }
-
-    // if (!data) {
-    //   hasRedirected.current = true;
-    //   navigation.navigate("AddPhone");
-    //   return;
-    // }
-
-    if (data || isError) {
-      setShowSplash(false);
-      return;
-    }
-
-    // If we get here and data is null, keep showing splash
-    if (!data) return;
-
-    // All checks done, no redirect needed, show welcome screen
-    setShowSplash(false);
-  }, [clerkLoaded, isSignedIn, isLoading, data, isError, navigation]);
 
   const handleContinueWithEmail = () => {
     navigation.navigate("EmailAuth", {
@@ -207,6 +145,5 @@ export function useWelcomeLogic({ navigation }: WelcomeScreenProps) {
     handleLogout,
     isGoogleLoading,
     isAppleLoading,
-    showSplash,
   };
 }

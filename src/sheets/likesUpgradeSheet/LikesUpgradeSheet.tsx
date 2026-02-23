@@ -40,6 +40,7 @@ const LikesUpgradeSheet: FC<SheetProps<"likes-upgrade-sheet">> = (props) => {
           <Image
             source={image}
             style={styles.profileImage}
+            blurRadius={24}
             contentFit="cover"
           />
         </View>

@@ -14,6 +14,13 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 20,
   },
+  closeButton: {
+    padding: 4,
+    position: "absolute",
+    left: 0,
+    top: 16,
+    zIndex: 1,
+  },
   title: {
     ...typography.header20,
     color: palette.TEXT_COLOR,

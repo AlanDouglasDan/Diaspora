@@ -53,10 +53,28 @@ export const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     justifyContent: "space-between",
   },
-  badgeContainer: {
+  // Top section
+  cardTopSection: {
     flexDirection: "row",
-    justifyContent: "flex-end",
-    padding: 8,
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    padding: 10,
+  },
+  cardTopLeft: {
+    flex: 1,
+    marginRight: 8,
+  },
+  cardUserName: {
+    ...typography.semiheader14,
+    color: palette.WHITE,
+    textShadowColor: "rgba(0, 0, 0, 0.75)",
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
+  },
+  recentlyActiveBadgeInline: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 2,
   },
   recentlyActiveBadge: {
     flexDirection: "row",
@@ -76,15 +94,26 @@ export const styles = StyleSheet.create({
   badgeText: {
     ...typography.text10,
     color: palette.WHITE,
+    textShadowColor: "rgba(0, 0, 0, 0.6)",
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
-  likeIconContainer: {
-    position: "absolute",
-    bottom: 12,
-    left: 12,
-    right: 12,
-    flexDirection: "row",
-    justifyContent: "space-between",
+  // Priority Aisles gradient icon (top-right, small, not pressable)
+  priorityGradientIcon: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
     alignItems: "center",
+    justifyContent: "center",
+  },
+  // Bottom section
+  cardBottomSection: {
+    padding: 10,
+  },
+  // Your Likes tab: icon at bottom-right
+  likesBottomRow: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
   },
   superLikeIcon: {
     width: 36,
@@ -94,7 +123,21 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  heartIcon: {
+  // Views tab: dislike + like space-between at bottom
+  viewsBottomRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  dislikeIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: palette.RED,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  likeHeartIcon: {
     width: 36,
     height: 36,
     borderRadius: 18,
@@ -102,51 +145,9 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  regularLikeIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 8,
-    backgroundColor: palette.RED,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  priorityLikeIcon: {
-    position: "absolute",
-    bottom: 12,
-    right: 12,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: palette.RED,
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: palette.BLACK,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  cardBottomSection: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-end",
-    padding: 12,
-  },
-  cardUserName: {
-    ...typography.semiheader14,
-    color: palette.WHITE,
-    flex: 1,
-    marginRight: 8,
-    textShadowColor: "rgba(0, 0, 0, 0.75)",
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 3,
-  },
-  priorityLikeIconBottom: {
-    alignSelf: "flex-end",
-  },
-  likeIconContainerBottom: {
-    flexDirection: "row",
-    gap: 8,
+  // Greyed out state for already-liked users
+  greyedOutIcon: {
+    backgroundColor: palette.GREY3,
   },
   // Loading state styles
   loadingContainer: {

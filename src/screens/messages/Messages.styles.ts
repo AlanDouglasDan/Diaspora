@@ -8,6 +8,7 @@ export const styles = StyleSheet.create({
     backgroundColor: palette.WHITE,
   },
   scrollContent: {
+    paddingHorizontal: 20,
     paddingBottom: 100,
     paddingTop: 24,
   },

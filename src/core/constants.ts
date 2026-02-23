@@ -177,6 +177,9 @@ export const PERSONALITY_OPTIONS = [
   { id: "Introvert", label: "INTROVERT" },
   { id: "Extrovert", label: "EXTROVERT" },
   { id: "Ambivert", label: "AMBIVERT" },
+];
+
+export const PERSONALITY_PROFILE_OPTIONS = [
   { id: "INTJ", label: "INTJ" },
   { id: "INTP", label: "INTP" },
   { id: "ENTJ", label: "ENTJ" },

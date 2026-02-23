@@ -11,11 +11,8 @@ import {
 } from "react-native";
 import { Image } from "expo-image";
 import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
-// Commented out deck swiper - replaced with SwipeableCard
-// import Swiper from "react-native-deck-swiper";
 
 import { SwipeableCard } from "./components";
-
 import LoveLetterSend from "components/svg/LoveLetterSend";
 import LoveLetter2 from "components/svg/LoveLetter2";
 import { Button } from "components/button";
@@ -34,7 +31,7 @@ const Match: FC<MatchScreenProps> = (props) => {
     isLoading,
     isActionLoading,
     isSwipingEnabled,
-    // swiperRef, // Commented out - no longer using deck swiper
+    swipeableCardRef,
     handleOpenImages,
     handleOpenSendLoveLetter,
     handleDislike,
@@ -242,80 +239,11 @@ const Match: FC<MatchScreenProps> = (props) => {
         scrollEventThrottle={16}
         keyboardShouldPersistTaps="handled"
       >
-        {/* Commented out deck swiper - replaced with SwipeableCard */}
-        {/* <View style={styles.swiperContainer}>
-          <Swiper
-            ref={swiperRef}
-            cards={users}
-            cardIndex={cardIndex % users.length}
-            renderCard={renderCard}
-            onSwipedLeft={handleSwipedLeft}
-            onSwipedRight={handleSwipedRight}
-            onSwipedAll={handleSwipedAll}
-            stackSize={3}
-            stackScale={5}
-            stackSeparation={14}
-            animateCardOpacity
-            animateOverlayLabelsOpacity
-            disableTopSwipe
-            disableBottomSwipe
-            horizontalSwipe={isSwipingEnabled}
-            verticalSwipe={false}
-            backgroundColor="transparent"
-            cardVerticalMargin={0}
-            cardHorizontalMargin={0}
-            useViewOverflow={false}
-            cardStyle={styles.swiperCard}
-            containerStyle={styles.swiperInnerContainer}
-            infinite
-            swipeAnimationDuration={150}
-            swipeBackCard
-            overlayLabels={{
-              left: {
-                title: "NOPE",
-                style: {
-                  label: {
-                    backgroundColor: palette.RED,
-                    color: palette.WHITE,
-                    fontSize: 24,
-                    borderRadius: 8,
-                    padding: 10,
-                  },
-                  wrapper: {
-                    flexDirection: "column",
-                    alignItems: "flex-end",
-                    justifyContent: "flex-start",
-                    marginTop: 30,
-                    marginLeft: -30,
-                  },
-                },
-              },
-              right: {
-                title: "LIKE",
-                style: {
-                  label: {
-                    backgroundColor: "#4DED30",
-                    color: palette.WHITE,
-                    fontSize: 24,
-                    borderRadius: 8,
-                    padding: 10,
-                  },
-                  wrapper: {
-                    flexDirection: "column",
-                    alignItems: "flex-start",
-                    justifyContent: "flex-start",
-                    marginTop: 30,
-                    marginLeft: 30,
-                  },
-                },
-              },
-            }}
-          />
-        </View> */}
 
         {/* New SwipeableCard implementation */}
         <View style={styles.swiperContainer}>
           <SwipeableCard
+            ref={swipeableCardRef}
             onSwipeLeft={handleSwipedLeft}
             onSwipeRight={handleSwipedRight}
             enabled={isSwipingEnabled}
@@ -471,13 +399,17 @@ const Match: FC<MatchScreenProps> = (props) => {
           </View>
         )}
 
-        {currentUser?.galleryImages.length > 1 && (
-          <Image
-            source={currentUser?.galleryImages[1]}
-            style={styles.galleryPhoto}
-            contentFit="cover"
-          />
-        )}
+        {currentUser?.galleryImages.length > 1 &&
+          currentUser.galleryImages
+            .slice(1)
+            .map((img, index) => (
+              <Image
+                key={`gallery-${index}`}
+                source={img}
+                style={styles.galleryPhoto}
+                contentFit="cover"
+              />
+            ))}
 
         {/* Interests + Location card */}
         {((currentUser?.interests.length > 0 &&

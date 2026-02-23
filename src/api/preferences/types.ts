@@ -34,6 +34,7 @@ export interface Preference {
   loveLanguage: string;
   travelPlans: string;
   personality: string;
+  personalityProfile: string;
   relationshipStatus: string;
   willingToRelocate: boolean;
   opennessToLongDistance: boolean;
@@ -73,6 +74,7 @@ export interface UpdatePreferencePayload {
   loveLanguage?: string;
   travelPlans?: string;
   personality?: string;
+  personalityProfile?: string;
   relationshipStatus?: string;
   willingToRelocate?: boolean;
   opennessToLongDistance?: boolean;

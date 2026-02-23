@@ -1,28 +1,28 @@
-import { useState } from "react";
-import { useStreamChat } from "@/src/providers";
-import { useStreamVideo } from "@/src/providers/StreamVideoProvider";
+import { useUser } from "@clerk/clerk-expo";
 
+import { useGetUser } from "@/src/api";
 import type { SetupCompleteScreenProps } from "./SetupComplete.types";
 
 export function useSetupCompleteLogic({
   navigation,
 }: SetupCompleteScreenProps) {
-  const { isConnecting: isChatConnecting } = useStreamChat();
-  const { isConnecting: isVideoConnecting } = useStreamVideo();
-  const [isNavigating, setIsNavigating] = useState(false);
+  const { user: clerkUser } = useUser();
+  const { getUser } = useGetUser();
 
   const handleContinue = async () => {
-    setIsNavigating(true);
+    try {
+      // Fetch user so Stream providers detect the user exists and connect
+      if (clerkUser?.id) {
+        await getUser(clerkUser.id);
+      }
+    } catch (error) {
+      console.log("Error fetching user on setup complete:", error);
+    }
 
-    // Navigate to Loading screen which will handle the rest
-    // The Stream providers will automatically connect when user exists
     navigation.navigate("Loading");
   };
 
-  const isLoading = isNavigating || isChatConnecting || isVideoConnecting;
-
   return {
     handleContinue,
-    isLoading,
   };
 }

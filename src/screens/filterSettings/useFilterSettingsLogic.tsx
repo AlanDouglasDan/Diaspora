@@ -71,78 +71,84 @@ export const SELECT_ROWS: SelectRowItem[] = [
 ];
 
 const LOOKING_FOR_OPTIONS: FilterSelectOption[] = [
-  { id: "relationship", label: "Relationship" },
-  { id: "casual", label: "Casual" },
-  { id: "friendship", label: "Friendship" },
-  { id: "not_sure", label: "Not sure yet" },
+  { id: "man", label: "Man" },
+  { id: "woman", label: "Woman" },
+  { id: "nonbinary", label: "Non-binary" },
 ];
 
 const ETHNICITY_OPTIONS: FilterSelectOption[] = [
-  { id: "african", label: "African" },
-  { id: "asian", label: "Asian" },
-  { id: "caucasian", label: "Caucasian" },
-  { id: "hispanic", label: "Hispanic/Latino" },
-  { id: "middle_eastern", label: "Middle Eastern" },
-  { id: "mixed", label: "Mixed" },
-  { id: "other", label: "Other" },
+  { id: "Asian", label: "Asian" },
+  { id: "Black/African", label: "Black/African" },
+  { id: "Hispanic/Latino", label: "Hispanic/Latino" },
+  { id: "Middle-Eastern", label: "Middle-Eastern" },
+  { id: "Native-American", label: "Native-American" },
+  { id: "Pacific-Islander", label: "Pacific-Islander" },
+  { id: "White/Caucasian", label: "White/Caucasian" },
+  { id: "Mixed", label: "Mixed" },
+  { id: "Other", label: "Other" },
+  { id: "Prefer not to say", label: "Prefer not to say" },
 ];
 
 const STAR_SIGN_OPTIONS: FilterSelectOption[] = [
-  { id: "aries", label: "Aries" },
-  { id: "taurus", label: "Taurus" },
-  { id: "gemini", label: "Gemini" },
-  { id: "cancer", label: "Cancer" },
-  { id: "leo", label: "Leo" },
-  { id: "virgo", label: "Virgo" },
-  { id: "libra", label: "Libra" },
-  // { id: "scorpio", label: "Scorpio" },
-  // { id: "sagittarius", label: "Sagittarius" },
-  // { id: "capricorn", label: "Capricorn" },
-  // { id: "aquarius", label: "Aquarius" },
-  // { id: "pisces", label: "Pisces" },
+  { id: "Aries", label: "Aries" },
+  { id: "Taurus", label: "Taurus" },
+  { id: "Gemini", label: "Gemini" },
+  { id: "Cancer", label: "Cancer" },
+  { id: "Leo", label: "Leo" },
+  { id: "Virgo", label: "Virgo" },
+  { id: "Libra", label: "Libra" },
+  { id: "Scorpio", label: "Scorpio" },
+  { id: "Sagittarius", label: "Sagittarius" },
+  { id: "Capricorn", label: "Capricorn" },
+  { id: "Aquarius", label: "Aquarius" },
+  { id: "Pisces", label: "Pisces" },
+  {
+    id: "I don't believe in zodiac signs",
+    label: "I don't believe in zodiac signs",
+  },
 ];
 
 const DRINKING_OPTIONS: FilterSelectOption[] = [
-  { id: "never", label: "Never" },
-  { id: "socially", label: "Socially" },
-  { id: "regularly", label: "Regularly" },
-  { id: "prefer_not_say", label: "Prefer not to say" },
+  { id: "Non-drinker", label: "Non-drinker" },
+  { id: "Social drinker", label: "Social drinker" },
+  { id: "Regular drinker", label: "Regular drinker" },
 ];
 
 const SMOKING_OPTIONS: FilterSelectOption[] = [
-  { id: "never", label: "Never" },
-  { id: "socially", label: "Socially" },
-  { id: "regularly", label: "Regularly" },
-  { id: "prefer_not_say", label: "Prefer not to say" },
+  { id: "Non-smoker", label: "Non-smoker" },
+  { id: "Social smoker", label: "Social smoker" },
+  { id: "Regular smoker", label: "Regular smoker" },
+  { id: "Trying to quit", label: "Trying to quit" },
 ];
 
 const EDUCATION_OPTIONS: FilterSelectOption[] = [
-  { id: "high_school", label: "High School" },
-  { id: "some_college", label: "Some College" },
-  { id: "bachelors", label: "Bachelor's Degree" },
-  { id: "masters", label: "Master's Degree" },
-  { id: "doctorate", label: "Doctorate" },
-  { id: "prefer_not_say", label: "Prefer not to say" },
+  { id: "High School", label: "High School" },
+  { id: "College", label: "College" },
+  { id: "Bachelor", label: "Bachelor" },
+  { id: "Master", label: "Master" },
+  { id: "PhD", label: "PhD" },
 ];
 
 const CHILDREN_OPTIONS: FilterSelectOption[] = [
-  { id: "none", label: "None" },
-  { id: "dont_have_but_want", label: "Don't have but want" },
-  { id: "dont_have_dont_want", label: "Don't have & don't want" },
-  { id: "have_want_more", label: "Have & want more" },
-  { id: "have_dont_want_more", label: "Have & don't want more" },
-  { id: "prefer_not_say", label: "Prefer not to say" },
+  { id: "Want children", label: "Want children" },
+  { id: "Don't want children", label: "Don't want children" },
+  { id: "Have children", label: "Have children" },
+  { id: "Open to children", label: "Open to children" },
+  { id: "Not sure yet", label: "Not sure yet" },
 ];
 
 const RELIGION_OPTIONS: FilterSelectOption[] = [
-  { id: "christianity", label: "Christianity" },
-  { id: "islam", label: "Islam" },
-  { id: "hinduism", label: "Hinduism" },
-  { id: "buddhism", label: "Buddhism" },
-  { id: "judaism", label: "Judaism" },
-  { id: "sikhism", label: "Sikhism" },
-  { id: "other", label: "Other" },
-  { id: "prefer_not_say", label: "Prefer not to say" },
+  { id: "Christianity", label: "Christianity" },
+  { id: "Islam", label: "Islam" },
+  { id: "Hinduism", label: "Hinduism" },
+  { id: "Buddhism", label: "Buddhism" },
+  { id: "Judaism", label: "Judaism" },
+  { id: "Sikhism", label: "Sikhism" },
+  { id: "Agnostic", label: "Agnostic" },
+  { id: "Atheist", label: "Atheist" },
+  { id: "Spiritual", label: "Spiritual" },
+  { id: "Other", label: "Other" },
+  { id: "Prefer not to say", label: "Prefer not to say" },
 ];
 
 const HEIGHT_FILTER_OPTIONS: FilterSelectOption[] = [
@@ -155,14 +161,15 @@ const HEIGHT_FILTER_OPTIONS: FilterSelectOption[] = [
 ];
 
 const SEXUALITY_OPTIONS: FilterSelectOption[] = [
-  { id: "straight", label: "Straight" },
-  { id: "gay", label: "Gay" },
-  { id: "lesbian", label: "Lesbian" },
-  { id: "bisexual", label: "Bisexual" },
-  { id: "pansexual", label: "Pansexual" },
-  { id: "asexual", label: "Asexual" },
-  { id: "other", label: "Other" },
-  { id: "prefer_not_say", label: "Prefer not to say" },
+  { id: "Straight", label: "Straight" },
+  { id: "Gay", label: "Gay" },
+  { id: "Lesbian", label: "Lesbian" },
+  { id: "Bisexual", label: "Bisexual" },
+  { id: "Pansexual", label: "Pansexual" },
+  { id: "Asexual", label: "Asexual" },
+  { id: "Queer", label: "Queer" },
+  { id: "Questioning", label: "Questioning" },
+  { id: "Prefer not to say", label: "Prefer not to say" },
 ];
 
 const WORKOUT_FREQUENCY_FILTER_OPTIONS: FilterSelectOption[] = [
@@ -408,6 +415,26 @@ export const useFilterSettingsLogic = (props: FilterSettingsScreenProps) => {
     } as any);
   }, [navigation, dispatch]);
 
+  const handleClearFilter = useCallback(
+    (key: keyof FilterState) => {
+      const initialValue = [] as string[];
+      dispatch(updateFilterAction({ key, value: initialValue }));
+    },
+    [dispatch],
+  );
+
+  const getFilterDisplayValue = useCallback(
+    (key: string): string => {
+      const value = filters[key as keyof FilterState];
+      if (!value || (Array.isArray(value) && value.length === 0)) return "";
+      if (Array.isArray(value)) {
+        return value.join(", ");
+      }
+      return String(value);
+    },
+    [filters],
+  );
+
   const handleSelectRowPress = useCallback(
     (field: string) => {
       const config = FIELD_CONFIG[field];
@@ -441,6 +468,8 @@ export const useFilterSettingsLogic = (props: FilterSettingsScreenProps) => {
     updateFilter,
     handleApply,
     handleSelectRowPress,
+    handleClearFilter,
+    getFilterDisplayValue,
     isFilterChanged,
   };
 };

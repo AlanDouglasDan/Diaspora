@@ -63,4 +63,12 @@ export {
   clearFilters,
 } from "./filtersSlice";
 
+export {
+  default as subscriptionReducer,
+  setSubscriptionType,
+  setSubscriptionLoading,
+  setSubscriptionError,
+  clearSubscription,
+} from "./subscriptionSlice";
+
 export * from "./filtersSlice";
