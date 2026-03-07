@@ -10,12 +10,8 @@ import React, {
 import { StreamChat, Channel as ChannelType } from "stream-chat";
 import { OverlayProvider, Chat } from "stream-chat-expo";
 import { useUser } from "@clerk/clerk-expo";
-import {
-  useGetStreamToken,
-  clearStreamToken,
-  useGetProfile,
-  useGetUser,
-} from "@/src/api";
+import { useGetStreamToken, clearStreamToken, useGetProfile } from "@/src/api";
+import { useAppSelector } from "@/src/store";
 
 export type CallType = "voice" | "video";
 
@@ -60,7 +56,7 @@ export const StreamChatProvider: React.FC<StreamChatProviderProps> = ({
   const { user: clerkUser, isSignedIn } = useUser();
   const { getStreamToken } = useGetStreamToken();
   const { getProfile } = useGetProfile();
-  const { getUser } = useGetUser();
+  const reduxUser = useAppSelector((state) => state.user.data);
 
   const [client, setClient] = useState<StreamChat | null>(null);
   const [isConnected, setIsConnected] = useState(false);
@@ -73,6 +69,12 @@ export const StreamChatProvider: React.FC<StreamChatProviderProps> = ({
       return;
     }
 
+    // During signup flow, the backend user may not exist yet.
+    // useLoadingLogic is responsible for fetching and storing the backend user in Redux.
+    if (!reduxUser?.id) {
+      return;
+    }
+
     let chatClient: StreamChat | null = null;
     let isMounted = true;
 
@@ -81,25 +83,6 @@ export const StreamChatProvider: React.FC<StreamChatProviderProps> = ({
       setConnectionError(null);
 
       try {
-        // First check if user exists in backend (skip during signup flow)
-        let userData;
-        try {
-          userData = await getUser(clerkUser.id);
-        } catch (userError: any) {
-          // User doesn't exist in backend yet (signup flow), skip connection
-          console.log(
-            "⏳ User not found in backend, skipping Stream Chat connection (signup flow)",
-          );
-          setIsConnecting(false);
-          return;
-        }
-
-        if (!userData || !isMounted) {
-          // User doesn't exist, skip connection
-          setIsConnecting(false);
-          return;
-        }
-
         // Get Stream token from backend
         const tokenData = await getStreamToken(clerkUser.id);
 
@@ -120,7 +103,11 @@ export const StreamChatProvider: React.FC<StreamChatProviderProps> = ({
           clerkUser.fullName ||
           clerkUser.firstName ||
           "User";
-        const userImage = profileData?.images?.[0] || clerkUser.imageUrl;
+        const firstImage = profileData?.images?.[0];
+        const userImage =
+          (typeof firstImage === "string"
+            ? firstImage
+            : firstImage?.imageUrl) || clerkUser.imageUrl;
 
         const res = await chatClient.connectUser(
           {
@@ -167,7 +154,7 @@ export const StreamChatProvider: React.FC<StreamChatProviderProps> = ({
         }, 0);
       }
     };
-  }, [isSignedIn, clerkUser?.id, getStreamToken, getProfile, getUser]);
+  }, [isSignedIn, clerkUser?.id, reduxUser?.id, getStreamToken, getProfile]);
 
   // Disconnect user
   const disconnectUser = useCallback(async () => {

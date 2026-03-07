@@ -24,12 +24,6 @@ export function useDisplayNameLogic({ navigation }: DisplayNameScreenProps) {
         displayName: displayName.trim(),
       });
 
-      Toast.show({
-        type: "success",
-        text1: "Display Name Set!",
-        text2: `Welcome, ${displayName}!`,
-      });
-
       navigation.navigate("Birthday");
     } catch (error: any) {
       console.error("Update display name error:", error);

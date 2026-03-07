@@ -8,7 +8,7 @@ export function useUpdateUser() {
 
   const updateUser = async (
     clerkId: string,
-    payload: UpdateUserPayload
+    payload: UpdateUserPayload,
   ): Promise<User | null> => {
     setIsLoading(true);
     setError(null);

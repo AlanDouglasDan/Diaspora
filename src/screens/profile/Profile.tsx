@@ -77,7 +77,12 @@ const Profile: FC<ProfileScreenProps> = () => {
             progress={calculateProfileProgress(profileData, preferencesData)}
           >
             <Image
-              source={{ uri: profileData?.images?.[0] || "" }}
+              source={{
+                uri:
+                  (typeof profileData?.images?.[0] === "string"
+                    ? profileData?.images?.[0]
+                    : profileData?.images?.[0]?.imageUrl) || "",
+              }}
               style={styles.avatar}
               contentFit="cover"
             />

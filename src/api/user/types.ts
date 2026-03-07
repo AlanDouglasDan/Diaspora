@@ -10,6 +10,11 @@ export interface User {
   lookingToDate?: string;
   interests?: string[];
   photos?: string[];
+  location?: {
+    name: string;
+    abrv: string;
+    flag: string;
+  };
   createdAt?: string;
   updatedAt?: string;
 }

@@ -13,6 +13,7 @@ import { palette, layout } from "core/styles";
 import { LayoutContainer } from "components/layoutContainer";
 import { Button } from "components/button";
 import { ProgressBar } from "components/progressBar";
+import { SuccessNotification } from "components/successNotification";
 
 import type { ProfileInfoScreenProps } from "./ProfileInfo.types";
 import { styles } from "./ProfileInfo.styles";
@@ -35,6 +36,9 @@ const ProfileInfo: FC<ProfileInfoScreenProps> = (props) => {
     handleEditInterests,
     handleFieldPress,
     getFieldDisplayValue,
+    successInfo,
+    hideSuccess,
+    whyHereDisplayValue,
   } = useProfileInfoLogic(props);
 
   const bioInputRef = useRef<TextInput>(null);
@@ -64,7 +68,9 @@ const ProfileInfo: FC<ProfileInfoScreenProps> = (props) => {
           activeOpacity={0.8}
         >
           <Image
-            source={{ uri: photo }}
+            source={{
+              uri: typeof photo === "string" ? photo : (photo as any)?.imageUrl,
+            }}
             style={{
               width: size,
               height: size,
@@ -96,160 +102,208 @@ const ProfileInfo: FC<ProfileInfoScreenProps> = (props) => {
   };
 
   return (
-    <LayoutContainer
-      style={styles.container}
-      edges={["top", "bottom"]}
-      keyboardShouldPersistTaps="handled"
-    >
-      {/* Custom Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Ionicons name="chevron-back" size={24} color={palette.BLACK} />
-        </TouchableOpacity>
+    <View style={{ flex: 1 }}>
+      <SuccessNotification
+        visible={successInfo.visible}
+        title={successInfo.title}
+        message={successInfo.message}
+        onHide={hideSuccess}
+      />
 
-        <View style={styles.headerCenter}>
-          <Text style={styles.headerTitle}>{profileCompletion}% complete</Text>
+      <LayoutContainer
+        style={styles.container}
+        edges={["top", "bottom"]}
+        keyboardShouldPersistTaps="handled"
+      >
+        {/* Custom Header */}
+        <View style={styles.header}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}
+          >
+            <Ionicons name="chevron-back" size={24} color={palette.BLACK} />
+          </TouchableOpacity>
 
-          <ProgressBar
-            progress={profileCompletion / 100}
-            style={styles.headerProgress}
-          />
-        </View>
+          <View style={styles.headerCenter}>
+            <Text style={styles.headerTitle}>
+              {profileCompletion}% complete
+            </Text>
 
-        <View style={{ width: 24 }} />
-        {/* <TouchableOpacity onPress={handlePreview}>
+            <ProgressBar
+              progress={profileCompletion / 100}
+              style={styles.headerProgress}
+            />
+          </View>
+
+          <View style={{ width: 24 }} />
+          {/* <TouchableOpacity onPress={handlePreview}>
           <Text style={styles.previewButton}>Preview</Text>
         </TouchableOpacity> */}
-      </View>
+        </View>
 
-      {/* Photos Grid - 3x3 with first slot being 2x2 */}
-      <View style={styles.photosGrid}>
-        {/* Row 1: Main photo (2x2) + 2 small photos stacked */}
-        <View style={{ flexDirection: "row", gap: 4 }}>
-          {renderPhotoSlot(0, true)}
-          <View style={{ gap: 4 }}>
-            {renderPhotoSlot(1)}
-            {renderPhotoSlot(2)}
+        {/* Photos Grid - 3x3 with first slot being 2x2 */}
+        <View style={styles.photosGrid}>
+          {/* Row 1: Main photo (2x2) + 2 small photos stacked */}
+          <View style={{ flexDirection: "row", gap: 4 }}>
+            {renderPhotoSlot(0, true)}
+            <View style={{ gap: 4 }}>
+              {renderPhotoSlot(1)}
+              {renderPhotoSlot(2)}
+            </View>
+          </View>
+
+          {/* Row 2: 3 small photos */}
+          <View style={{ flexDirection: "row", gap: 4, marginTop: 4 }}>
+            {renderPhotoSlot(3)}
+            {renderPhotoSlot(4)}
+            {renderPhotoSlot(5)}
           </View>
         </View>
 
-        {/* Row 2: 3 small photos */}
-        <View style={{ flexDirection: "row", gap: 4, marginTop: 4 }}>
-          {renderPhotoSlot(3)}
-          {renderPhotoSlot(4)}
-          {renderPhotoSlot(5)}
-        </View>
-      </View>
+        {/* User Info */}
+        <TouchableOpacity style={styles.sectionContainer}>
+          <View style={styles.flexedRow}>
+            <Text style={styles.userName}>
+              {userData.name}, {userData.age}
+            </Text>
 
-      {/* User Info */}
-      <TouchableOpacity style={styles.sectionContainer}>
-        <View style={styles.flexedRow}>
-          <Text style={styles.userName}>
-            {userData.name}, {userData.age}
-          </Text>
+            <Text style={styles.semiheader14}>{userData.gender}</Text>
+          </View>
 
-          <Text style={styles.semiheader14}>Male</Text>
-        </View>
+          <View style={styles.flexedRow}>
+            <Ionicons name="location-outline" size={20} color={palette.GREY2} />
 
-        <View style={styles.flexedRow}>
-          {/* <Ionicons name="location-outline" size={20} color={palette.GREY2} />
+            <Text style={[styles.semiheader14, { flex: 1 }]}>
+              {userData.location}
+            </Text>
 
-          <Text style={[styles.semiheader14, { flex: 1 }]}>
-            {userData.location}
-          </Text> */}
+            {/* <Ionicons name="chevron-forward" size={16} color={palette.GREY2} /> */}
+          </View>
 
-          {/* <Ionicons name="chevron-forward" size={16} color={palette.GREY2} /> */}
-        </View>
+          <View style={styles.flexedRow}>
+            <Text style={[styles.semiheader14, { flex: 1 }]}>
+              {userData.countryFlag} {userData.country}
+            </Text>
+          </View>
+        </TouchableOpacity>
 
-        {/* <View style={styles.flexedRow}>
-          <Text style={[styles.semiheader14, { flex: 1 }]}>
-            {userData.countryFlag} {userData.country}
-          </Text>
-        </View> */}
-      </TouchableOpacity>
+        <Text style={styles.text10}>
+          ***We will capture your location and based on where you are that is
+          what we show.
+        </Text>
 
-      {/* Why You're Here Section */}
-      {sections
-        .filter((section) => section.id === "whyHere")
-        .map((section) => (
-          <TouchableOpacity key={section.id} style={styles.sectionContainer}>
-            <View style={layout.spacedRow}>
-              <View>
-                <Text style={styles.sectionTitle}>Why You're Here</Text>
-
-                <Text style={styles.fieldValue}>
-                  {section.fields[0]?.value}
-                </Text>
-              </View>
-
-              <Ionicons
-                name="chevron-forward"
-                size={16}
-                color={palette.GREY2}
-                style={{ marginLeft: 8 }}
-              />
-            </View>
-          </TouchableOpacity>
-        ))}
-
-      {/* Bio Section */}
-      <View style={styles.sectionContainer}>
-        <View style={layout.spacedRow}>
-          <Text style={styles.sectionTitle}>Bio</Text>
-        </View>
-
-        <View style={styles.sectionContent}>
-          <TextInput
-            ref={bioInputRef}
-            style={styles.bioInput}
-            value={bio}
-            onChangeText={setBio}
-            placeholder="Write about yourself"
-            placeholderTextColor={`${palette.GREY2}60`}
-            multiline
-            maxLength={400}
-          />
-
-          <Text style={styles.bioCounter}>{bio.length}/400</Text>
-        </View>
-      </View>
-
-      {/* About Me Section */}
-      {sections
-        .filter((s) => s.id !== "whyHere" && s.id !== "interests")
-        .map((section) => (
-          <View key={section.id} style={styles.sectionContainer}>
-            <View style={layout.spacedRow}>
-              <Text style={styles.sectionTitle}>{section.title}</Text>
-            </View>
-
-            <View style={styles.sectionContent}>
-              {section.fields.map((field) => (
-                <TouchableOpacity
-                  key={field.id}
-                  style={styles.fieldRow}
-                  onPress={() => handleFieldPressWithBlur(field.id)}
-                  activeOpacity={0.7}
-                >
-                  <View style={styles.fieldLeft}>
-                    {field.icon && renderFieldIcon(field.icon)}
-                    <View style={styles.fieldLabelContainer}>
-                      <Text style={styles.fieldLabel}>{field.label}</Text>
-
-                      {field.subLabel && (
-                        <Text style={styles.fieldSubLabel}>
-                          {field.subLabel}
-                        </Text>
-                      )}
-                    </View>
-                  </View>
+        {/* Why You're Here Section */}
+        {sections
+          .filter((section) => section.id === "whyHere")
+          .map((section) => (
+            <TouchableOpacity
+              key={section.id}
+              style={styles.sectionContainer}
+              onPress={() => handleFieldPressWithBlur("why")}
+              activeOpacity={0.7}
+            >
+              <View style={layout.spacedRow}>
+                <View>
+                  <Text style={styles.sectionTitle}>Why You're Here</Text>
 
                   <Text style={styles.fieldValue}>
-                    {getFieldDisplayValue(field.id) || field.value}
+                    {whyHereDisplayValue || section.fields[0]?.value}
                   </Text>
+                </View>
+
+                <Ionicons
+                  name="chevron-forward"
+                  size={16}
+                  color={palette.GREY2}
+                  style={{ marginLeft: 8 }}
+                />
+              </View>
+            </TouchableOpacity>
+          ))}
+
+        {/* Bio Section */}
+        <View style={styles.sectionContainer}>
+          <View style={layout.spacedRow}>
+            <Text style={styles.sectionTitle}>Bio</Text>
+          </View>
+
+          <View style={styles.sectionContent}>
+            <TextInput
+              ref={bioInputRef}
+              style={styles.bioInput}
+              value={bio}
+              onChangeText={setBio}
+              placeholder="Write about yourself"
+              placeholderTextColor={`${palette.GREY2}60`}
+              multiline
+              maxLength={400}
+            />
+
+            <Text style={styles.bioCounter}>{bio.length}/400</Text>
+          </View>
+        </View>
+
+        {/* About Me Section */}
+        {sections
+          .filter((s) => s.id !== "whyHere" && s.id !== "interests")
+          .map((section) => (
+            <View key={section.id} style={styles.sectionContainer}>
+              <View style={layout.spacedRow}>
+                <Text style={styles.sectionTitle}>{section.title}</Text>
+              </View>
+
+              <View style={styles.sectionContent}>
+                {section.fields.map((field) => (
+                  <TouchableOpacity
+                    key={field.id}
+                    style={styles.fieldRow}
+                    onPress={() => handleFieldPressWithBlur(field.id)}
+                    activeOpacity={0.7}
+                  >
+                    <View style={styles.fieldLeft}>
+                      {field.icon && renderFieldIcon(field.icon)}
+                      <View style={styles.fieldLabelContainer}>
+                        <Text style={styles.fieldLabel}>{field.label}</Text>
+
+                        {field.subLabel && (
+                          <Text style={styles.fieldSubLabel}>
+                            {field.subLabel}
+                          </Text>
+                        )}
+                      </View>
+                    </View>
+
+                    <Text style={styles.fieldValue}>
+                      {getFieldDisplayValue(field.id) || field.value}
+                    </Text>
+
+                    <Ionicons
+                      name="chevron-forward"
+                      size={16}
+                      color={palette.GREY2}
+                      style={styles.fieldChevron}
+                    />
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          ))}
+
+        {/* Interests Section */}
+        {sections
+          .filter((s) => s.id === "interests")
+          .map((section) => (
+            <TouchableOpacity
+              key={section.id}
+              style={styles.sectionContainer}
+              onPress={handleEditInterests}
+              activeOpacity={0.7}
+            >
+              <View style={layout.spacedRow}>
+                <Text style={styles.sectionTitle}>Interests</Text>
+
+                <View style={styles.flexedRow}>
+                  <Text style={styles.sectionEdit}>Edit</Text>
 
                   <Ionicons
                     name="chevron-forward"
@@ -257,45 +311,19 @@ const ProfileInfo: FC<ProfileInfoScreenProps> = (props) => {
                     color={palette.GREY2}
                     style={styles.fieldChevron}
                   />
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-        ))}
-
-      {/* Interests Section */}
-      {sections
-        .filter((s) => s.id === "interests")
-        .map((section) => (
-          <TouchableOpacity
-            key={section.id}
-            style={styles.sectionContainer}
-            onPress={handleEditInterests}
-            activeOpacity={0.7}
-          >
-            <View style={layout.spacedRow}>
-              <Text style={styles.sectionTitle}>Interests</Text>
-
-              <View style={styles.flexedRow}>
-                <Text style={styles.sectionEdit}>Edit</Text>
-
-                <Ionicons
-                  name="chevron-forward"
-                  size={16}
-                  color={palette.GREY2}
-                  style={styles.fieldChevron}
-                />
+                </View>
               </View>
-            </View>
 
-            <View style={styles.sectionContent}>
-              <Text style={styles.fieldValue}>{section.fields[0]?.value}</Text>
-            </View>
-          </TouchableOpacity>
-        ))}
+              <View style={styles.sectionContent}>
+                <Text style={styles.fieldValue}>
+                  {section.fields[0]?.value}
+                </Text>
+              </View>
+            </TouchableOpacity>
+          ))}
 
-      {/* Get Verified Section */}
-      {/* <View style={styles.verifySection}>
+        {/* Get Verified Section */}
+        {/* <View style={styles.verifySection}>
         <Text style={styles.verifyTitle}>Get verified</Text>
 
         <Text style={styles.verifyDescription}>
@@ -312,7 +340,8 @@ const ProfileInfo: FC<ProfileInfoScreenProps> = (props) => {
           style={styles.verifyButton}
         />
       </View> */}
-    </LayoutContainer>
+      </LayoutContainer>
+    </View>
   );
 };
 

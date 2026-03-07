@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useOAuth, useClerk, useUser } from "@clerk/clerk-expo";
 import * as WebBrowser from "expo-web-browser";
 import Toast from "react-native-toast-message";
@@ -16,6 +16,24 @@ export function useWelcomeLogic({ navigation }: WelcomeScreenProps) {
 
   const [isGoogleLoading, setIsGoogleLoading] = useState<boolean>(false);
   const [isAppleLoading, setIsAppleLoading] = useState<boolean>(false);
+
+  // Log out any existing session when entering welcome screen
+  // Only run once on mount, not when session changes
+  useEffect(() => {
+    const logoutExistingSession = async () => {
+      if (session) {
+        try {
+          await signOut();
+          console.log("Logged out existing session on Welcome screen mount");
+        } catch (error) {
+          console.log("Error signing out existing session:", error);
+        }
+      }
+    };
+
+    logoutExistingSession();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run on mount, not when session changes
 
   const { startOAuthFlow: startGoogleOAuthFlow } = useOAuth({
     strategy: "oauth_google",
@@ -50,30 +68,29 @@ export function useWelcomeLogic({ navigation }: WelcomeScreenProps) {
     }
   };
 
-  console.log(user?.id);
-
   const handleGoogleSignIn = async () => {
     setIsGoogleLoading(true);
     try {
-      const { createdSessionId, setActive } = await startGoogleOAuthFlow();
+      const { createdSessionId, setActive, signUp, signIn } =
+        await startGoogleOAuthFlow();
 
       if (createdSessionId) {
         await setActive!({ session: createdSessionId });
 
         if (authState === "sign-up") {
-          // For sign-up, navigate to AddPhone to continue onboarding
-          // Toast.show({
-          //   type: "success",
-          //   text1: "Welcome!",
-          //   text2: "Successfully signed up with Google",
-          // });
-          navigation.navigate("AddPhone");
+          // Check if user already exists (signIn has data means existing user)
+          // signUp.createdUserId only exists for brand new users
+          const isExistingUser =
+            signIn?.userData?.firstName || !signUp?.createdUserId;
+
+          if (isExistingUser) {
+            // User already has an account, sign them in directly
+            navigation.navigate("Loading");
+          } else {
+            // New user, continue with onboarding
+            navigation.navigate("AddPhone");
+          }
         } else {
-          // Toast.show({
-          //   type: "success",
-          //   text1: "Welcome!",
-          //   text2: "Successfully signed in with Google",
-          // });
           navigation.navigate("Loading");
         }
       }
@@ -96,27 +113,26 @@ export function useWelcomeLogic({ navigation }: WelcomeScreenProps) {
   const handleAppleSignIn = async () => {
     setIsAppleLoading(true);
     try {
-      const { createdSessionId, setActive } = await startAppleOAuthFlow();
+      const { createdSessionId, setActive, signUp, signIn } =
+        await startAppleOAuthFlow();
 
       if (createdSessionId) {
         await setActive!({ session: createdSessionId });
 
         if (authState === "sign-up") {
-          // For sign-up, navigate to AddPhone to continue onboarding
-          // Toast.show({
-          //   type: "success",
-          //   text1: "Welcome!",
-          //   text2: "Successfully signed up with Apple",
-          // });
+          // Check if user already exists (signIn has data means existing user)
+          // signUp.createdUserId only exists for brand new users
+          const isExistingUser =
+            signIn?.userData?.firstName || !signUp?.createdUserId;
 
-          navigation.navigate("AddPhone");
+          if (isExistingUser) {
+            // User already has an account, sign them in directly
+            navigation.navigate("Loading");
+          } else {
+            // New user, continue with onboarding
+            navigation.navigate("AddPhone");
+          }
         } else {
-          // For sign-in, check if user has complete profile
-          // Toast.show({
-          //   type: "success",
-          //   text1: "Welcome!",
-          //   text2: "Successfully signed in with Apple",
-          // });
           navigation.navigate("Loading");
         }
       }

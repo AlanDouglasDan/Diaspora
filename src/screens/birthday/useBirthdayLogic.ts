@@ -79,8 +79,6 @@ export function useBirthdayLogic({ navigation }: BirthdayScreenProps) {
     try {
       await updateUser(user.id, {
         birthday: `${month}-${day}-${year}`, // MM-DD-YYYY format
-        // email: user.primaryEmailAddress?.emailAddress,
-        // userId: user.id,
       });
 
       // Toast.show({

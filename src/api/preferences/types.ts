@@ -38,6 +38,7 @@ export interface Preference {
   relationshipStatus: string;
   willingToRelocate: boolean;
   opennessToLongDistance: boolean;
+  whyHere?: string;
 }
 
 export interface CreatePreferencePayload {
@@ -78,4 +79,5 @@ export interface UpdatePreferencePayload {
   relationshipStatus?: string;
   willingToRelocate?: boolean;
   opennessToLongDistance?: boolean;
+  whyHere?: string;
 }

@@ -1,5 +1,5 @@
 import React, { FC, useEffect } from "react";
-import { ImageBackground, Text, View, TouchableOpacity } from "react-native";
+import { ImageBackground, Text, View, TouchableOpacity, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Image } from "expo-image";
 import { AntDesign, Feather } from "@expo/vector-icons";
@@ -95,7 +95,7 @@ const Welcome: FC<WelcomeScreenProps> = (props) => {
                   onPress={handleContinueWithEmail}
                 />
 
-                <Button
+                {Platform.OS === "ios" && <Button
                   prefixIcon={
                     <AntDesign name="apple" size={18} color={palette.BLACK} />
                   }
@@ -104,7 +104,7 @@ const Welcome: FC<WelcomeScreenProps> = (props) => {
                   variant="white"
                   onPress={handleAppleSignIn}
                   loading={isAppleLoading}
-                />
+                />}
 
                 <Button
                   prefixIcon={

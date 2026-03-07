@@ -9,7 +9,7 @@ export function useGenderLogic({ navigation }: GenderScreenProps) {
   const { updateUser } = useUpdateUser();
 
   const [selectedGender, setSelectedGender] = useState<GenderOption | null>(
-    null
+    null,
   );
   const [showOnProfile, setShowOnProfile] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
@@ -29,15 +29,8 @@ export function useGenderLogic({ navigation }: GenderScreenProps) {
     try {
       await updateUser(user.id, {
         showGender: showOnProfile,
-        // userId: user.id,
         gender: selectedGender,
       });
-
-      // Toast.show({
-      //   type: "success",
-      //   text1: "Gender Saved!",
-      //   text2: "Your gender has been updated",
-      // });
 
       navigation.navigate("DatingPreference");
     } catch (error: any) {

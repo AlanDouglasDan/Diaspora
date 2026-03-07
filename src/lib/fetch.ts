@@ -32,11 +32,17 @@ export const fetchAPI = async (url: string, options?: RequestInit) => {
     console.log(
       `📥 API Response: ${response.status} ${response.statusText} for ${
         options?.method || "GET"
-      } ${url}`
+      } ${url}`,
     );
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    // Handle 204 No Content responses (e.g., DELETE requests)
+    if (response.status === 204) {
+      console.log(`📦 Response Data: (No Content - 204)`);
+      return null;
     }
 
     const res = await response.json();
@@ -55,7 +61,7 @@ export const fetchAPI = async (url: string, options?: RequestInit) => {
   } catch (error) {
     console.log(
       `❌ Fetch Error for ${options?.method || "GET"} ${url}:`,
-      error
+      error,
     );
     throw error;
   }
@@ -73,7 +79,7 @@ export const useFetch = <T>(url: string, options?: RequestInit) => {
     try {
       const result = await fetchAPI(
         `${process.env.EXPO_PUBLIC_BACKEND_API + url}`,
-        options
+        options,
       );
       setData(result.data);
     } catch (err) {

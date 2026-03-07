@@ -5,7 +5,7 @@ import * as Location from "expo-location";
 
 import useAbly from "hooks/useAbly";
 import { useUpdateLocation, useGetUser } from "@/src/api/user";
-import { useGetSubscriptionStatus } from "@/src/api/subscription";
+// import { useGetSubscriptionStatus } from "@/src/api/subscription";
 import type { LoadingScreenProps } from "./Loading.types";
 
 export const useLoadingLogic = ({ navigation }: LoadingScreenProps) => {
@@ -13,18 +13,18 @@ export const useLoadingLogic = ({ navigation }: LoadingScreenProps) => {
   const { user: clerkUser, isSignedIn } = useUser();
   const { updateLocation } = useUpdateLocation();
   const { getUser } = useGetUser();
-  const { getSubscriptionStatus } = useGetSubscriptionStatus();
+  // const { getSubscriptionStatus } = useGetSubscriptionStatus();
   const hasRedirected = useRef(false);
 
   const initializeApp = useCallback(
     async (userId: string) => {
       try {
-        try {
-          const subscriptionStatus = await getSubscriptionStatus(userId);
-          console.log("Subscription status:", subscriptionStatus);
-        } catch (error) {
-          console.log("Failed to get subscription status:", error);
-        }
+        // try {
+        //   const subscriptionStatus = await getSubscriptionStatus(userId);
+        //   console.log("Subscription status:", subscriptionStatus);
+        // } catch (error) {
+        //   console.log("Failed to get subscription status:", error);
+        // }
 
         // Request location permission
         const { status } = await Location.requestForegroundPermissionsAsync();
@@ -61,7 +61,7 @@ export const useLoadingLogic = ({ navigation }: LoadingScreenProps) => {
         });
       }
     },
-    [getSubscriptionStatus, updateLocation, navigation],
+    [],
   );
 
   useEffect(() => {

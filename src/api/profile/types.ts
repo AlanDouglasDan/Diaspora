@@ -29,7 +29,7 @@ export interface Profile {
   updatedAt: string;
   user: ProfileUser;
   preferences: ProfilePreferences;
-  images: string[];
+  images: { imageUrl: string; order: number }[];
 }
 
 export interface CreateProfilePayload {

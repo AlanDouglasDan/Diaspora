@@ -269,7 +269,7 @@ export const useMatchLogic = (props: MatchScreenProps) => {
     };
 
     fetchData();
-  }, [clerkUser?.id, getPreference, getLikes]);
+  }, []);
 
   // Fetch users when params change or after initial data fetch
   useEffect(() => {
@@ -285,7 +285,7 @@ export const useMatchLogic = (props: MatchScreenProps) => {
     };
 
     fetchUsers();
-  }, [clerkUser?.id, isInitializing, buildGetUsersParams, getUsers]);
+  }, [isInitializing]);
 
   // Update excluded users when likes data changes
   useEffect(() => {
@@ -331,7 +331,7 @@ export const useMatchLogic = (props: MatchScreenProps) => {
     } catch (error) {
       console.error("Error refreshing data:", error);
     }
-  }, [clerkUser?.id, getUsers, getLikes, buildGetUsersParams]);
+  }, []);
 
   const handleBoostProfile = useCallback(async () => {
     if (!clerkUser?.id || isBoosting) return;

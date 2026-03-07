@@ -1,4 +1,4 @@
-import { StyleSheet } from "react-native";
+import { StyleSheet, Platform } from "react-native";
 
 import { palette, typography } from "core/styles";
 import { font } from "core/utils";
@@ -14,7 +14,7 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: palette.WHITE,
     borderRadius: 6,
-    paddingVertical: 3,
+    paddingVertical: Platform.OS === "ios" ? 3 : 8,
     paddingHorizontal: 12,
     gap: 2,
   },
