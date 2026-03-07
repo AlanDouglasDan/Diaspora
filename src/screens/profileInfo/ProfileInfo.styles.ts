@@ -135,4 +135,9 @@ export const styles = StyleSheet.create({
   verifyButton: {
     marginVertical: 8,
   },
+  text10: {
+    ...typography.text12,
+    color: palette.GREY2,
+    marginTop: 4,
+  },
 });

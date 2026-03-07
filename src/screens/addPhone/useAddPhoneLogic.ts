@@ -40,11 +40,11 @@ export function useAddPhoneLogic({ navigation }: AddPhoneScreenProps) {
         phone: fullPhoneNumber,
       });
 
-      Toast.show({
-        type: "success",
-        text1: "Phone Number Added",
-        text2: "Your account has been created successfully",
-      });
+      // Toast.show({
+      //   type: "success",
+      //   text1: "Phone Number Added",
+      //   text2: "Your account has been created successfully",
+      // });
 
       navigation.navigate("Onboarding");
 

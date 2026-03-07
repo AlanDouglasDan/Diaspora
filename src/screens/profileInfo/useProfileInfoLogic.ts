@@ -69,8 +69,10 @@ const LOOKING_FOR_OPTIONS = [
 export const useProfileInfoLogic = ({ navigation }: ProfileInfoScreenProps) => {
   const { width: screenWidth } = useWindowDimensions();
   const { user } = useUser();
+
   const profileData = useAppSelector((state) => state.profile.data);
   const preferencesData = useAppSelector((state) => state.preferences.data);
+  const userData2 = useAppSelector((state) => state.user.data);
 
   const dispatch = useAppDispatch();
   const { getProfile } = useGetProfile();
@@ -87,6 +89,17 @@ export const useProfileInfoLogic = ({ navigation }: ProfileInfoScreenProps) => {
 
   // Debounce timer ref for bio
   const bioDebounceRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Success notification state
+  const [successInfo, setSuccessInfo] = useState<{
+    visible: boolean;
+    title: string;
+    message: string;
+  }>({ visible: false, title: "", message: "" });
+
+  const hideSuccess = useCallback(() => {
+    setSuccessInfo((prev) => ({ ...prev, visible: false }));
+  }, []);
 
   // Fetch profile data if not in Redux
   useEffect(() => {
@@ -135,12 +148,22 @@ export const useProfileInfoLogic = ({ navigation }: ProfileInfoScreenProps) => {
         setBio(profileData.bio);
       }
 
-      // Set photos from images array
+      // Set photos from images array (backend now returns {imageUrl, order} objects)
       if (profileData.images && profileData.images.length > 0) {
-        const newPhotos = [...photos];
-        profileData.images.forEach((image, index) => {
-          if (index < 6) {
-            newPhotos[index] = image;
+        const newPhotos: (string | null)[] = [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+        ];
+        profileData.images.forEach((image) => {
+          const url = typeof image === "string" ? image : image?.imageUrl;
+          const order = typeof image === "string" ? 0 : (image?.order ?? 0);
+          const idx = order > 0 ? order - 1 : 0;
+          if (url && idx < 6) {
+            newPhotos[idx] = url;
           }
         });
         setPhotos(newPhotos);
@@ -255,8 +278,14 @@ export const useProfileInfoLogic = ({ navigation }: ProfileInfoScreenProps) => {
         newFieldValues.opennessToLongDistance =
           preferencesData.opennessToLongDistance ? "yes" : "no";
       }
-      if (preferencesData.lookingToDate) {
+      if (
+        preferencesData.lookingToDate &&
+        preferencesData.lookingToDate.length > 0
+      ) {
         newFieldValues.lookingFor = preferencesData.lookingToDate;
+      }
+      if (preferencesData.whyHere) {
+        newFieldValues.whyHere = preferencesData.whyHere;
       }
 
       setFieldValues((prev) => ({ ...prev, ...newFieldValues }));
@@ -275,9 +304,10 @@ export const useProfileInfoLogic = ({ navigation }: ProfileInfoScreenProps) => {
   const userData = {
     name: profileData?.user?.name || "User",
     age: profileData?.user?.age ? calculateAge(profileData.user.age) : 0,
-    location: "N/A", // Location not available in current API response
-    country: "N/A",
-    countryFlag: "🏠",
+    gender: profileData?.user?.gender === "WOMAN" ? "Female" : "Male",
+    location: userData2?.location?.name || "N/A",
+    country: userData2?.location?.abrv || "N/A",
+    countryFlag: userData2?.location?.flag || "🏠",
   };
 
   const handleSelectPhoto = useCallback(
@@ -324,11 +354,13 @@ export const useProfileInfoLogic = ({ navigation }: ProfileInfoScreenProps) => {
 
                 // Save to backend
                 const uploadedImages = newPhotos
-                  .filter((photo): photo is string => photo !== null)
+                  .filter((photo) => photo !== null)
                   .map((photo, idx) => ({
-                    imageUrl: photo,
+                    imageUrl:
+                      typeof photo === "object" && photo !== null
+                        ? (photo as any).imageUrl || ""
+                        : String(photo),
                     order: idx + 1,
-                    userId: user.id,
                   }));
 
                 saveImages({
@@ -438,11 +470,11 @@ export const useProfileInfoLogic = ({ navigation }: ProfileInfoScreenProps) => {
         }
         // Refresh profile data after preference update
         await getProfile(user.id);
-        // Toast.show({
-        //   type: "success",
-        //   text1: "Updated",
-        //   text2: "Your profile has been updated",
-        // });
+        setSuccessInfo({
+          visible: true,
+          title: "Updated",
+          message: "Your profile has been updated",
+        });
       } catch (error: any) {
         console.error("Update preference error:", error);
         // Toast.show({
@@ -466,11 +498,11 @@ export const useProfileInfoLogic = ({ navigation }: ProfileInfoScreenProps) => {
         if (result) {
           dispatch(setProfile(result));
         }
-        // Toast.show({
-        //   type: "success",
-        //   text1: "Updated",
-        //   text2: "Your profile has been updated",
-        // });
+        setSuccessInfo({
+          visible: true,
+          title: "Updated",
+          message: "Your profile has been updated",
+        });
       } catch (error: any) {
         console.error("Update profile error:", error);
         // Toast.show({
@@ -492,11 +524,7 @@ export const useProfileInfoLogic = ({ navigation }: ProfileInfoScreenProps) => {
           {
             id: "why",
             label: "",
-            value:
-              preferencesData?.lookingToDate &&
-              preferencesData.lookingToDate.length > 0
-                ? preferencesData.lookingToDate.join(", ")
-                : "Empty",
+            value: "Empty",
           },
         ],
       },
@@ -646,11 +674,7 @@ export const useProfileInfoLogic = ({ navigation }: ProfileInfoScreenProps) => {
           {
             id: "lookingFor",
             label: "Looking For",
-            value:
-              preferencesData?.lookingToDate &&
-              preferencesData.lookingToDate.length > 0
-                ? preferencesData.lookingToDate.join(", ")
-                : "Empty",
+            value: "Empty",
             icon: "search",
           },
           {
@@ -732,6 +756,7 @@ export const useProfileInfoLogic = ({ navigation }: ProfileInfoScreenProps) => {
         relationshipStatus: "relationshipStatus",
         willingToRelocate: "willingToRelocate",
         opennessToLongDistance: "opennessToLongDistance",
+        whyHere: "whyHere",
       };
 
       const preferenceField = fieldToPreferenceMap[fieldId];
@@ -1183,6 +1208,20 @@ export const useProfileInfoLogic = ({ navigation }: ProfileInfoScreenProps) => {
           });
           break;
 
+        case "why":
+          SheetManager.show("profile-field-sheet", {
+            payload: {
+              fieldId: "whyHere",
+              title: "Why are you here?",
+              image: images.language,
+              variant: "single-select",
+              options: LOOKING_FOR_OPTIONS,
+              initialValue: fieldValues.whyHere || "",
+              onSubmit: (value) => updateFieldValue("whyHere", value),
+            },
+          });
+          break;
+
         default:
           // For other fields, do nothing for now
           break;
@@ -1209,5 +1248,8 @@ export const useProfileInfoLogic = ({ navigation }: ProfileInfoScreenProps) => {
     fieldValues,
     isUploading,
     isUpdatingPreference,
+    successInfo,
+    hideSuccess,
+    whyHereDisplayValue: getFieldDisplayValue("whyHere", LOOKING_FOR_OPTIONS),
   };
 };

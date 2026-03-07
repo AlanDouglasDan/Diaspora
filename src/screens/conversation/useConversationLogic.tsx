@@ -33,7 +33,12 @@ export const useConversationLogic = (props: ConversationScreenProps) => {
 
   // Get logged in user's avatar from profile data
   const myAvatar = profileData?.images?.[0]
-    ? { uri: profileData.images[0] }
+    ? {
+        uri:
+          typeof profileData.images[0] === "string"
+            ? profileData.images[0]
+            : profileData.images[0]?.imageUrl,
+      }
     : undefined;
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);

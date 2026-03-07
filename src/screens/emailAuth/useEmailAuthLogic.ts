@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { useSignUp, useSignIn, useClerk } from "@clerk/clerk-expo";
+import { useState } from "react";
+import { useSignUp, useSignIn } from "@clerk/clerk-expo";
 import Toast from "react-native-toast-message";
 
 import type { EmailAuthScreenProps } from "./EmailAuth.types";
@@ -9,25 +9,9 @@ export function useEmailAuthLogic({ navigation, route }: EmailAuthScreenProps) {
 
   const { isLoaded: signUpLoaded, signUp } = useSignUp();
   const { isLoaded: signInLoaded, signIn, setActive } = useSignIn();
-  const { signOut, session } = useClerk();
 
   const [email, setEmail] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
-
-  // Log out any existing session when entering email auth screen
-  useEffect(() => {
-    const logoutExistingSession = async () => {
-      if (session) {
-        try {
-          await signOut();
-        } catch (error) {
-          console.log("Error signing out existing session:", error);
-        }
-      }
-    };
-
-    logoutExistingSession();
-  }, [session, signOut]);
 
   const handleGoBack = () => {
     navigation.goBack();

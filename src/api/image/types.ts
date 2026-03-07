@@ -10,7 +10,6 @@ export interface UploadUrlData {
 export interface ImageUpload {
   imageUrl: string;
   order: number;
-  userId: string;
 }
 
 export interface SaveImagesPayload {

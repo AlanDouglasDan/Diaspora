@@ -38,7 +38,7 @@ export function useUploadToCloudinary() {
         {
           method: "POST",
           body: formData,
-        }
+        },
       );
 
       if (!uploadResponse.ok) {

@@ -20,7 +20,8 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useUser } from "@clerk/clerk-expo";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useGetStreamToken, useGetProfile, useGetUser } from "@/src/api";
+import { useGetStreamToken, useGetProfile } from "@/src/api";
+import { useAppSelector } from "@/src/store";
 import { requestNotificationPermission } from "@/src/core/requestNotificationPermission";
 
 interface StreamVideoContextType {
@@ -60,7 +61,7 @@ export const StreamVideoProvider: React.FC<StreamVideoProviderProps> = ({
   const { user: clerkUser, isSignedIn } = useUser();
   const { getStreamToken } = useGetStreamToken();
   const { getProfile } = useGetProfile();
-  const { getUser } = useGetUser();
+  const reduxUser = useAppSelector((state) => state.user.data);
 
   const [client, setClient] = useState<StreamVideoClient | null>(null);
   const [isConnected, setIsConnected] = useState(false);
@@ -74,6 +75,12 @@ export const StreamVideoProvider: React.FC<StreamVideoProviderProps> = ({
       return;
     }
 
+    // During signup flow, the backend user may not exist yet.
+    // useLoadingLogic is responsible for fetching and storing the backend user in Redux.
+    if (!reduxUser?.id) {
+      return;
+    }
+
     let videoClient: StreamVideoClient | null = null;
     let isMounted = true;
 
@@ -82,25 +89,6 @@ export const StreamVideoProvider: React.FC<StreamVideoProviderProps> = ({
       setConnectionError(null);
 
       try {
-        // First check if user exists in backend (skip during signup flow)
-        let userData;
-        try {
-          userData = await getUser(clerkUser.id);
-        } catch (userError: any) {
-          // User doesn't exist in backend yet (signup flow), skip connection
-          console.log(
-            "⏳ User not found in backend, skipping Stream Video connection (signup flow)",
-          );
-          setIsConnecting(false);
-          return;
-        }
-
-        if (!userData || !isMounted) {
-          // User doesn't exist, skip connection
-          setIsConnecting(false);
-          return;
-        }
-
         // Get Stream token from backend
         const tokenData = await getStreamToken(clerkUser.id);
 
@@ -119,7 +107,11 @@ export const StreamVideoProvider: React.FC<StreamVideoProviderProps> = ({
           clerkUser.fullName ||
           clerkUser.firstName ||
           "User";
-        const userImage = profileData?.images?.[0] || clerkUser.imageUrl;
+        const firstImage = profileData?.images?.[0];
+        const userImage =
+          (typeof firstImage === "string"
+            ? firstImage
+            : firstImage?.imageUrl) || clerkUser.imageUrl;
 
         const user: StreamUser = {
           id: clerkUser.id,
@@ -170,7 +162,7 @@ export const StreamVideoProvider: React.FC<StreamVideoProviderProps> = ({
         });
       }
     };
-  }, [isSignedIn, clerkUser?.id, getStreamToken, getProfile, getUser]);
+  }, [isSignedIn, clerkUser?.id, reduxUser?.id, getStreamToken, getProfile]);
 
   // Start a call with another user
   const startCall = useCallback(

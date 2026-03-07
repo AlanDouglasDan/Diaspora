@@ -10,8 +10,13 @@ import { styles } from "./Settings.styles";
 import { useSettingsLogic } from "./useSettingsLogic";
 
 const Settings: FC<SettingsScreenProps> = (props) => {
-  const { handleSignOut, handleDeleteAccount, sections, isSigningOut } =
-    useSettingsLogic(props);
+  const {
+    handleSignOut,
+    handleDeleteAccount,
+    sections,
+    isSigningOut,
+    isDeletingAccount,
+  } = useSettingsLogic(props);
 
   return (
     <LayoutContainer style={styles.container} edges={["bottom"]}>
@@ -63,8 +68,13 @@ const Settings: FC<SettingsScreenProps> = (props) => {
         <TouchableOpacity
           style={styles.deleteButton}
           onPress={handleDeleteAccount}
+          disabled={isDeletingAccount}
         >
-          <Text style={styles.deleteText}>Delete account</Text>
+          {isDeletingAccount ? (
+            <ActivityIndicator size="small" color={palette.RED} />
+          ) : (
+            <Text style={styles.deleteText}>Delete account</Text>
+          )}
         </TouchableOpacity>
       </View>
     </LayoutContainer>

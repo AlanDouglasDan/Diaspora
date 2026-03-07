@@ -57,8 +57,8 @@ export function useAddPhotosLogic({ navigation }: AddPhotosScreenProps) {
       // Show local image immediately while uploading
       setPhotoSlots((prev) =>
         prev.map((slot) =>
-          slot.id === slotId ? { ...slot, uri: localUri } : slot
-        )
+          slot.id === slotId ? { ...slot, uri: localUri } : slot,
+        ),
       );
 
       // Upload to Cloudinary
@@ -75,8 +75,8 @@ export function useAddPhotosLogic({ navigation }: AddPhotosScreenProps) {
             // Update with Cloudinary URL
             setPhotoSlots((prev) =>
               prev.map((slot) =>
-                slot.id === slotId ? { ...slot, uri: imageUrl } : slot
-              )
+                slot.id === slotId ? { ...slot, uri: imageUrl } : slot,
+              ),
             );
           }
         } catch (error: any) {
@@ -90,8 +90,8 @@ export function useAddPhotosLogic({ navigation }: AddPhotosScreenProps) {
           // Revert to null on error
           setPhotoSlots((prev) =>
             prev.map((slot) =>
-              slot.id === slotId ? { ...slot, uri: null } : slot
-            )
+              slot.id === slotId ? { ...slot, uri: null } : slot,
+            ),
           );
         } finally {
           setIsUploading(false);
@@ -111,7 +111,6 @@ export function useAddPhotosLogic({ navigation }: AddPhotosScreenProps) {
         .map((slot, idx) => ({
           imageUrl: slot.uri!,
           order: idx + 1,
-          userId: user.id,
         }));
 
       // Save uploaded images to backend
