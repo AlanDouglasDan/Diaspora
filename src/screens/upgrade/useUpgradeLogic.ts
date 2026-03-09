@@ -5,6 +5,7 @@ import Toast from "react-native-toast-message";
 import * as Haptics from "expo-haptics";
 
 import { useGetPlans } from "@/src/api/plans";
+import { useGetUser } from "@/src/api/user";
 import {
   useCreateCustomer,
   useCreateSubscription,
@@ -47,6 +48,7 @@ export const useUpgradeLogic = (props: UpgradeScreenProps) => {
 
   // API hooks
   const { data: plansData, getPlans, isLoading: plansLoading } = useGetPlans();
+  const { getUser } = useGetUser();
   const { createCustomer, isLoading: customerLoading } = useCreateCustomer();
   const { createSubscription, isLoading: subscriptionLoading } =
     useCreateSubscription();
@@ -56,6 +58,17 @@ export const useUpgradeLogic = (props: UpgradeScreenProps) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [isPaymentSheetReady, setIsPaymentSheetReady] = useState(false);
+
+  // Success notification state
+  const [successInfo, setSuccessInfo] = useState<{
+    visible: boolean;
+    title: string;
+    message: string;
+  }>({ visible: false, title: "", message: "" });
+
+  const hideSuccess = useCallback(() => {
+    setSuccessInfo((prev) => ({ ...prev, visible: false }));
+  }, []);
 
   // Ref to track if payment sheet should be presented
   const shouldPresentSheet = useRef(false);
@@ -157,18 +170,29 @@ export const useUpgradeLogic = (props: UpgradeScreenProps) => {
       } else {
         const planName =
           getDisplayPlanName(
-            plansData?.find((p) => p.id === selectedPlanId)?.product
+            plansData?.find((p) => p.id === selectedPlanId)?.product,
           ) || "Premium";
 
-        Toast.show({
-          type: "success",
-          text1: "Payment Successful!",
-          text2: `Welcome to Diaspora ${planName}`,
+        setSuccessInfo({
+          visible: true,
+          title: "Payment Successful!",
+          message: `Welcome to Diaspora ${planName}`,
         });
         await Haptics.notificationAsync(
-          Haptics.NotificationFeedbackType.Success
+          Haptics.NotificationFeedbackType.Success,
         );
-        navigation.navigate("UpgradeSuccess");
+
+        // Navigate after a short delay to show the notification
+        setTimeout(async () => {
+          if (user?.id) {
+            try {
+              await getUser(user.id);
+            } catch (error) {
+              console.error("Error refreshing user after upgrade:", error);
+            }
+          }
+          navigation.navigate("UpgradeSuccess");
+        }, 700);
       }
     } catch (error: any) {
       console.error("Payment error:", error);
@@ -229,13 +253,27 @@ export const useUpgradeLogic = (props: UpgradeScreenProps) => {
 
       if (!subscriptionResponse?.clientSecret) {
         // Free plan or no payment required
-        Toast.show({
-          type: "success",
-          text1: "Plan Activated",
-          text2: "Your plan has been activated!",
+        setSuccessInfo({
+          visible: true,
+          title: "Plan Activated",
+          message: "Your plan has been activated!",
         });
         setIsProcessing(false);
-        navigation.navigate("UpgradeSuccess");
+
+        // Navigate after a short delay to show the notification
+        setTimeout(async () => {
+          if (user?.id) {
+            try {
+              await getUser(user.id);
+            } catch (error) {
+              console.error(
+                "Error refreshing user after plan activation:",
+                error,
+              );
+            }
+          }
+          navigation.navigate("UpgradeSuccess");
+        }, 700);
         return;
       }
 
@@ -251,7 +289,14 @@ export const useUpgradeLogic = (props: UpgradeScreenProps) => {
       setIsProcessing(false);
       shouldPresentSheet.current = false;
     }
-  }, [user, selectedPlanId, createCustomer, createSubscription, navigation]);
+  }, [
+    user,
+    selectedPlanId,
+    createCustomer,
+    createSubscription,
+    navigation,
+    getUser,
+  ]);
 
   // Build current plan data from API or fallback to static
   const currentPlan: PlanData = useMemo(() => {
@@ -308,5 +353,7 @@ export const useUpgradeLogic = (props: UpgradeScreenProps) => {
     handleClose,
     handleTabChange,
     handleUpgrade,
+    successInfo,
+    hideSuccess,
   };
 };

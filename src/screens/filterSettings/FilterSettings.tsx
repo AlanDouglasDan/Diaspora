@@ -1,5 +1,11 @@
 import React, { FC, useState } from "react";
-import { View, Text, TouchableOpacity, Switch } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Switch,
+  ActivityIndicator,
+} from "react-native";
 import CountryPicker, {
   Country,
   CountryCode,
@@ -31,7 +37,11 @@ const FilterSettings: FC<FilterSettingsScreenProps> = (props) => {
     handleClearFilter,
     getFilterDisplayValue,
     isFilterChanged,
+    handleResetCountry,
+    isLoadingInterests,
   } = useFilterSettingsLogic(props);
+
+  const navigation = props.navigation;
 
   const [showCountryPicker, setShowCountryPicker] = useState(false);
 
@@ -68,7 +78,7 @@ const FilterSettings: FC<FilterSettingsScreenProps> = (props) => {
       <View style={styles.scrollContent}>
         <View style={styles.row}>
           <Select
-            label="Looking for"
+            label="Interested in"
             value={filters.gender}
             onChange={(value) => updateFilter("gender", value as string[])}
             options={GENDER_OPTIONS}
@@ -115,6 +125,18 @@ const FilterSettings: FC<FilterSettingsScreenProps> = (props) => {
               onClose={() => setShowCountryPicker(false)}
             />
           )}
+
+          {filters.country && filters.country !== "all" && (
+            <TouchableOpacity
+              style={{ marginTop: 8 }}
+              onPress={handleResetCountry}
+              activeOpacity={0.7}
+            >
+              <Text style={{ color: palette.RED, fontSize: 14 }}>
+                Reset to All
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
 
         <GradientSlider
@@ -154,14 +176,16 @@ const FilterSettings: FC<FilterSettingsScreenProps> = (props) => {
             match faster.
           </Text>
 
-          <LinearGradient
-            colors={["#EC6B82", "#BA5466FC", "#9A4655", "#692F3A"]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 0.4, y: 1 }}
-            style={styles.upgradeBadge}
-          >
-            <Text style={styles.upgradeBadgeText}>Diaspora First Class</Text>
-          </LinearGradient>
+          <TouchableOpacity onPress={() => navigation.navigate("Upgrade")}>
+            <LinearGradient
+              colors={["#EC6B82", "#BA5466FC", "#9A4655", "#692F3A"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 0.4, y: 1 }}
+              style={styles.upgradeBadge}
+            >
+              <Text style={styles.upgradeBadgeText}>Upgrade</Text>
+            </LinearGradient>
+          </TouchableOpacity>
 
           <GradientSlider
             label="Minimum number of photos"
@@ -199,15 +223,19 @@ const FilterSettings: FC<FilterSettingsScreenProps> = (props) => {
                 <Text style={styles.selectRowLabel}>{row.label}</Text>
 
                 <View style={styles.selectRowRight}>
-                  <Text
-                    style={[
-                      styles.selectRowValue,
-                      hasValue && styles.selectRowValueActive,
-                    ]}
-                    numberOfLines={1}
-                  >
-                    {hasValue ? displayValue : "Select"}
-                  </Text>
+                  {row.key === "interests" && isLoadingInterests ? (
+                    <ActivityIndicator size="small" color={palette.RED} />
+                  ) : (
+                    <Text
+                      style={[
+                        styles.selectRowValue,
+                        hasValue && styles.selectRowValueActive,
+                      ]}
+                      numberOfLines={1}
+                    >
+                      {hasValue ? displayValue : "Select"}
+                    </Text>
+                  )}
 
                   {hasValue ? (
                     <TouchableOpacity
@@ -224,11 +252,13 @@ const FilterSettings: FC<FilterSettingsScreenProps> = (props) => {
                       />
                     </TouchableOpacity>
                   ) : (
-                    <Ionicons
-                      name="chevron-forward"
-                      size={18}
-                      color={palette.GREY2}
-                    />
+                    !isLoadingInterests && (
+                      <Ionicons
+                        name="chevron-forward"
+                        size={18}
+                        color={palette.GREY2}
+                      />
+                    )
                   )}
                 </View>
               </TouchableOpacity>

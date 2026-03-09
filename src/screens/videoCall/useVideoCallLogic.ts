@@ -1,27 +1,58 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { Alert } from "react-native";
-import { CameraType } from "expo-camera";
 import type { Call } from "@stream-io/video-react-native-sdk";
 
 import { useStreamVideo, useStreamChat } from "@/src/providers";
 
 import type { VideoCallScreenProps } from "./VideoCall.types";
 
+const formatDuration = (seconds: number): string => {
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+};
+
 export const useVideoCallLogic = (props: VideoCallScreenProps) => {
   const { navigation, route } = props;
-  const { recipientId, recipientName, recipientAvatar } = route.params;
+  const { recipientId, recipientName, recipientAvatar, isIncoming } =
+    route.params;
 
-  const { startCall, endCall } = useStreamVideo();
+  const { startCall, endCall, activeCall } = useStreamVideo();
   const { sendCallMessage } = useStreamChat();
 
   const [call, setCall] = useState<Call | null>(null);
-  const [facing, setFacing] = useState<CameraType>("front");
   const [isMuted, setIsMuted] = useState<boolean>(false);
   const [isVideoOff, setIsVideoOff] = useState<boolean>(false);
   const [isConnecting, setIsConnecting] = useState<boolean>(true);
   const [callStatus, setCallStatus] = useState<string>("Connecting...");
+  const [callDuration, setCallDuration] = useState<number>(0);
 
   const callStartTimeRef = useRef<number | null>(null);
+  const durationIntervalRef = useRef<ReturnType<typeof setInterval> | null>(
+    null,
+  );
+
+  // Start the duration timer once connected
+  const startDurationTimer = useCallback(() => {
+    callStartTimeRef.current = Date.now();
+    durationIntervalRef.current = setInterval(() => {
+      if (callStartTimeRef.current) {
+        const elapsed = Math.floor(
+          (Date.now() - callStartTimeRef.current) / 1000,
+        );
+        setCallDuration(elapsed);
+      }
+    }, 1000);
+  }, []);
+
+  // Clean up the timer
+  useEffect(() => {
+    return () => {
+      if (durationIntervalRef.current) {
+        clearInterval(durationIntervalRef.current);
+      }
+    };
+  }, []);
 
   // Initialize the call when the screen mounts
   useEffect(() => {
@@ -30,9 +61,17 @@ export const useVideoCallLogic = (props: VideoCallScreenProps) => {
     const initializeCall = async () => {
       try {
         setIsConnecting(true);
-        setCallStatus("Connecting...");
 
-        const newCall = await startCall(recipientId, true); // true = video call
+        let newCall: Call | null = null;
+
+        if (isIncoming && activeCall) {
+          // Incoming call — use the existing active/ringing call
+          newCall = activeCall;
+        } else {
+          // Outgoing call — start a new call
+          setCallStatus("Connecting...");
+          newCall = await startCall(recipientId, true); // true = video call
+        }
 
         if (!isMounted) return;
 
@@ -40,7 +79,7 @@ export const useVideoCallLogic = (props: VideoCallScreenProps) => {
           setCall(newCall);
           setCallStatus("Connected");
           setIsConnecting(false);
-          callStartTimeRef.current = Date.now();
+          startDurationTimer();
 
           // Enable camera for video call
           await newCall.camera.enable();
@@ -56,7 +95,7 @@ export const useVideoCallLogic = (props: VideoCallScreenProps) => {
             if (isMounted) {
               Alert.alert(
                 "Call Declined",
-                `${recipientName} declined the call`
+                `${recipientName} declined the call`,
               );
               navigation.goBack();
             }
@@ -80,13 +119,20 @@ export const useVideoCallLogic = (props: VideoCallScreenProps) => {
     return () => {
       isMounted = false;
     };
-  }, [recipientId, recipientName, startCall, navigation]);
+  }, [
+    recipientId,
+    recipientName,
+    startCall,
+    navigation,
+    startDurationTimer,
+    isIncoming,
+    activeCall,
+  ]);
 
   const toggleCameraFacing = useCallback(async () => {
     if (call) {
       try {
         await call.camera.flip();
-        setFacing((current) => (current === "front" ? "back" : "front"));
       } catch (error) {
         console.error("Error flipping camera:", error);
       }
@@ -125,6 +171,11 @@ export const useVideoCallLogic = (props: VideoCallScreenProps) => {
 
   const handleEndCall = useCallback(async () => {
     try {
+      // Stop duration timer
+      if (durationIntervalRef.current) {
+        clearInterval(durationIntervalRef.current);
+      }
+
       // Calculate call duration
       const durationSeconds = callStartTimeRef.current
         ? Math.floor((Date.now() - callStartTimeRef.current) / 1000)
@@ -161,11 +212,12 @@ export const useVideoCallLogic = (props: VideoCallScreenProps) => {
     recipientName,
     recipientAvatar,
     call,
-    facing,
     isMuted,
     isVideoOff,
     isConnecting,
     callStatus,
+    callDuration,
+    callDurationFormatted: formatDuration(callDuration),
     toggleCameraFacing,
     toggleMute,
     toggleVideo,

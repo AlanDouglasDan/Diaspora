@@ -16,6 +16,7 @@ export interface ChatMessage {
   isCall?: boolean;
   callType?: "voice" | "video";
   callDuration?: number;
+  senderId?: string;
 }
 
 export interface ConversationParams {

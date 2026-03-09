@@ -31,6 +31,7 @@ import {
   Conversation,
   AudioCall,
   VideoCall,
+  IncomingCall,
   LoveLetterSent,
   Loading,
   SendLoveLetter,
@@ -41,6 +42,7 @@ import type { UserProfileViewParams } from "screens/userProfileView";
 import type { ConversationParams } from "screens/conversation";
 import type { AudioCallParams } from "screens/audioCall";
 import type { VideoCallParams } from "screens/videoCall";
+import type { IncomingCallParams } from "screens/incomingCall";
 import MainTabNavigator from "./MainTabNavigator";
 import { typography, palette } from "core/styles";
 
@@ -82,6 +84,7 @@ export type RootStackParamList = {
   Conversation: ConversationParams;
   AudioCall: AudioCallParams;
   VideoCall: VideoCallParams;
+  IncomingCall: IncomingCallParams;
   LoveLetterSent: {
     recipientName: string;
     recipientImage: { uri: string };
@@ -245,6 +248,14 @@ export default function RootNavigator() {
       <Stack.Screen
         name="Conversation"
         component={Conversation}
+        options={{
+          headerShown: false,
+        }}
+      />
+
+      <Stack.Screen
+        name="IncomingCall"
+        component={IncomingCall}
         options={{
           headerShown: false,
         }}

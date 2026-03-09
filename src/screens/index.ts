@@ -24,6 +24,7 @@ export * from "./cruiseCamera";
 export * from "./cruiseCall";
 export * from "./cruiseResult";
 export * from "./audioCall";
+export * from "./incomingCall";
 export * from "./videoCall";
 export * from "./upgrade";
 export * from "./upgradeSuccess";

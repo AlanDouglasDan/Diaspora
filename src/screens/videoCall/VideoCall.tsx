@@ -22,6 +22,7 @@ interface VideoCallContentProps {
   recipientAvatar: any;
   isMuted: boolean;
   isVideoOff: boolean;
+  callDurationFormatted: string;
   toggleCameraFacing: () => void;
   toggleMute: () => void;
   toggleVideo: () => void;
@@ -33,6 +34,7 @@ const VideoCallContent: FC<VideoCallContentProps> = ({
   recipientAvatar,
   isMuted,
   isVideoOff,
+  callDurationFormatted,
   toggleCameraFacing,
   toggleMute,
   toggleVideo,
@@ -44,7 +46,7 @@ const VideoCallContent: FC<VideoCallContentProps> = ({
 
   // Find the remote participant (not the local user)
   const remoteParticipant = participants.find(
-    (p) => p.sessionId !== localParticipant?.sessionId
+    (p) => p.sessionId !== localParticipant?.sessionId,
   );
 
   return (
@@ -71,6 +73,11 @@ const VideoCallContent: FC<VideoCallContentProps> = ({
       )}
 
       <View style={styles.overlay}>
+        {/* Call duration badge */}
+        <View style={styles.durationBadge}>
+          <Text style={styles.durationText}>{callDurationFormatted}</Text>
+        </View>
+
         {/* Local camera preview */}
         <View style={styles.localVideoContainer}>
           {localParticipant && !isVideoOff ? (
@@ -98,7 +105,13 @@ const VideoCallContent: FC<VideoCallContentProps> = ({
             />
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.controlButton} onPress={toggleMute}>
+          <TouchableOpacity
+            style={[
+              styles.controlButton,
+              isMuted && styles.controlButtonActive,
+            ]}
+            onPress={toggleMute}
+          >
             <Feather
               name={isMuted ? "mic-off" : "mic"}
               size={24}
@@ -106,7 +119,13 @@ const VideoCallContent: FC<VideoCallContentProps> = ({
             />
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.controlButton} onPress={toggleVideo}>
+          <TouchableOpacity
+            style={[
+              styles.controlButton,
+              isVideoOff && styles.controlButtonActive,
+            ]}
+            onPress={toggleVideo}
+          >
             <Feather
               name={isVideoOff ? "video-off" : "video"}
               size={24}
@@ -131,11 +150,11 @@ const VideoCall: FC<VideoCallScreenProps> = (props) => {
     recipientName,
     recipientAvatar,
     call,
-    facing,
     isMuted,
     isVideoOff,
     isConnecting,
     callStatus,
+    callDurationFormatted,
     toggleCameraFacing,
     toggleMute,
     toggleVideo,
@@ -170,7 +189,19 @@ const VideoCall: FC<VideoCallScreenProps> = (props) => {
         />
         <View style={styles.overlay}>
           <View style={styles.connectingContainer}>
-            <ActivityIndicator size="large" color={palette.WHITE} />
+            <View style={styles.connectingAvatarContainer}>
+              <Image
+                source={recipientAvatar || images.avatar2}
+                style={styles.connectingAvatar}
+                contentFit="cover"
+              />
+            </View>
+            <Text style={styles.connectingName}>{recipientName}</Text>
+            <ActivityIndicator
+              size="small"
+              color={palette.WHITE}
+              style={styles.connectingIndicator}
+            />
             <Text style={styles.connectingText}>{callStatus}</Text>
           </View>
           <View style={styles.controlsContainer}>
@@ -193,6 +224,7 @@ const VideoCall: FC<VideoCallScreenProps> = (props) => {
         recipientAvatar={recipientAvatar}
         isMuted={isMuted}
         isVideoOff={isVideoOff}
+        callDurationFormatted={callDurationFormatted}
         toggleCameraFacing={toggleCameraFacing}
         toggleMute={toggleMute}
         toggleVideo={toggleVideo}

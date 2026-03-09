@@ -1,14 +1,14 @@
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "navigation/RootNavigator";
 
-export type VideoCallScreenProps = NativeStackScreenProps<
+export type IncomingCallScreenProps = NativeStackScreenProps<
   RootStackParamList,
-  "VideoCall"
+  "IncomingCall"
 >;
 
-export interface VideoCallParams {
+export interface IncomingCallParams {
   recipientId: string;
   recipientName: string;
   recipientAvatar: any;
-  isIncoming?: boolean;
+  isVideoCall: boolean;
 }

@@ -6,7 +6,6 @@ export const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: palette.WHITE,
-    marginHorizontal: -20,
   },
   scrollContent: {
     paddingTop: 20,
@@ -18,7 +17,7 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   yourInterestsSection: {
-    backgroundColor: `${palette.RED2}15`,
+    backgroundColor: `${palette.PINK2}15`,
     paddingVertical: 16,
     paddingHorizontal: 20,
     marginBottom: 8,
@@ -34,7 +33,7 @@ export const styles = StyleSheet.create({
     gap: 8,
   },
   categorySection: {
-    backgroundColor: `${palette.RED2}15`,
+    backgroundColor: `${palette.PINK2}15`,
     paddingVertical: 16,
     paddingHorizontal: 20,
     marginBottom: 8,
@@ -52,20 +51,20 @@ export const styles = StyleSheet.create({
   interestChip: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: `${palette.PINK}60`,
+    backgroundColor: `${palette.PINK2}20`,
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: 20,
     gap: 6,
   },
   interestChipSelected: {
-    backgroundColor: `${palette.PINK}60`,
+    backgroundColor: `${palette.PINK2}50`,
   },
   interestEmoji: {
     fontSize: 14,
   },
   interestLabel: {
-    ...typography.text12,
+    ...typography.semiheader14,
     color: palette.TEXT_COLOR,
   },
   interestIcon: {
@@ -93,8 +92,17 @@ export const styles = StyleSheet.create({
     marginTop: 12,
   },
   buttonContainer: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 36,
     paddingVertical: 16,
     backgroundColor: palette.WHITE,
+  },
+  allInterestsSection: {
+    backgroundColor: `${palette.PINK2}15`,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+  },
+  flatListContent: {
+    paddingTop: 20,
+    paddingBottom: 20,
   },
 });

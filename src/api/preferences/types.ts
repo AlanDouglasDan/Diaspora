@@ -5,7 +5,7 @@ export interface Preference {
   updatedAt: string;
   interests: string[] | null;
   lookingToDate: string[];
-  ethnicity: string;
+  ethnicity: string | string[];
   pronouns: string;
   zodiac: string;
   bio: string;
@@ -16,7 +16,7 @@ export interface Preference {
   pets: string;
   age: string;
   distance: string;
-  language: string;
+  language: string | string[];
   familyPlans: string;
   gender: string;
   height: string;
@@ -38,7 +38,7 @@ export interface Preference {
   relationshipStatus: string;
   willingToRelocate: boolean;
   opennessToLongDistance: boolean;
-  whyHere?: string;
+  whyHere?: string | null;
 }
 
 export interface CreatePreferencePayload {
@@ -49,7 +49,7 @@ export interface CreatePreferencePayload {
 export interface UpdatePreferencePayload {
   interests?: string[];
   lookingToDate?: string[];
-  ethnicity?: string;
+  ethnicity?: string | string[];
   pronouns?: string;
   zodiac?: string;
   bio?: string;
@@ -60,7 +60,7 @@ export interface UpdatePreferencePayload {
   pets?: string;
   age?: string;
   distance?: string;
-  language?: string;
+  language?: string | string[];
   familyPlans?: string;
   gender?: string;
   height?: string;

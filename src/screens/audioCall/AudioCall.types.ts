@@ -10,4 +10,5 @@ export interface AudioCallParams {
   recipientId: string;
   recipientName: string;
   recipientAvatar: any;
+  isIncoming?: boolean;
 }

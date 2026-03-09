@@ -85,9 +85,11 @@ const Match: FC<MatchScreenProps> = (props) => {
                       </View>
                     )}
                   </View>
-                  <View style={styles.badge}>
-                    <Text style={styles.badgeText}>{user.badge}</Text>
-                  </View>
+                  {user.badge && (
+                    <View style={styles.badge}>
+                      <Text style={styles.badgeText}>{user.badge}</Text>
+                    </View>
+                  )}
                 </View>
               </View>
 
@@ -239,7 +241,6 @@ const Match: FC<MatchScreenProps> = (props) => {
         scrollEventThrottle={16}
         keyboardShouldPersistTaps="handled"
       >
-
         {/* New SwipeableCard implementation */}
         <View style={styles.swiperContainer}>
           <SwipeableCard

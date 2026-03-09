@@ -26,6 +26,17 @@ export const useEditInterestsLogic = ({
   const [isLoading, setIsLoading] = useState(false);
   const hasInitialized = useRef(false);
 
+  // Success notification state
+  const [successInfo, setSuccessInfo] = useState<{
+    visible: boolean;
+    title: string;
+    message: string;
+  }>({ visible: false, title: "", message: "" });
+
+  const hideSuccess = useCallback(() => {
+    setSuccessInfo((prev) => ({ ...prev, visible: false }));
+  }, []);
+
   useEffect(() => {
     getInterests();
   }, [getInterests]);
@@ -38,7 +49,7 @@ export const useEditInterestsLogic = ({
         label: interest.title,
         emoji: ICON_TO_EMOJI[interest.icon] || "⭐",
       })) || [],
-    [interestsData]
+    [interestsData],
   );
 
   // Prefill selected interests from Redux preferences - only once when data is available
@@ -50,7 +61,7 @@ export const useEditInterestsLogic = ({
       transformedInterests.length > 0
     ) {
       const selected = transformedInterests.filter((interest) =>
-        preferencesData.interests!.includes(interest.id)
+        preferencesData.interests!.includes(interest.id),
       );
       setSelectedInterests(selected);
       hasInitialized.current = true;
@@ -71,7 +82,7 @@ export const useEditInterestsLogic = ({
     (interestId: string) => {
       return selectedInterests.some((i) => i.id === interestId);
     },
-    [selectedInterests]
+    [selectedInterests],
   );
 
   const toggleShowAll = useCallback(() => {
@@ -82,7 +93,7 @@ export const useEditInterestsLogic = ({
   const availableInterests = useMemo(() => {
     const selectedIds = selectedInterests.map((i) => i.id);
     return transformedInterests.filter(
-      (interest) => !selectedIds.includes(interest.id)
+      (interest) => !selectedIds.includes(interest.id),
     );
   }, [transformedInterests, selectedInterests]);
 
@@ -105,13 +116,16 @@ export const useEditInterestsLogic = ({
       // Refresh preferences data in Redux
       await getPreference(user.id);
 
-      Toast.show({
-        type: "success",
-        text1: "Interests Updated",
-        text2: "Your interests have been saved successfully",
+      setSuccessInfo({
+        visible: true,
+        title: "Interests Updated",
+        message: "Your interests have been saved successfully",
       });
 
-      navigation.goBack();
+      // Navigate back after a short delay to show the notification
+      setTimeout(() => {
+        navigation.goBack();
+      }, 1500);
     } catch (error: any) {
       console.log("Error updating interests:", error);
       Toast.show({
@@ -143,5 +157,7 @@ export const useEditInterestsLogic = ({
     interestsLoading,
     isLoading,
     handleSave,
+    successInfo,
+    hideSuccess,
   };
 };

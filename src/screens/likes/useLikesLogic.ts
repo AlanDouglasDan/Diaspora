@@ -58,7 +58,7 @@ export function useLikesLogic() {
 
   const { user } = useUser();
   const subscriptionType = useAppSelector(
-    (state) => state.subscription.subscriptionType,
+    (state) => state.user.data?.subscription,
   );
 
   // User is subscribed if subscriptionType exists and is not "free"
@@ -66,6 +66,8 @@ export function useLikesLogic() {
     () => subscriptionType !== null && subscriptionType !== "free",
     [subscriptionType],
   );
+
+  console.log(isSubscribed);
 
   const [activeTab, setActiveTab] = useState<LikesTab>("priority");
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -108,8 +110,6 @@ export function useLikesLogic() {
 
     fetchData();
   }, [user?.id, getReceivedLikes, getLikes, getProfileViews]);
-
-  console.log(profileViewsData);
 
   // Pull to refresh handler
   const handleRefresh = useCallback(async () => {
