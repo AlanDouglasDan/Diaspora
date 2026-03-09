@@ -10,7 +10,7 @@ export interface UserProfile {
   age: number;
   flag: string;
   isVerified: boolean;
-  badge: string;
+  badge: string | null;
   isOnline: boolean;
   bio: string;
   avatar: ImageSourcePropType;

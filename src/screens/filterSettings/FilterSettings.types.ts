@@ -33,6 +33,7 @@ export interface FilterState {
   opennessToLongDistance: string[] | null;
   willingToRelocate: string[] | null;
   loveLanguage: string[] | null;
+  interests: string[] | null;
 }
 
 export interface SelectOption {

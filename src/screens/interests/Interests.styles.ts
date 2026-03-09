@@ -1,11 +1,17 @@
-import { StyleSheet } from "react-native";
+import { Platform, StyleSheet } from "react-native";
 
 import { palette, typography } from "core/styles";
 
 export const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: palette.WHITE,
+  },
+  headerSection: {
+    // paddingHorizontal: 20,
+  },
   progressBar: {
     marginTop: 16,
-    marginHorizontal: -20,
   },
   title: {
     ...typography.header32,
@@ -20,8 +26,9 @@ export const styles = StyleSheet.create({
   interestsContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
-    marginTop: 32,
     gap: 12,
+    paddingBottom: Platform.OS === "ios" ? 24 : 54,
+    paddingHorizontal: 20,
   },
   interestChip: {
     flexDirection: "row",
@@ -52,6 +59,8 @@ export const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    paddingHorizontal: 20,
+    paddingBottom: 24
   },
   skipText: {
     ...typography.text16,

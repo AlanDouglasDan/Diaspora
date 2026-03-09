@@ -29,6 +29,8 @@ export function useInterestsLogic({ navigation }: InterestsScreenProps) {
     getInterests();
   }, []);
 
+  console.log(selectedInterests);
+
   // Transform API data to match Interest interface with emojis - use useMemo to prevent infinite loops
   const transformedInterests = useMemo(
     () =>

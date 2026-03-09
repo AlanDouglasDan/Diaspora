@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { TouchableOpacity, Text } from "react-native";
 import { SheetManager } from "react-native-actions-sheet";
 
@@ -10,6 +10,7 @@ import {
   clearFilters,
 } from "@/src/store";
 import { useGetPreference } from "@/src/api/preferences";
+import { useGetInterests } from "@/src/api/interests";
 import { useUser } from "@clerk/clerk-expo";
 import type {
   FilterSettingsScreenProps,
@@ -50,6 +51,7 @@ export const COUNTRY_OPTIONS: SelectOption[] = [
 ];
 
 export const SELECT_ROWS: SelectRowItem[] = [
+  { key: "interests", label: "Interests" },
   { key: "lookingFor", label: "Looking for" },
   { key: "ethnicity", label: "Ethnicity" },
   { key: "starSign", label: "Star sign" },
@@ -71,9 +73,9 @@ export const SELECT_ROWS: SelectRowItem[] = [
 ];
 
 const LOOKING_FOR_OPTIONS: FilterSelectOption[] = [
-  { id: "man", label: "Man" },
-  { id: "woman", label: "Woman" },
-  { id: "nonbinary", label: "Non-binary" },
+  { id: "marriage", label: "Marriage" },
+  { id: "fun", label: "Fun" },
+  { id: "casual", label: "Casual" },
 ];
 
 const ETHNICITY_OPTIONS: FilterSelectOption[] = [
@@ -347,6 +349,11 @@ const FIELD_CONFIG: Record<string, FieldConfig> = {
     variant: "multi-select",
     options: LOVE_LANGUAGE_FILTER_OPTIONS,
   },
+  interests: {
+    title: "Interests",
+    variant: "multi-select",
+    options: [], // Will be populated dynamically from API
+  },
 };
 
 export const useFilterSettingsLogic = (props: FilterSettingsScreenProps) => {
@@ -355,6 +362,19 @@ export const useFilterSettingsLogic = (props: FilterSettingsScreenProps) => {
   const { user } = useUser();
   const { filters, appliedFilters } = useAppSelector((state) => state.filters);
   const { data: preferencesData, getPreference } = useGetPreference();
+
+  // Interests from API
+  const interestsFromRedux = useAppSelector(
+    (state) => state.preferences.data?.interests,
+  );
+  const {
+    data: interestsData,
+    getInterests,
+    isLoading: isLoadingInterests,
+  } = useGetInterests();
+  const [interestsOptions, setInterestsOptions] = useState<
+    FilterSelectOption[]
+  >([]);
 
   // Load preferences to set default gender if needed
   useEffect(() => {
@@ -377,6 +397,28 @@ export const useFilterSettingsLogic = (props: FilterSettingsScreenProps) => {
       );
     }
   }, [preferencesData, filters.gender, dispatch]);
+
+  // Fetch interests if not in Redux
+  useEffect(() => {
+    if (!interestsFromRedux || interestsFromRedux.length === 0) {
+      getInterests();
+    }
+  }, [interestsFromRedux, getInterests]);
+
+  // Transform interests data to options
+  useEffect(() => {
+    if (interestsData && interestsData.length > 0) {
+      const options = interestsData.map((interest) => ({
+        id: interest.title,
+        label: interest.title,
+      }));
+      setInterestsOptions(options);
+    }
+  }, [interestsData]);
+
+  const handleResetCountry = useCallback(() => {
+    dispatch(updateFilterAction({ key: "country", value: "all" }));
+  }, [dispatch]);
 
   const handleClearAll = useCallback(() => {
     dispatch(clearFilters());
@@ -440,12 +482,15 @@ export const useFilterSettingsLogic = (props: FilterSettingsScreenProps) => {
       const config = FIELD_CONFIG[field];
       if (!config) return;
 
+      // Use dynamic interests options if field is interests
+      const options = field === "interests" ? interestsOptions : config.options;
+
       SheetManager.show("filter-select-sheet", {
         payload: {
           fieldKey: field,
           title: config.title,
           variant: config.variant,
-          options: config.options,
+          options: options,
           initialValue: filters[field as keyof FilterState] as
             | string
             | string[]
@@ -460,7 +505,7 @@ export const useFilterSettingsLogic = (props: FilterSettingsScreenProps) => {
         },
       });
     },
-    [filters, updateFilter],
+    [filters, updateFilter, interestsOptions],
   );
 
   return {
@@ -471,5 +516,8 @@ export const useFilterSettingsLogic = (props: FilterSettingsScreenProps) => {
     handleClearFilter,
     getFilterDisplayValue,
     isFilterChanged,
+    handleResetCountry,
+    isLoadingInterests,
+    interestsOptions,
   };
 };

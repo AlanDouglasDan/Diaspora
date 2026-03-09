@@ -66,6 +66,12 @@ const LOOKING_FOR_OPTIONS = [
   { id: "nonbinary", label: "NON-BINARY" },
 ];
 
+const WHY_HERE_OPTIONS = [
+  { id: "marriage", label: "Marriage" },
+  { id: "fun", label: "Fun" },
+  { id: "casual", label: "Casual" },
+];
+
 export const useProfileInfoLogic = ({ navigation }: ProfileInfoScreenProps) => {
   const { width: screenWidth } = useWindowDimensions();
   const { user } = useUser();
@@ -307,7 +313,7 @@ export const useProfileInfoLogic = ({ navigation }: ProfileInfoScreenProps) => {
     gender: profileData?.user?.gender === "WOMAN" ? "Female" : "Male",
     location: userData2?.location?.name || "N/A",
     country: userData2?.location?.abrv || "N/A",
-    countryFlag: userData2?.location?.flag || "🏠",
+    countryFlag: userData2?.location?.flag || "",
   };
 
   const handleSelectPhoto = useCallback(
@@ -811,10 +817,21 @@ export const useProfileInfoLogic = ({ navigation }: ProfileInfoScreenProps) => {
               fieldId: "language",
               title: "Language",
               image: images.language,
-              variant: "single-select",
+              variant: "multi-select",
               options: LANGUAGE_OPTIONS,
-              initialValue: fieldValues.language || fieldValues.languages || "",
-              onSubmit: (value) => updateFieldValue("languages", value),
+              initialValue: Array.isArray(fieldValues.language)
+                ? fieldValues.language
+                : fieldValues.language
+                  ? [fieldValues.language]
+                  : [],
+              onSubmit: async (value) => {
+                const values = Array.isArray(value) ? value : [value];
+                setFieldValues((prev) => ({
+                  ...prev,
+                  language: values,
+                }));
+                await updatePreferenceField("language", values);
+              },
             },
           });
           break;
@@ -924,10 +941,21 @@ export const useProfileInfoLogic = ({ navigation }: ProfileInfoScreenProps) => {
               fieldId: "ethnicity",
               title: "What is your ethnicity?",
               image: images.language,
-              variant: "single-select",
+              variant: "multi-select",
               options: ETHNICITY_OPTIONS,
-              initialValue: fieldValues.ethnicity || "",
-              onSubmit: (value) => updateFieldValue("ethnicity", value),
+              initialValue: Array.isArray(fieldValues.ethnicity)
+                ? fieldValues.ethnicity
+                : fieldValues.ethnicity
+                  ? [fieldValues.ethnicity]
+                  : [],
+              onSubmit: async (value) => {
+                const values = Array.isArray(value) ? value : [value];
+                setFieldValues((prev) => ({
+                  ...prev,
+                  ethnicity: values,
+                }));
+                await updatePreferenceField("ethnicity", values);
+              },
             },
           });
           break;
@@ -1215,7 +1243,7 @@ export const useProfileInfoLogic = ({ navigation }: ProfileInfoScreenProps) => {
               title: "Why are you here?",
               image: images.language,
               variant: "single-select",
-              options: LOOKING_FOR_OPTIONS,
+              options: WHY_HERE_OPTIONS,
               initialValue: fieldValues.whyHere || "",
               onSubmit: (value) => updateFieldValue("whyHere", value),
             },

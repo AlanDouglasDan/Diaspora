@@ -1,5 +1,5 @@
 import React, { FC, useEffect } from "react";
-import { View, TouchableOpacity, Text } from "react-native";
+import { View, TouchableOpacity, Text, ActivityIndicator } from "react-native";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { MaterialIcons, Feather, Ionicons } from "@expo/vector-icons";
@@ -15,12 +15,12 @@ const AudioCall: FC<AudioCallScreenProps> = (props) => {
     recipientName,
     recipientAvatar,
     isMuted,
-    isVideoOff,
+    isSpeakerOn,
     isConnecting,
     callStatus,
-    toggleCameraFacing,
+    callDurationFormatted,
     toggleMute,
-    toggleVideo,
+    toggleSpeaker,
     handleEndCall,
   } = useAudioCallLogic(props);
 
@@ -49,7 +49,20 @@ const AudioCall: FC<AudioCallScreenProps> = (props) => {
 
       <View style={styles.overlay}>
         <View style={styles.callingContainer}>
-          <Text style={styles.callingText}>{callStatus}</Text>
+          <Text style={styles.recipientName}>{recipientName}</Text>
+          {isConnecting ? (
+            <>
+              <ActivityIndicator
+                size="small"
+                color={palette.WHITE}
+                style={styles.connectingIndicator}
+              />
+              <Text style={styles.callingText}>{callStatus}</Text>
+            </>
+          ) : (
+            <Text style={styles.callingText}>{callDurationFormatted}</Text>
+          )}
+
           <View style={styles.avatarContainer}>
             <Image
               source={recipientAvatar}
@@ -62,27 +75,28 @@ const AudioCall: FC<AudioCallScreenProps> = (props) => {
         {/* Control buttons */}
         <View style={styles.controlsContainer}>
           <TouchableOpacity
-            style={styles.controlButton}
-            onPress={toggleCameraFacing}
+            style={[
+              styles.controlButton,
+              isSpeakerOn && styles.controlButtonActive,
+            ]}
+            onPress={toggleSpeaker}
           >
-            <MaterialIcons
-              name="flip-camera-ios"
+            <Ionicons
+              name={isSpeakerOn ? "volume-high" : "volume-medium"}
               size={24}
               color={palette.WHITE}
             />
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.controlButton} onPress={toggleMute}>
+          <TouchableOpacity
+            style={[
+              styles.controlButton,
+              isMuted && styles.controlButtonActive,
+            ]}
+            onPress={toggleMute}
+          >
             <Feather
               name={isMuted ? "mic-off" : "mic"}
-              size={24}
-              color={palette.WHITE}
-            />
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.controlButton} onPress={toggleVideo}>
-            <Feather
-              name={isVideoOff ? "video-off" : "video"}
               size={24}
               color={palette.WHITE}
             />

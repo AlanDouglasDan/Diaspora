@@ -5,6 +5,7 @@ export const palette = {
   RED2: "#FF7578",
   RED3: "#E7243B",
   PINK: "#EC6B82",
+  PINK2: "#EC6B82",
   BLUE: "#155DFC",
   GREEN: "#538059",
   YELLOW: "#F8D84B",

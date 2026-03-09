@@ -15,6 +15,7 @@ export interface User {
     abrv: string;
     flag: string;
   };
+  subscription?: string | null;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -74,7 +75,7 @@ export interface UserListItem {
     updatedAt: string;
     interests: string[];
     lookingToDate: string[];
-    ethnicity: string;
+    ethnicity: string | string[];
     pronouns: string;
     zodiac: string;
     bio: string;
@@ -85,13 +86,14 @@ export interface UserListItem {
     pets: string;
     age: string;
     distance: string;
-    language: string;
+    language: string | string[];
     familyPlans: string;
     gender: string;
     height: string;
     hasBio: boolean;
     minNumberOfPhotos: string;
     connections: string;
+    whyHere?: string | null;
   };
   profile?: {
     id: string;

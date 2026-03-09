@@ -44,14 +44,19 @@ const calculateAge = (birthday: string): number => {
   return age;
 };
 
-const getLookingToDateBadge = (lookingToDate?: string[]): string => {
-  if (!lookingToDate || lookingToDate.length === 0) return "💕 Dating";
-  const first = lookingToDate[0]?.toLowerCase() || "";
-  if (first.includes("marriage") || first.includes("serious"))
-    return "💍 Marriage";
-  if (first.includes("casual")) return "💕 Casual";
-  if (first.includes("network")) return "🤝 Networking";
-  return `💕 ${lookingToDate[0]}`;
+const getWhyHereBadge = (whyHere?: string | null): string | null => {
+  if (!whyHere) return null;
+
+  switch (whyHere) {
+    case "Marriage":
+      return `💍 ${whyHere}`;
+    case "Fun":
+      return `🥳 ${whyHere}`;
+    case "Casual":
+      return `💕 ${whyHere}`;
+    default:
+      return whyHere;
+  }
 };
 
 const mapUserToProfile = (apiUser: UserListItem): UserProfile => {
@@ -95,14 +100,24 @@ const mapUserToProfile = (apiUser: UserListItem): UserProfile => {
     isShared: false,
   }));
 
-  const ethnicity: string[] = prefs?.ethnicity ? [prefs.ethnicity] : [];
+  const ethnicity: string[] = Array.isArray(prefs?.ethnicity)
+    ? prefs.ethnicity
+    : prefs?.ethnicity
+      ? [prefs.ethnicity]
+      : [];
 
   const nationalities: string[] = apiUser.country?.name
     ? [apiUser.country.name]
     : [];
 
-  const languages: { name: string; isShared: boolean }[] = prefs?.language
-    ? [{ name: prefs.language, isShared: false }]
+  const languageValues = Array.isArray(prefs?.language)
+    ? prefs.language
+    : prefs?.language
+      ? [prefs.language]
+      : [];
+
+  const languages: { name: string; isShared: boolean }[] = languageValues.length
+    ? languageValues.map((language) => ({ name: language, isShared: false }))
     : [{ name: "English", isShared: false }];
 
   const distanceDisplay =
@@ -119,7 +134,7 @@ const mapUserToProfile = (apiUser: UserListItem): UserProfile => {
     age: apiUser.birthday ? calculateAge(apiUser.birthday) : 25,
     flag: apiUser.country?.flag || "🌍",
     isVerified: apiUser.verified || false,
-    badge: getLookingToDateBadge(prefs?.lookingToDate),
+    badge: getWhyHereBadge(prefs?.whyHere),
     isOnline: apiUser.onlineStatus || false,
     bio: profile?.bio || "No bio yet",
     avatar: avatarUri ? { uri: avatarUri } : images.avatar2,
@@ -180,7 +195,7 @@ export const useMatchLogic = (props: MatchScreenProps) => {
   const buildGetUsersParams = useCallback(() => {
     const params: any = {
       userId: clerkUser?.id || "",
-      radius: appliedFilters?.distanceRange || [1, 1000],
+      radius: appliedFilters?.distanceRange || [0, 1000],
       age: appliedFilters?.ageRange || [18, 99],
     };
 

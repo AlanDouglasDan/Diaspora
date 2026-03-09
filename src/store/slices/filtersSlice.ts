@@ -26,13 +26,14 @@ export interface FilterState {
   opennessToLongDistance: string[];
   willingToRelocate: string[];
   loveLanguage: string[];
+  interests: string[];
 }
 
 export const INITIAL_FILTER_STATE: FilterState = {
   gender: [],
   activity: [],
   country: "all",
-  distanceRange: [1, 500],
+  distanceRange: [0, 5000],
   ageRange: [18, 99],
   hasBio: false,
   ethnicity: [],
@@ -54,6 +55,7 @@ export const INITIAL_FILTER_STATE: FilterState = {
   opennessToLongDistance: [],
   willingToRelocate: [],
   loveLanguage: [],
+  interests: [],
 };
 
 interface FiltersStoreState {

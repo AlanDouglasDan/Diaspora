@@ -59,8 +59,37 @@ export const useConversationLogic = (props: ConversationScreenProps) => {
       isCall: (msg as any)?.isCall === true,
       callType: (msg as any)?.callType as "voice" | "video" | undefined,
       callDuration: (msg as any)?.callDuration as number | undefined,
+      senderId: msg.user?.id,
     }),
     [clerkUser?.id],
+  );
+
+  // Filter out love letters once both users have exchanged messages
+  // Love letters should only be displayed when sent and recipient hasn't responded,
+  // but once both users have sent messages, love letters should be hidden
+  const filterLoveLetters = useCallback(
+    (allMessages: ChatMessage[]): ChatMessage[] => {
+      if (!clerkUser?.id || allMessages.length === 0) return allMessages;
+
+      // Check if both users have sent at least one non-love-letter message
+      const myMessages = allMessages.filter(
+        (m) => m.senderId === clerkUser.id && !m.isLoveLetter,
+      );
+      const theirMessages = allMessages.filter(
+        (m) => m.senderId === recipientId && !m.isLoveLetter,
+      );
+
+      const bothHaveExchangedMessages =
+        myMessages.length > 0 && theirMessages.length > 0;
+
+      if (bothHaveExchangedMessages) {
+        // Remove all love letter messages
+        return allMessages.filter((m) => !m.isLoveLetter);
+      }
+
+      return allMessages;
+    },
+    [clerkUser?.id, recipientId],
   );
 
   // Initialize channel and load messages
@@ -266,12 +295,15 @@ export const useConversationLogic = (props: ConversationScreenProps) => {
     }
   }, [inputText, isSending]);
 
+  // Apply love letter filtering to messages
+  const filteredMessages = filterLoveLetters(messages);
+
   return {
     recipientName,
     recipientAvatar,
     myAvatar,
     matchDate: matchDate || "",
-    messages,
+    messages: filteredMessages,
     inputText,
     setInputText,
     handleGoBack,

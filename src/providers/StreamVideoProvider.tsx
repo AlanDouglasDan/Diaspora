@@ -5,24 +5,22 @@ import React, {
   useState,
   useCallback,
   useMemo,
+  useRef,
   ReactNode,
 } from "react";
-import { StyleSheet } from "react-native";
 import {
   StreamVideo,
   StreamVideoClient,
   User as StreamUser,
   Call,
   useCalls,
-  StreamCall,
-  RingingCallContent,
 } from "@stream-io/video-react-native-sdk";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useUser } from "@clerk/clerk-expo";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useGetStreamToken, useGetProfile } from "@/src/api";
 import { useAppSelector } from "@/src/store";
 import { requestNotificationPermission } from "@/src/core/requestNotificationPermission";
+import { navigate } from "@/src/navigation/utils";
 
 interface StreamVideoContextType {
   client: StreamVideoClient | null;
@@ -294,32 +292,62 @@ export const StreamVideoProvider: React.FC<StreamVideoProviderProps> = ({
   );
 };
 
-// RingingCalls component to watch for incoming/outgoing calls
-// This should be rendered at the root level of the app
+// RingingCalls component to watch for incoming calls only.
+// Outgoing calls are handled by the custom AudioCall/VideoCall screens.
+// For incoming calls, we navigate to the custom screen instead of using Stream's default UI.
 export const RingingCalls: React.FC = () => {
-  // Collect all ringing calls managed by the SDK
+  const { user: clerkUser } = useUser();
   const calls = useCalls().filter((c) => c.ringing);
+  const handledCallIds = useRef<Set<string>>(new Set());
 
-  // For simplicity, we only take the first one but
-  // there could be multiple calls ringing at the same time
-  const ringingCall = calls[0];
+  useEffect(() => {
+    if (!clerkUser?.id || calls.length === 0) return;
 
-  if (!ringingCall) return null;
+    const ringingCall = calls[0];
+    const callId = ringingCall.id;
 
-  return (
-    <StreamCall call={ringingCall}>
-      <SafeAreaView style={ringingStyles.container}>
-        <RingingCallContent />
-      </SafeAreaView>
-    </StreamCall>
-  );
+    // Skip if we already handled this call
+    if (handledCallIds.current.has(callId)) return;
+
+    // Check if this is an incoming call (created by someone else)
+    const createdByUserId = ringingCall.state.createdBy?.id;
+    const isIncomingCall = createdByUserId !== clerkUser.id;
+
+    if (!isIncomingCall) {
+      // Outgoing call — already handled by custom AudioCall/VideoCall screen.
+      // Mark as handled so we don't re-process.
+      handledCallIds.current.add(callId);
+      return;
+    }
+
+    // Incoming call — navigate to IncomingCall screen for accept/decline
+    handledCallIds.current.add(callId);
+
+    const isVideoCall = ringingCall.state.custom?.isVideoCall === true;
+    const caller = ringingCall.state.createdBy;
+    const callerName = caller?.name || "Unknown";
+    const callerImage = caller?.image || null;
+
+    navigate("IncomingCall", {
+      recipientId: caller?.id || "",
+      recipientName: callerName,
+      recipientAvatar: callerImage ? { uri: callerImage } : null,
+      isVideoCall,
+    });
+  }, [calls, clerkUser?.id]);
+
+  // Clean up handled call IDs when calls are no longer ringing
+  useEffect(() => {
+    const activeCallIds = new Set(calls.map((c) => c.id));
+    handledCallIds.current.forEach((id) => {
+      if (!activeCallIds.has(id)) {
+        handledCallIds.current.delete(id);
+      }
+    });
+  }, [calls]);
+
+  // No UI rendered — custom screens handle all call UI
+  return null;
 };
-
-const ringingStyles = StyleSheet.create({
-  container: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "#000",
-  },
-});
 
 export default StreamVideoProvider;

@@ -76,7 +76,7 @@ export const useSettingsLogic = ({ navigation }: SettingsScreenProps) => {
             if (!user?.id) return;
 
             setIsDeletingAccount(true);
-            // try {
+            try {
               // Delete user from backend
               await deleteUser(user.id);
 
@@ -107,18 +107,18 @@ export const useSettingsLogic = ({ navigation }: SettingsScreenProps) => {
               });
 
               setIsDeletingAccount(false);
-            // } catch (error: any) {
-            //   console.error("Delete account error:", error);
-            //   Toast.show({
-            //     type: "error",
-            //     text1: "Delete Failed",
-            //     text2:
-            //       error?.message ||
-            //       "Could not delete account. Please try again.",
-            //   });
-            // } finally {
-            //   setIsDeletingAccount(false);
-            // }
+            } catch (error: any) {
+              console.error("Delete account error:", error);
+              Toast.show({
+                type: "error",
+                text1: "Delete Failed",
+                text2:
+                  error?.message ||
+                  "Could not delete account. Please try again.",
+              });
+            } finally {
+              setIsDeletingAccount(false);
+            }
           },
         },
       ],

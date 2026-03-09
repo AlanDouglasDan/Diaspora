@@ -13,6 +13,7 @@ import { StripeProvider } from "@stripe/stripe-react-native";
 import { LayoutContainer } from "components/layoutContainer";
 import { TabNav } from "components/tabNav";
 import { Button } from "components/button";
+import { SuccessNotification } from "components/successNotification";
 import { images } from "core/images";
 import { palette } from "core/styles";
 
@@ -32,6 +33,8 @@ const Upgrade: FC<UpgradeScreenProps> = (props) => {
     handleClose,
     handleTabChange,
     handleUpgrade,
+    successInfo,
+    hideSuccess,
   } = useUpgradeLogic(props);
 
   const renderFeatureIcon = (iconType: string) => {
@@ -101,71 +104,80 @@ const Upgrade: FC<UpgradeScreenProps> = (props) => {
   );
 
   return (
-    <LayoutContainer
-      highlighted
-      edges={["top", "bottom"]}
-      style={styles.container}
-    >
-      {/* Header */}
-      <View style={styles.headerSection}>
-        <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
-          <Ionicons name="close" size={28} color={palette.WHITE} />
-        </TouchableOpacity>
+    <View style={{ flex: 1 }}>
+      <SuccessNotification
+        visible={successInfo.visible}
+        title={successInfo.title}
+        message={successInfo.message}
+        onHide={hideSuccess}
+      />
 
-        <Text style={styles.title}>Need More cruise ?</Text>
+      <LayoutContainer
+        highlighted
+        edges={["top", "bottom"]}
+        style={styles.container}
+      >
+        {/* Header */}
+        <View style={styles.headerSection}>
+          <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
+            <Ionicons name="close" size={28} color={palette.WHITE} />
+          </TouchableOpacity>
 
-        <Text style={styles.subtitle}>
-          Don't keep your matches waiting. Join Diaspora{"\n"}premium to start a
-          conversation.
-        </Text>
+          <Text style={styles.title}>Need More cruise ?</Text>
 
-        <View style={styles.logoContainer}>
-          <Image
-            source={images.firstClassLogo}
-            style={styles.logo}
-            contentFit="contain"
+          <Text style={styles.subtitle}>
+            Don't keep your matches waiting. Join Diaspora{"\n"}premium to start
+            a conversation.
+          </Text>
+
+          <View style={styles.logoContainer}>
+            <Image
+              source={images.firstClassLogo}
+              style={styles.logo}
+              contentFit="contain"
+            />
+          </View>
+
+          <TabNav
+            tabs={tabs}
+            value={selectedTab}
+            onChange={handleTabChange}
+            style={styles.tabContainer}
+            indicatorStyle={{ backgroundColor: palette.WHITE }}
+            labelStyle={{ color: palette.WHITE }}
+            activeLabelStyle={{ color: palette.WHITE }}
           />
         </View>
 
-        <TabNav
-          tabs={tabs}
-          value={selectedTab}
-          onChange={handleTabChange}
-          style={styles.tabContainer}
-          indicatorStyle={{ backgroundColor: palette.WHITE }}
-          labelStyle={{ color: palette.WHITE }}
-          activeLabelStyle={{ color: palette.WHITE }}
-        />
-      </View>
+        {/* Content Card */}
+        <View style={styles.contentCard}>
+          <Text style={styles.planDescription}>
+            See all that's included in Diaspora{"\n"}
+            {currentPlan.title} plan
+          </Text>
 
-      {/* Content Card */}
-      <View style={styles.contentCard}>
-        <Text style={styles.planDescription}>
-          See all that's included in Diaspora{"\n"}
-          {currentPlan.title} plan
-        </Text>
-
-        <ScrollView
-          style={styles.featuresList}
-          showsVerticalScrollIndicator={false}
-        >
-          {currentPlan.features.map(renderFeature)}
-        </ScrollView>
-      </View>
-
-      <Button
-        title={isLoading ? "Processing..." : currentPlan.buttonText}
-        onPress={handleUpgrade}
-        style={styles.upgradeButton}
-        variant="white"
-        disabled={isLoading}
-      />
-      {isLoading && (
-        <View style={styles.loadingOverlay}>
-          <ActivityIndicator size="large" color={palette.PINK} />
+          <ScrollView
+            style={styles.featuresList}
+            showsVerticalScrollIndicator={false}
+          >
+            {currentPlan.features.map(renderFeature)}
+          </ScrollView>
         </View>
-      )}
-    </LayoutContainer>
+
+        <Button
+          title={isLoading ? "Processing..." : currentPlan.buttonText}
+          onPress={handleUpgrade}
+          style={styles.upgradeButton}
+          variant="white"
+          disabled={isLoading}
+        />
+        {isLoading && (
+          <View style={styles.loadingOverlay}>
+            <ActivityIndicator size="large" color={palette.PINK} />
+          </View>
+        )}
+      </LayoutContainer>
+    </View>
   );
 };
 
