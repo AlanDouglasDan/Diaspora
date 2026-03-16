@@ -3,12 +3,23 @@ import { StyleSheet } from "react-native";
 import { palette, typography } from "core/styles";
 
 export const styles = StyleSheet.create({
-  container: {
-    paddingHorizontal: 20,
-    // maxHeight: "80%",
+  sheetContainer: {
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
+    maxHeight: "80%",
   },
-  scrollContent: {
-    paddingBottom: 40,
+  container: {
+    maxHeight: "100%",
+  },
+  listContent: {
+    paddingHorizontal: 20,
+    paddingTop: 8,
+  },
+  footerContainer: {
+    paddingHorizontal: 20,
+    paddingBottom: 32,
+    paddingTop: 8,
+    backgroundColor: palette.WHITE,
   },
   header: {
     alignItems: "center",

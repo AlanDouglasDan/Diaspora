@@ -60,19 +60,20 @@ export function useGetStreamToken() {
   const getStreamToken = useCallback(
     async (
       userId: string,
-      forceRefresh = false
+      forceRefresh = false,
     ): Promise<StreamTokenData | null> => {
       setIsLoading(true);
       setError(null);
 
       try {
         // Check cache first unless force refresh
-        // if (!forceRefresh) {
-        //   const cached = await getCachedStreamToken();
-        //   if (cached) {
-        //     return cached;
-        //   }
-        // }
+        if (!forceRefresh) {
+          const cached = await getCachedStreamToken();
+          if (cached) {
+            setIsLoading(false);
+            return cached;
+          }
+        }
 
         // Fetch new token from backend
         const response: StreamTokenResponse = await fetchAPI("/stream/token", {
@@ -106,7 +107,7 @@ export function useGetStreamToken() {
         setIsLoading(false);
       }
     },
-    []
+    [],
   );
 
   return { getStreamToken, isLoading, error };

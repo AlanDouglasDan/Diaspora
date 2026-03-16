@@ -1,4 +1,4 @@
-import React, { FC, useCallback } from "react";
+import React, { FC, useCallback, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -8,6 +8,9 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  Animated,
+  NativeSyntheticEvent,
+  NativeScrollEvent,
 } from "react-native";
 import { Image } from "expo-image";
 import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
@@ -29,7 +32,6 @@ const Match: FC<MatchScreenProps> = (props) => {
     currentUser,
     cardIndex,
     isLoading,
-    isActionLoading,
     isSwipingEnabled,
     swipeableCardRef,
     handleOpenImages,
@@ -92,11 +94,6 @@ const Match: FC<MatchScreenProps> = (props) => {
                   )}
                 </View>
               </View>
-
-              <View style={styles.scrollIndicator}>
-                <View style={[styles.scrollDot, styles.scrollDotActive]} />
-                <View style={styles.scrollDot} />
-              </View>
             </View>
 
             <View style={styles.bottomSection} pointerEvents="box-none">
@@ -120,52 +117,30 @@ const Match: FC<MatchScreenProps> = (props) => {
 
               <View style={styles.actionButtons}>
                 <TouchableOpacity
-                  style={[
-                    styles.actionButton,
-                    isActionLoading && { opacity: 0.6 },
-                  ]}
+                  style={[styles.actionButton]}
                   onPress={handleDislike}
                   activeOpacity={0.8}
-                  disabled={isActionLoading}
                 >
-                  {isActionLoading ? (
-                    <ActivityIndicator size="small" color={palette.RED} />
-                  ) : (
-                    <FontAwesome name="close" size={24} color={palette.RED} />
-                  )}
+                  <FontAwesome name="close" size={24} color={palette.RED} />
                 </TouchableOpacity>
 
                 <TouchableOpacity
                   style={[
                     styles.actionButton,
                     { backgroundColor: palette.RED },
-                    isActionLoading && { opacity: 0.6 },
                   ]}
                   onPress={handleSuperLike}
                   activeOpacity={0.8}
-                  disabled={isActionLoading}
                 >
-                  {isActionLoading ? (
-                    <ActivityIndicator size="small" color={palette.WHITE} />
-                  ) : (
-                    <FontAwesome name="star" size={24} color={palette.WHITE} />
-                  )}
+                  <FontAwesome name="star" size={24} color={palette.WHITE} />
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  style={[
-                    styles.actionButton,
-                    isActionLoading && { opacity: 0.6 },
-                  ]}
+                  style={[styles.actionButton]}
                   onPress={handleLike}
                   activeOpacity={0.8}
-                  disabled={isActionLoading}
                 >
-                  {isActionLoading ? (
-                    <ActivityIndicator size="small" color={palette.RED} />
-                  ) : (
-                    <FontAwesome name="heart" size={22} color={palette.RED} />
-                  )}
+                  <FontAwesome name="heart" size={22} color={palette.RED} />
                 </TouchableOpacity>
               </View>
             </View>
@@ -173,13 +148,29 @@ const Match: FC<MatchScreenProps> = (props) => {
         </View>
       );
     },
-    [
-      handleOpenImages,
-      handleDislike,
-      handleSuperLike,
-      handleLike,
-      isActionLoading,
-    ],
+    [handleOpenImages, handleDislike, handleSuperLike, handleLike],
+  );
+
+  const scrollY = useRef(new Animated.Value(0)).current;
+  const [scrollContentHeight, setScrollContentHeight] = useState(0);
+  const [scrollViewHeight, setScrollViewHeight] = useState(0);
+
+  const INDICATOR_TRACK_HEIGHT = 150;
+  const INDICATOR_THUMB_RATIO = 0.3;
+  const INDICATOR_THUMB_HEIGHT = INDICATOR_TRACK_HEIGHT * INDICATOR_THUMB_RATIO;
+  const maxScrollOffset = Math.max(scrollContentHeight - scrollViewHeight, 1);
+
+  const indicatorTranslateY = scrollY.interpolate({
+    inputRange: [0, maxScrollOffset],
+    outputRange: [0, INDICATOR_TRACK_HEIGHT - INDICATOR_THUMB_HEIGHT],
+    extrapolate: "clamp",
+  });
+
+  const onScrollEvent = useCallback(
+    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+      handleScroll(event);
+    },
+    [handleScroll],
   );
 
   if (isLoading) {
@@ -234,12 +225,30 @@ const Match: FC<MatchScreenProps> = (props) => {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
       keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
     >
+      {/* Fixed scroll indicator */}
+      <View style={styles.scrollIndicatorFixed}>
+        <View style={styles.scrollIndicator}>
+          <Animated.View
+            style={[
+              styles.scrollDot,
+              styles.scrollDotActive,
+              { transform: [{ translateY: indicatorTranslateY }] },
+            ]}
+          />
+        </View>
+      </View>
+
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
-        onScroll={handleScroll}
+        onScroll={(event) => {
+          scrollY.setValue(event.nativeEvent.contentOffset.y);
+          onScrollEvent(event);
+        }}
         scrollEventThrottle={16}
         keyboardShouldPersistTaps="handled"
+        onContentSizeChange={(_, h) => setScrollContentHeight(h)}
+        onLayout={(e) => setScrollViewHeight(e.nativeEvent.layout.height)}
       >
         {/* New SwipeableCard implementation */}
         <View style={styles.swiperContainer}>

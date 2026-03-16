@@ -66,6 +66,7 @@ export const StreamVideoProvider: React.FC<StreamVideoProviderProps> = ({
   const [isConnecting, setIsConnecting] = useState(false);
   const [connectionError, setConnectionError] = useState<string | null>(null);
   const [activeCall, setActiveCall] = useState<Call | null>(null);
+  const hasConnectedRef = useRef(false);
 
   // Initialize and connect to Stream Video
   useEffect(() => {
@@ -79,10 +80,16 @@ export const StreamVideoProvider: React.FC<StreamVideoProviderProps> = ({
       return;
     }
 
+    // Prevent duplicate connections
+    if (hasConnectedRef.current || isConnecting || isConnected) {
+      return;
+    }
+
     let videoClient: StreamVideoClient | null = null;
     let isMounted = true;
 
     const connectUser = async () => {
+      hasConnectedRef.current = true;
       setIsConnecting(true);
       setConnectionError(null);
 

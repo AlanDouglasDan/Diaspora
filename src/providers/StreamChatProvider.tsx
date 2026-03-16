@@ -5,6 +5,7 @@ import React, {
   useState,
   useCallback,
   useMemo,
+  useRef,
   ReactNode,
 } from "react";
 import { StreamChat, Channel as ChannelType } from "stream-chat";
@@ -62,6 +63,7 @@ export const StreamChatProvider: React.FC<StreamChatProviderProps> = ({
   const [isConnected, setIsConnected] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
   const [connectionError, setConnectionError] = useState<string | null>(null);
+  const hasConnectedRef = useRef(false);
 
   // Initialize and connect to Stream Chat
   useEffect(() => {
@@ -75,10 +77,16 @@ export const StreamChatProvider: React.FC<StreamChatProviderProps> = ({
       return;
     }
 
+    // Prevent duplicate connections
+    if (hasConnectedRef.current || isConnecting || isConnected) {
+      return;
+    }
+
     let chatClient: StreamChat | null = null;
     let isMounted = true;
 
     const connectUser = async () => {
+      hasConnectedRef.current = true;
       setIsConnecting(true);
       setConnectionError(null);
 

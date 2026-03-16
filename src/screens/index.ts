@@ -27,6 +27,7 @@ export * from "./audioCall";
 export * from "./incomingCall";
 export * from "./videoCall";
 export * from "./upgrade";
+export * from "./benefits";
 export * from "./upgradeSuccess";
 export * from "./matchResult";
 export * from "./filterSettings";

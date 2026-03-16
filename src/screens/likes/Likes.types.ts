@@ -13,4 +13,5 @@ export type LikeItem = {
   userId?: string;
   userName?: string;
   superLike?: boolean;
+  age?: number;
 };

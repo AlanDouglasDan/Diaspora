@@ -23,14 +23,12 @@ export function useAddPhoneLogic({ navigation }: AddPhoneScreenProps) {
     setCallingCode(calling);
   };
 
-  console.log("User:", user);
-
   const handleSubmit = async () => {
     if (!user) return;
 
     setIsLoading(true);
     try {
-      const fullPhoneNumber = `0${phoneNumber}`;
+      const fullPhoneNumber = `+${callingCode}${phoneNumber}`;
 
       console.log(user.id, fullPhoneNumber);
 

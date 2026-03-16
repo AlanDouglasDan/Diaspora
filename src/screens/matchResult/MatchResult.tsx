@@ -5,6 +5,7 @@ import { Ionicons } from "@expo/vector-icons";
 
 import { images } from "core/images";
 import { palette } from "core/styles";
+import { SuccessNotification } from "@/src/components/successNotification";
 
 import type { MatchResultScreenProps } from "./MatchResult.types";
 import { styles } from "./MatchResult.styles";
@@ -24,12 +25,25 @@ const MatchResult: FC<MatchResultScreenProps> = (props) => {
     handleClose,
     handleSend,
     handleSuggestionPress,
+    userName,
+    userImage,
+    isSending,
+    showSuccessNotification,
+    navigateToMessages,
   } = useMatchResultLogic(props);
 
   return (
     <View style={styles.container}>
+      <SuccessNotification
+        visible={showSuccessNotification}
+        title="Message Sent!"
+        message={`Your message to ${userName} was sent successfully`}
+        duration={2000}
+        onHide={navigateToMessages}
+      />
+
       <Image
-        source={images.avatar3}
+        source={userImage ? { uri: userImage } : images.avatar3}
         style={styles.backgroundImage}
         contentFit="cover"
       />
@@ -48,7 +62,7 @@ const MatchResult: FC<MatchResultScreenProps> = (props) => {
             />
           </View>
 
-          <Text style={styles.subtitle}>Rebecca likes you back!</Text>
+          <Text style={styles.subtitle}>{userName} likes you back!</Text>
 
           <View style={styles.inputContainer}>
             <TextInput
@@ -56,10 +70,15 @@ const MatchResult: FC<MatchResultScreenProps> = (props) => {
               placeholder="Say something nice"
               value={message}
               onChangeText={setMessage}
+              editable={!isSending}
             />
 
-            <TouchableOpacity style={styles.sendButton} onPress={handleSend}>
-              <Text style={styles.sendText}>Send</Text>
+            <TouchableOpacity
+              style={[styles.sendButton, isSending && { opacity: 0.6 }]}
+              onPress={handleSend}
+              disabled={isSending}
+            >
+              <Text style={styles.sendText}>{isSending ? "..." : "Send"}</Text>
             </TouchableOpacity>
           </View>
 
@@ -70,6 +89,7 @@ const MatchResult: FC<MatchResultScreenProps> = (props) => {
                 style={styles.suggestionChip}
                 onPress={() => handleSuggestionPress(suggestion.value)}
                 activeOpacity={0.8}
+                disabled={isSending}
               >
                 <Text style={styles.suggestionText}>{suggestion.value}</Text>
               </TouchableOpacity>

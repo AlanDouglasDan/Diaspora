@@ -192,7 +192,7 @@ export const useUpgradeLogic = (props: UpgradeScreenProps) => {
             }
           }
           navigation.navigate("UpgradeSuccess");
-        }, 700);
+        }, 100);
       }
     } catch (error: any) {
       console.error("Payment error:", error);
@@ -273,7 +273,7 @@ export const useUpgradeLogic = (props: UpgradeScreenProps) => {
             }
           }
           navigation.navigate("UpgradeSuccess");
-        }, 700);
+        }, 100);
         return;
       }
 

@@ -81,6 +81,7 @@ export const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     flex: 1,
+    marginRight: 12,
   },
   fieldIcon: {
     width: 24,
@@ -101,6 +102,9 @@ export const styles = StyleSheet.create({
     ...typography.text12,
     color: palette.GREY2,
     textTransform: "capitalize",
+    flexShrink: 1,
+    maxWidth: "45%",
+    textAlign: "right",
   },
   fieldChevron: {
     marginLeft: 8,

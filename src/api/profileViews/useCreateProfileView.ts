@@ -30,8 +30,18 @@ export function useCreateProfileView() {
         setIsLoading(false);
       }
     },
-    []
+    [],
   );
 
-  return { createProfileView, isLoading, error };
+  const createProfileViewSilent = useCallback(
+    (params: CreateProfileViewParams) => {
+      fetchAPI("/profile-views", {
+        method: "POST",
+        body: JSON.stringify(params),
+      }).catch(() => {});
+    },
+    [],
+  );
+
+  return { createProfileView, createProfileViewSilent, isLoading, error };
 }

@@ -398,12 +398,10 @@ export const useFilterSettingsLogic = (props: FilterSettingsScreenProps) => {
     }
   }, [preferencesData, filters.gender, dispatch]);
 
-  // Fetch interests if not in Redux
+  // Fetch all interests for the options list
   useEffect(() => {
-    if (!interestsFromRedux || interestsFromRedux.length === 0) {
-      getInterests();
-    }
-  }, [interestsFromRedux, getInterests]);
+    getInterests();
+  }, [getInterests]);
 
   // Transform interests data to options
   useEffect(() => {
@@ -415,6 +413,22 @@ export const useFilterSettingsLogic = (props: FilterSettingsScreenProps) => {
       setInterestsOptions(options);
     }
   }, [interestsData]);
+
+  // Prefill interests filter from user's saved interests in Redux
+  useEffect(() => {
+    if (
+      interestsFromRedux &&
+      interestsFromRedux.length > 0 &&
+      (!filters.interests || filters.interests.length === 0)
+    ) {
+      dispatch(
+        updateFilterAction({
+          key: "interests",
+          value: interestsFromRedux,
+        }),
+      );
+    }
+  }, [interestsFromRedux]);
 
   const handleResetCountry = useCallback(() => {
     dispatch(updateFilterAction({ key: "country", value: "all" }));

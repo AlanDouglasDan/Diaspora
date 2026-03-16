@@ -93,7 +93,7 @@ const Likes: FC = () => {
               <View style={styles.cardTopLeft}>
                 {item.userName && (
                   <Text style={styles.cardUserName} numberOfLines={1}>
-                    {item.userName}
+                    {item.userName}, {item.age}
                   </Text>
                 )}
                 {item.isRecentlyActive && (

@@ -5,5 +5,6 @@ export interface ProfileView {
     id: string;
     displayName: string;
     image: string;
+    age: number
   };
 }

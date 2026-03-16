@@ -58,6 +58,7 @@ export interface UserListItem {
   fcmToken: string | null;
   streamToken: string;
   onlineStatus: boolean;
+  hasLikedLoggedInUser: boolean;
   images: UserListImage[];
   distanceKm: number;
   travelTimeMinutes?: number;

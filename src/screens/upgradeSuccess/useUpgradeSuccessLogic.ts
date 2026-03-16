@@ -14,8 +14,8 @@ export const useUpgradeSuccessLogic = (props: UpgradeSuccessScreenProps) => {
   }, [navigation]);
 
   const handleSeeAllBenefits = useCallback(() => {
-    // TODO: Navigate to benefits screen or show modal
-  }, []);
+    navigation.navigate("Benefits");
+  }, [navigation]);
 
   return {
     handleClose,

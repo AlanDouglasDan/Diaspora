@@ -25,4 +25,5 @@ export interface UserProfile {
   languages: { name: string; isShared: boolean }[];
   interests: { name: string; isShared: boolean }[];
   location: string;
+  hasLikedLoggedInUser: boolean;
 }

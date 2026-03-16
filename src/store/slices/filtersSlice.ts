@@ -1,4 +1,7 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+const FILTERS_STORAGE_KEY = "@diaspora_applied_filters";
 
 export interface FilterState {
   gender: string[];
@@ -33,7 +36,7 @@ export const INITIAL_FILTER_STATE: FilterState = {
   gender: [],
   activity: [],
   country: "all",
-  distanceRange: [0, 5000],
+  distanceRange: [0, 100],
   ageRange: [18, 99],
   hasBio: false,
   ethnicity: [],
@@ -61,11 +64,31 @@ export const INITIAL_FILTER_STATE: FilterState = {
 interface FiltersStoreState {
   filters: FilterState;
   appliedFilters: FilterState;
+  isHydrated: boolean;
 }
 
 const initialState: FiltersStoreState = {
   filters: INITIAL_FILTER_STATE,
   appliedFilters: INITIAL_FILTER_STATE,
+  isHydrated: false,
+};
+
+export const hydrateFilters = createAsyncThunk("filters/hydrate", async () => {
+  try {
+    const stored = await AsyncStorage.getItem(FILTERS_STORAGE_KEY);
+    if (stored) {
+      return JSON.parse(stored) as FilterState;
+    }
+  } catch (error) {
+    console.error("Error loading filters from storage:", error);
+  }
+  return null;
+});
+
+const persistFilters = (filters: FilterState) => {
+  AsyncStorage.setItem(FILTERS_STORAGE_KEY, JSON.stringify(filters)).catch(
+    (error) => console.error("Error saving filters to storage:", error),
+  );
 };
 
 const filtersSlice = createSlice({
@@ -83,11 +106,25 @@ const filtersSlice = createSlice({
     },
     applyFilters: (state) => {
       state.appliedFilters = state.filters;
+      persistFilters(state.filters);
     },
     clearFilters: (state) => {
       state.filters = INITIAL_FILTER_STATE;
       state.appliedFilters = INITIAL_FILTER_STATE;
+      AsyncStorage.removeItem(FILTERS_STORAGE_KEY).catch(() => {});
     },
+  },
+  extraReducers: (builder) => {
+    builder.addCase(hydrateFilters.fulfilled, (state, action) => {
+      if (action.payload) {
+        state.filters = { ...INITIAL_FILTER_STATE, ...action.payload };
+        state.appliedFilters = { ...INITIAL_FILTER_STATE, ...action.payload };
+      }
+      state.isHydrated = true;
+    });
+    builder.addCase(hydrateFilters.rejected, (state) => {
+      state.isHydrated = true;
+    });
   },
 });
 

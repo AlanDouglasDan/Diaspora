@@ -19,21 +19,21 @@ export function useWelcomeLogic({ navigation }: WelcomeScreenProps) {
 
   // Log out any existing session when entering welcome screen
   // Only run once on mount, not when session changes
-  useEffect(() => {
-    const logoutExistingSession = async () => {
-      if (session) {
-        try {
-          await signOut();
-          console.log("Logged out existing session on Welcome screen mount");
-        } catch (error) {
-          console.log("Error signing out existing session:", error);
-        }
-      }
-    };
+  // useEffect(() => {
+  //   const logoutExistingSession = async () => {
+  //     if (session) {
+  //       try {
+  //         await signOut();
+  //         console.log("Logged out existing session on Welcome screen mount");
+  //       } catch (error) {
+  //         console.log("Error signing out existing session:", error);
+  //       }
+  //     }
+  //   };
 
-    logoutExistingSession();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Only run on mount, not when session changes
+  //   logoutExistingSession();
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, []); // Only run on mount, not when session changes
 
   const { startOAuthFlow: startGoogleOAuthFlow } = useOAuth({
     strategy: "oauth_google",
@@ -75,15 +75,25 @@ export function useWelcomeLogic({ navigation }: WelcomeScreenProps) {
         await startGoogleOAuthFlow();
 
       if (createdSessionId) {
+        // Check if user already exists (signIn has data means existing user)
+        // signUp.createdUserId only exists for brand new users
+        const isNewUser = signUp?.createdUserId && !signIn?.userData?.firstName;
+
+        if (authState === "sign-in" && isNewUser) {
+          // User doesn't have an account, show error
+          await signOut();
+          Toast.show({
+            type: "error",
+            text1: "Account Not Found",
+            text2: "No account exists with this email. Please sign up first.",
+          });
+          return;
+        }
+
         await setActive!({ session: createdSessionId });
 
         if (authState === "sign-up") {
-          // Check if user already exists (signIn has data means existing user)
-          // signUp.createdUserId only exists for brand new users
-          const isExistingUser =
-            signIn?.userData?.firstName || !signUp?.createdUserId;
-
-          if (isExistingUser) {
+          if (!isNewUser) {
             // User already has an account, sign them in directly
             navigation.navigate("Loading");
           } else {
@@ -117,15 +127,25 @@ export function useWelcomeLogic({ navigation }: WelcomeScreenProps) {
         await startAppleOAuthFlow();
 
       if (createdSessionId) {
+        // Check if user already exists (signIn has data means existing user)
+        // signUp.createdUserId only exists for brand new users
+        const isNewUser = signUp?.createdUserId && !signIn?.userData?.firstName;
+
+        if (authState === "sign-in" && isNewUser) {
+          // User doesn't have an account, show error
+          await signOut();
+          Toast.show({
+            type: "error",
+            text1: "Account Not Found",
+            text2: "No account exists with this email. Please sign up first.",
+          });
+          return;
+        }
+
         await setActive!({ session: createdSessionId });
 
         if (authState === "sign-up") {
-          // Check if user already exists (signIn has data means existing user)
-          // signUp.createdUserId only exists for brand new users
-          const isExistingUser =
-            signIn?.userData?.firstName || !signUp?.createdUserId;
-
-          if (isExistingUser) {
+          if (!isNewUser) {
             // User already has an account, sign them in directly
             navigation.navigate("Loading");
           } else {

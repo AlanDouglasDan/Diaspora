@@ -9,14 +9,14 @@ import type { TabItem } from "components/tabNav/TabNav.types";
 import type { LikesTab, LikeItem } from "./Likes.types";
 import type { RootStackParamList } from "../../navigation";
 import {
-  useGetReceivedLikes,
+  useGetMutualLikes,
   useGetProfileViews,
   useLikeUser,
   useDislikeUser,
   useGetLikes,
 } from "@/src/api";
 import { useAppSelector } from "@/src/store";
-import type { Like } from "@/src/api/likes/types";
+import type { Like, MutualLike } from "@/src/api/likes/types";
 import type { ProfileView } from "@/src/api/profileViews/types";
 
 const TABS: TabItem[] = [
@@ -41,6 +41,18 @@ const mapLikeToItem = (like: Like): LikeItem => ({
   userId: like.user?.id || like.likedId,
   userName: like.user?.name,
   superLike: like.superLike,
+  age: like.user?.age,
+});
+
+// Map API MutualLike to LikeItem
+const mapMutualLikeToItem = (mutualLike: MutualLike): LikeItem => ({
+  id: mutualLike.userId + mutualLike.likedAt,
+  image: mutualLike.images?.[0] || "",
+  isRecentlyActive: isRecentLike(mutualLike.likedAt),
+  userId: mutualLike.user?.id || mutualLike.userId,
+  userName: mutualLike.user?.name,
+  superLike: mutualLike.superLike,
+  age: mutualLike.user?.age,
 });
 
 // Map API ProfileView to LikeItem
@@ -50,6 +62,7 @@ const mapProfileViewToItem = (view: ProfileView): LikeItem => ({
   isRecentlyActive: view.isNew,
   userId: view.viewer.id,
   userName: view.viewer.displayName,
+  age: view.viewer.age,
 });
 
 export function useLikesLogic() {
@@ -79,10 +92,10 @@ export function useLikesLogic() {
   }>({ visible: false, title: "", message: "" });
 
   const {
-    data: receivedLikesData,
-    getReceivedLikes,
-    isLoading: receivedLikesLoading,
-  } = useGetReceivedLikes();
+    data: mutualLikesData,
+    getMutualLikes,
+    isLoading: mutualLikesLoading,
+  } = useGetMutualLikes();
   const { data: likesData, getLikes, isLoading: likesLoading } = useGetLikes();
   const {
     data: profileViewsData,
@@ -99,7 +112,7 @@ export function useLikesLogic() {
 
       try {
         await Promise.all([
-          getReceivedLikes(user.id),
+          getMutualLikes(user.id),
           getLikes(user.id),
           getProfileViews(user.id),
         ]);
@@ -109,7 +122,7 @@ export function useLikesLogic() {
     };
 
     fetchData();
-  }, [user?.id, getReceivedLikes, getLikes, getProfileViews]);
+  }, [user?.id, getMutualLikes, getLikes, getProfileViews]);
 
   // Pull to refresh handler
   const handleRefresh = useCallback(async () => {
@@ -118,7 +131,7 @@ export function useLikesLogic() {
     setIsRefreshing(true);
     try {
       await Promise.all([
-        getReceivedLikes(user.id),
+        getMutualLikes(user.id),
         getLikes(user.id),
         getProfileViews(user.id),
       ]);
@@ -127,13 +140,13 @@ export function useLikesLogic() {
     } finally {
       setIsRefreshing(false);
     }
-  }, [user?.id, getReceivedLikes, getLikes, getProfileViews]);
+  }, [user?.id, getMutualLikes, getLikes, getProfileViews]);
 
-  // Priority Aisles: all received likes
+  // Priority Aisles: mutual likes
   const priorityLikes = useMemo((): LikeItem[] => {
-    if (!receivedLikesData?.length) return [];
-    return receivedLikesData.map(mapLikeToItem);
-  }, [receivedLikesData]);
+    if (!mutualLikesData?.length) return [];
+    return mutualLikesData.map(mapMutualLikeToItem);
+  }, [mutualLikesData]);
 
   // Your Likes: users I have liked
   const yourLikes = useMemo((): LikeItem[] => {
@@ -194,8 +207,8 @@ export function useLikesLogic() {
   const showActionButtons = useMemo(() => activeTab === "views", [activeTab]);
 
   const isLoading = useMemo(
-    () => receivedLikesLoading || profileViewsLoading || likesLoading,
-    [receivedLikesLoading, profileViewsLoading, likesLoading],
+    () => mutualLikesLoading || profileViewsLoading || likesLoading,
+    [mutualLikesLoading, profileViewsLoading, likesLoading],
   );
 
   const handleUpgrade = useCallback(() => {
@@ -221,7 +234,7 @@ export function useLikesLogic() {
     try {
       switch (activeTab) {
         case "priority":
-          await getReceivedLikes(user.id);
+          await getMutualLikes(user.id);
           break;
         case "likes":
           await getLikes(user.id);
@@ -233,7 +246,7 @@ export function useLikesLogic() {
     } catch (error) {
       console.log("Error refetching tab data:", error);
     }
-  }, [user?.id, activeTab, getReceivedLikes, getLikes, getProfileViews]);
+  }, [user?.id, activeTab, getMutualLikes, getLikes, getProfileViews]);
 
   const hideSuccess = useCallback(() => {
     setSuccessInfo((prev) => ({ ...prev, visible: false }));
@@ -319,14 +332,14 @@ export function useLikesLogic() {
       if (!userId) return false;
       // Check if I have liked this user
       const iLikedThem = hasLikedUser(userId);
-      // Check if this user has liked me
+      // Check if this user is in mutual likes
       const theyLikedMe =
-        receivedLikesData?.some(
-          (like) => (like.user?.id || like.likedId) === userId,
+        mutualLikesData?.some(
+          (like) => (like.user?.id || like.userId) === userId,
         ) || false;
       return iLikedThem && theyLikedMe;
     },
-    [hasLikedUser, receivedLikesData],
+    [hasLikedUser, mutualLikesData],
   );
 
   // Navigate to conversation if mutual like, otherwise open profile view

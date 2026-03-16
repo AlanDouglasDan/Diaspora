@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { fetchAPI } from "@/src/lib/fetch";
 import type { GetUsersResponse } from "./types";
 
@@ -33,8 +33,12 @@ const encodeArrayParam = (values: number[]) => {
   return `[${values.join(",")}]`;
 };
 
+// Module-level cache so data survives component remounts
+let _cachedUsersData: GetUsersResponse | null = null;
+let _isFetching = false;
+
 export function useGetUsers() {
-  const [data, setData] = useState<GetUsersResponse | null>(null);
+  const [data, setData] = useState<GetUsersResponse | null>(_cachedUsersData);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -50,16 +54,23 @@ export function useGetUsers() {
         advancedFilters,
       } = args;
 
-      setIsLoading(true);
+      // Prevent concurrent duplicate calls
+      if (_isFetching) return _cachedUsersData;
+      _isFetching = true;
+
+      // Only show loading on first fetch (no cached data)
+      if (!_cachedUsersData) {
+        setIsLoading(true);
+      }
       setError(null);
 
       try {
         const normalizedRadius = radius.map((r) => r);
 
         let url = `/users?userId=${encodeURIComponent(
-          userId
+          userId,
         )}&radius=${encodeArrayParam(normalizedRadius)}&age=${encodeArrayParam(
-          age
+          age,
         )}`;
 
         if (gender && !String(gender).includes("null")) {
@@ -94,29 +105,30 @@ export function useGetUsers() {
         }
         if (advancedFilters?.educationLevel) {
           url += `&educationLevel=${encodeURIComponent(
-            advancedFilters?.educationLevel
+            advancedFilters?.educationLevel,
           )}`;
         }
         if (advancedFilters?.familyPlans) {
           url += `&familyPlans=${encodeURIComponent(
-            advancedFilters?.familyPlans
+            advancedFilters?.familyPlans,
           )}`;
         }
         if (advancedFilters?.lookingFor) {
           url += `&lookingFor=${encodeURIComponent(
-            advancedFilters?.lookingFor
+            advancedFilters?.lookingFor,
           )}`;
         }
 
         if (Number(advancedFilters?.numberOfPhotos?.[0]) > 2) {
           url += `&minPhotos=${encodeURIComponent(
-            String(advancedFilters?.numberOfPhotos?.[0])
+            String(advancedFilters?.numberOfPhotos?.[0]),
           )}`;
         }
 
         const response = await fetchAPI(url, { method: "GET" });
         const resolved = response.data || response;
 
+        _cachedUsersData = resolved;
         setData(resolved);
         return resolved;
       } catch (err: any) {
@@ -125,9 +137,10 @@ export function useGetUsers() {
         throw err;
       } finally {
         setIsLoading(false);
+        _isFetching = false;
       }
     },
-    []
+    [],
   );
 
   return { data, getUsers, isLoading, error };

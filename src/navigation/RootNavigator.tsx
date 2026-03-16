@@ -32,6 +32,7 @@ import {
   AudioCall,
   VideoCall,
   IncomingCall,
+  Benefits,
   LoveLetterSent,
   Loading,
   SendLoveLetter,
@@ -76,7 +77,12 @@ export type RootStackParamList = {
   };
   Upgrade: undefined;
   UpgradeSuccess: undefined;
-  MatchResult: undefined;
+  Benefits: undefined;
+  MatchResult: {
+    userId: string;
+    userName: string;
+    userImage: string;
+  };
   FilterSettings: undefined;
   Images: {
     images: ImageSourcePropType[];
@@ -222,6 +228,14 @@ export default function RootNavigator() {
       <Stack.Screen name="Upgrade" component={Upgrade} />
 
       <Stack.Screen name="UpgradeSuccess" component={UpgradeSuccess} />
+
+      <Stack.Screen
+        name="Benefits"
+        component={Benefits}
+        options={{
+          headerShown: false,
+        }}
+      />
 
       <Stack.Screen name="MatchResult" component={MatchResult} />
 

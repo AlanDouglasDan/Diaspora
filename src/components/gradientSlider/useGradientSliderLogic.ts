@@ -32,7 +32,7 @@ export const useGradientSliderLogic = (props: GradientSliderProps) => {
       const range = maximumValue - minimumValue;
       return ((val - minimumValue) / range) * trackWidth;
     },
-    [minimumValue, maximumValue, trackWidth]
+    [minimumValue, maximumValue, trackWidth],
   );
 
   const positionToValue = useCallback(
@@ -43,7 +43,7 @@ export const useGradientSliderLogic = (props: GradientSliderProps) => {
       const steppedValue = Math.round(rawValue / step) * step;
       return Math.max(minimumValue, Math.min(maximumValue, steppedValue));
     },
-    [minimumValue, maximumValue, step, trackWidth]
+    [minimumValue, maximumValue, step, trackWidth],
   );
 
   const handleLayout = useCallback((event: LayoutChangeEvent) => {
@@ -67,7 +67,7 @@ export const useGradientSliderLogic = (props: GradientSliderProps) => {
               : valueToPosition(maxVal);
           const newPos = Math.max(
             0,
-            Math.min(trackWidth, currentPos + gestureState.dx)
+            Math.min(trackWidth, currentPos + gestureState.dx),
           );
           const newValue = positionToValue(newPos);
 
@@ -96,16 +96,16 @@ export const useGradientSliderLogic = (props: GradientSliderProps) => {
       step,
       isRange,
       onValueChange,
-    ]
+    ],
   );
 
   const minPanResponder = useMemo(
     () => createPanResponder("min"),
-    [createPanResponder]
+    [createPanResponder],
   );
   const maxPanResponder = useMemo(
     () => createPanResponder("max"),
-    [createPanResponder]
+    [createPanResponder],
   );
 
   const formatValue = useCallback(() => {

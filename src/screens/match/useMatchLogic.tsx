@@ -11,7 +11,6 @@ import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { SheetManager } from "react-native-actions-sheet";
-import Swiper from "react-native-deck-swiper";
 import { useUser } from "@clerk/clerk-expo";
 import Toast from "react-native-toast-message";
 
@@ -100,6 +99,8 @@ const mapUserToProfile = (apiUser: UserListItem): UserProfile => {
     isShared: false,
   }));
 
+  const hasLikedLoggedInUser = apiUser.hasLikedLoggedInUser || false;
+
   const ethnicity: string[] = Array.isArray(prefs?.ethnicity)
     ? prefs.ethnicity
     : prefs?.ethnicity
@@ -153,6 +154,7 @@ const mapUserToProfile = (apiUser: UserListItem): UserProfile => {
       ? interests
       : [{ name: "No interests yet", isShared: false }],
     location: location || "Location not available",
+    hasLikedLoggedInUser,
   };
 };
 
@@ -165,14 +167,13 @@ export const useMatchLogic = (props: MatchScreenProps) => {
   // Get filters from Redux store for persistence
   const { filters, appliedFilters } = useAppSelector((state) => state.filters);
 
-  const { data: usersData, getUsers, isLoading } = useGetUsers();
+  const { data: usersData, getUsers } = useGetUsers();
   const { likeUser } = useLikeUser();
   const { dislikeUser } = useDislikeUser();
-  const { getLikes, data: likesData } = useGetLikes();
-  const { getPreference, data: preferencesData } = useGetPreference();
+  // const { getPreference, data: preferencesData } = useGetPreference();
   const { boostProfile } = useBoostProfile();
   const { sendLoveLetter, isConnected: isStreamConnected } = useStreamChat();
-  const { createProfileView } = useCreateProfileView();
+  const { createProfileViewSilent } = useCreateProfileView();
 
   const swipeableCardRef = useRef<SwipeableCardRef>(null);
   const pendingSuperLike = useRef(false);
@@ -182,27 +183,22 @@ export const useMatchLogic = (props: MatchScreenProps) => {
     new Set(),
   );
   const [viewedUserIds, setViewedUserIds] = useState<Set<string>>(new Set());
-  const [isActionLoading, setIsActionLoading] = useState(false);
   const [loveLetterText, setLoveLetterText] = useState("");
   const [isSendingLoveLetter, setIsSendingLoveLetter] = useState(false);
-  const [isInitializing, setIsInitializing] = useState(true);
   const [isBoosting, setIsBoosting] = useState(false);
-  // Commented out - no longer using deck swiper
-  // const swiperRef = useRef<Swiper<UserProfile>>(null);
-  // const isProgrammaticSwipe = useRef(false);
 
   // Build getUsers params from applied filters and user preferences
   const buildGetUsersParams = useCallback(() => {
     const params: any = {
       userId: clerkUser?.id || "",
-      radius: appliedFilters?.distanceRange || [0, 1000],
+      radius: appliedFilters?.distanceRange || [0, 100],
       age: appliedFilters?.ageRange || [18, 99],
     };
 
     // Use gender from preferences if not explicitly set in filters
-    if (appliedFilters?.gender?.length) {
-      params.gender = appliedFilters.gender;
-    }
+    // if (appliedFilters?.gender?.length) {
+    //   params.lookingFor = appliedFilters.gender;
+    // }
     // else if (preferencesData?.lookingToDate?.length) {
     //   // Use the first value in lookingToDate as gender preference
     //   const lookingFor = preferencesData.lookingToDate[0]?.toLowerCase();
@@ -215,100 +211,70 @@ export const useMatchLogic = (props: MatchScreenProps) => {
     //   }
     // }
 
-    console.log("params", params);
+    // console.log("params", params);
 
-    if (appliedFilters?.activity?.length) {
-      params.activity = appliedFilters.activity;
-    }
-    if (appliedFilters?.country && appliedFilters.country !== "all") {
-      params.country = appliedFilters.country;
-    }
+    // if (appliedFilters?.activity?.length) {
+    //   params.activity = appliedFilters.activity;
+    // }
+    // if (appliedFilters?.country && appliedFilters.country !== "all") {
+    //   params.country = appliedFilters.country;
+    // }
 
     // Build advanced filters
-    const advancedFilters: any = {};
-    if (appliedFilters?.hasBio) advancedFilters.bio = true;
-    if (appliedFilters?.ethnicity)
-      advancedFilters.ethnicity = appliedFilters.ethnicity;
-    if (appliedFilters?.starSign)
-      advancedFilters.zodiac = appliedFilters.starSign;
-    if (appliedFilters?.height) advancedFilters.height = appliedFilters.height;
+    // const advancedFilters: any = {};
+    // if (appliedFilters?.hasBio) advancedFilters.bio = true;
+    // if (appliedFilters?.ethnicity)
+    //   advancedFilters.ethnicity = appliedFilters.ethnicity;
+    // if (appliedFilters?.starSign)
+    //   advancedFilters.zodiac = appliedFilters.starSign;
+    // if (appliedFilters?.height) advancedFilters.height = appliedFilters.height;
 
-    if (appliedFilters?.drinking?.length) {
-      advancedFilters.drinking =
-        appliedFilters.drinking.includes("socially") ||
-        appliedFilters.drinking.includes("regularly");
-    }
+    // if (appliedFilters?.drinking?.length) {
+    //   advancedFilters.drinking =
+    //     appliedFilters.drinking.includes("socially") ||
+    //     appliedFilters.drinking.includes("regularly");
+    // }
 
-    if (appliedFilters?.smoking?.length) {
-      advancedFilters.smoking =
-        appliedFilters.smoking.includes("socially") ||
-        appliedFilters.smoking.includes("regularly");
-    }
+    // if (appliedFilters?.smoking?.length) {
+    //   advancedFilters.smoking =
+    //     appliedFilters.smoking.includes("socially") ||
+    //     appliedFilters.smoking.includes("regularly");
+    // }
 
-    if (appliedFilters?.educationLevel)
-      advancedFilters.educationLevel = appliedFilters.educationLevel;
-    if (appliedFilters?.children)
-      advancedFilters.familyPlans = appliedFilters.children;
-    if (appliedFilters?.lookingFor)
-      advancedFilters.lookingFor = appliedFilters.lookingFor;
-    if (appliedFilters?.religion)
-      advancedFilters.religion = appliedFilters.religion;
+    // if (appliedFilters?.educationLevel)
+    //   advancedFilters.educationLevel = appliedFilters.educationLevel;
+    // if (appliedFilters?.children)
+    //   advancedFilters.familyPlans = appliedFilters.children;
+    // if (appliedFilters?.lookingFor)
+    //   advancedFilters.lookingFor = appliedFilters.lookingFor;
+    // if (appliedFilters?.religion)
+    //   advancedFilters.religion = appliedFilters.religion;
 
-    if (Object.keys(advancedFilters).length > 0) {
-      params.advancedFilters = advancedFilters;
-    }
+    // if (Object.keys(advancedFilters).length > 0) {
+    //   params.advancedFilters = advancedFilters;
+    // }
 
     return params;
-  }, [clerkUser?.id, appliedFilters, preferencesData]);
+  }, [appliedFilters]);
 
-  // Fetch users, likes and preferences
+  // Fetch users once on mount
+  const hasFetchedRef = useRef(false);
   useEffect(() => {
+    if (!clerkUser?.id || hasFetchedRef.current) return;
+    hasFetchedRef.current = true;
+
     const fetchData = async () => {
-      if (!clerkUser?.id) return;
-
-      setIsInitializing(true);
-
       try {
-        // Fetch preferences and likes first to build correct params
-        await Promise.all([
-          getPreference(clerkUser.id),
-          getLikes(clerkUser.id),
-        ]);
-
-        // buildGetUsersParams will now have updated preferencesData
+        const getUsersParams = buildGetUsersParams();
+        await getUsers(getUsersParams);
       } catch (error) {
         console.error("Error fetching initial data:", error);
-      } finally {
-        setIsInitializing(false);
+        hasFetchedRef.current = false; // Allow retry on error
       }
     };
 
     fetchData();
-  }, []);
-
-  // Fetch users when params change or after initial data fetch
-  useEffect(() => {
-    if (!clerkUser?.id || isInitializing) return;
-
-    const fetchUsers = async () => {
-      const getUsersParams = buildGetUsersParams();
-      try {
-        await getUsers(getUsersParams);
-      } catch (error) {
-        console.error("Error fetching users:", error);
-      }
-    };
-
-    fetchUsers();
-  }, [isInitializing]);
-
-  // Update excluded users when likes data changes
-  useEffect(() => {
-    if (likesData?.length) {
-      const likedIds = new Set(likesData.map((like) => like.likedId));
-      setExcludedUserIds((prev) => new Set([...prev, ...likedIds]));
-    }
-  }, [likesData]);
+  }, [clerkUser?.id]);
 
   // Map API users to UserProfile format and filter out excluded and viewed users
   const users: UserProfile[] = useMemo(() => {
@@ -328,21 +294,25 @@ export const useMatchLogic = (props: MatchScreenProps) => {
   // Track profile views when viewing a user
   useEffect(() => {
     if (currentUser && clerkUser?.id && currentUser.id !== clerkUser.id) {
-      createProfileView({
+      createProfileViewSilent({
         viewedId: currentUser.id,
         viewerId: clerkUser.id,
       });
     }
-  }, [currentUser?.id, clerkUser?.id, createProfileView]);
+  }, []);
 
-  console.log(users.length);
+  console.log(users?.length);
 
   const handleRefresh = useCallback(async () => {
     if (!clerkUser?.id) return;
 
     try {
-      const getUsersParams = buildGetUsersParams();
-      await Promise.all([getUsers(getUsersParams), getLikes(clerkUser.id)]);
+      // const getUsersParams = buildGetUsersParams();
+      await getUsers({
+        userId: clerkUser?.id || "",
+        radius: [0, 100],
+        age: [18, 99],
+      });
     } catch (error) {
       console.error("Error refreshing data:", error);
     }
@@ -455,21 +425,37 @@ export const useMatchLogic = (props: MatchScreenProps) => {
     async (superLike: boolean = false): Promise<boolean> => {
       if (!currentUser || !clerkUser?.id) return false;
 
+      const likedUser = currentUser;
+      const isMutualLike = likedUser.hasLikedLoggedInUser;
+
       // Run API call in background without loading indicator
-      excludeUser(currentUser.id);
+      excludeUser(likedUser.id);
 
       // Fire and forget - don't await, run in background
       likeUser({
-        likedId: currentUser.id,
+        likedId: likedUser.id,
         likerId: clerkUser.id,
         superLike,
       }).catch((error) => {
         console.error("Failed to send like:", error);
       });
 
+      // If it's a mutual like, navigate to MatchResult screen
+      if (isMutualLike) {
+        const userImage =
+          typeof likedUser.avatar === "object" && "uri" in likedUser.avatar
+            ? (likedUser.avatar as { uri: string }).uri
+            : "";
+        rootNavigation.navigate("MatchResult", {
+          userId: likedUser.id,
+          userName: likedUser.name,
+          userImage,
+        });
+      }
+
       return true;
     },
-    [currentUser, clerkUser?.id, likeUser, excludeUser],
+    [currentUser, clerkUser?.id, likeUser, excludeUser, rootNavigation],
   );
 
   const handleDislikeAction = useCallback(async (): Promise<boolean> => {
@@ -596,8 +582,7 @@ export const useMatchLogic = (props: MatchScreenProps) => {
     users,
     currentUser,
     cardIndex,
-    isLoading: isInitializing || isLoading,
-    isActionLoading,
+    isLoading: !usersData,
     isSwipingEnabled,
     swipeableCardRef,
     handleOpenImages,

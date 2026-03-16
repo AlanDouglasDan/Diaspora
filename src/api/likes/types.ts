@@ -2,6 +2,7 @@ export interface LikeUser {
   id: string;
   name: string;
   email: string;
+  age: number;
 }
 
 export interface Like {
@@ -27,4 +28,20 @@ export interface Dislike {
   dislikerId: string;
   dislikedId: string;
   dislikedAt: string;
+}
+
+export interface MutualLikeUser {
+  id: string;
+  name: string;
+  email: string;
+  age: number;
+}
+
+export interface MutualLike {
+  userId: string;
+  likedAt: string;
+  superLike: boolean;
+  user?: MutualLikeUser;
+  images?: string[] | null;
+  age: number;
 }
