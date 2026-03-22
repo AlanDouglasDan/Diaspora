@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   FlatList,
   ActivityIndicator,
+  TextInput,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -37,6 +38,8 @@ const EditInterests: FC<EditInterestsScreenProps> = (props) => {
     handleSave,
     successInfo,
     hideSuccess,
+    searchQuery,
+    setSearchQuery,
   } = useEditInterestsLogic(props);
 
   const sections = useMemo<SectionItem[]>(() => {
@@ -50,7 +53,19 @@ const EditInterests: FC<EditInterestsScreenProps> = (props) => {
     ({ item }: { item: SectionItem }) => {
       switch (item.type) {
         case "title":
-          return <Text style={styles.pageTitle}>Things that interest you</Text>;
+          return (
+            <View>
+              <Text style={styles.pageTitle}>Things that interest you</Text>
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Search interests..."
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+            </View>
+          );
 
         case "yourInterests":
           return (

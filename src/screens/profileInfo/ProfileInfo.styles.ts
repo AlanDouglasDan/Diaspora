@@ -98,6 +98,11 @@ export const styles = StyleSheet.create({
     ...typography.text10,
     color: `${palette.GREY2}70`,
   },
+  text12: {
+    ...typography.text12,
+    color: palette.GREY2,
+    textTransform: "capitalize",
+  },
   fieldValue: {
     ...typography.text12,
     color: palette.GREY2,

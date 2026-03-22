@@ -11,7 +11,8 @@ export function useWelcomeLogic({ navigation }: WelcomeScreenProps) {
     "welcome",
   );
 
-  const { signOut, session } = useClerk();
+  const clerk = useClerk();
+  const { signOut, session } = clerk;
   const { user } = useUser();
 
   const [isGoogleLoading, setIsGoogleLoading] = useState<boolean>(false);
@@ -80,8 +81,16 @@ export function useWelcomeLogic({ navigation }: WelcomeScreenProps) {
         const isNewUser = signUp?.createdUserId && !signIn?.userData?.firstName;
 
         if (authState === "sign-in" && isNewUser) {
-          // User doesn't have an account, show error
-          await signOut();
+          // OAuth auto-created a Clerk account — activate session to delete it
+          await setActive!({ session: createdSessionId });
+          try {
+            if (clerk.user) {
+              await clerk.user.delete();
+            }
+          } catch (e) {
+            // Fallback: at least sign out to clear the session
+            await signOut();
+          }
           Toast.show({
             type: "error",
             text1: "Account Not Found",
@@ -132,8 +141,16 @@ export function useWelcomeLogic({ navigation }: WelcomeScreenProps) {
         const isNewUser = signUp?.createdUserId && !signIn?.userData?.firstName;
 
         if (authState === "sign-in" && isNewUser) {
-          // User doesn't have an account, show error
-          await signOut();
+          // OAuth auto-created a Clerk account — activate session to delete it
+          await setActive!({ session: createdSessionId });
+          try {
+            if (clerk.user) {
+              await clerk.user.delete();
+            }
+          } catch (e) {
+            // Fallback: at least sign out to clear the session
+            await signOut();
+          }
           Toast.show({
             type: "error",
             text1: "Account Not Found",

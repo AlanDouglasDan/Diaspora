@@ -206,16 +206,16 @@ export const useProfileInfoLogic = ({ navigation }: ProfileInfoScreenProps) => {
         newFieldValues.pets = preferencesData.pets;
       }
       if (preferencesData.smoking !== undefined) {
-        newFieldValues.smoking = preferencesData.smoking ? "yes" : "no";
+        newFieldValues.smoking = preferencesData.smoking;
       }
       if (preferencesData.drinking !== undefined) {
-        newFieldValues.drinking = preferencesData.drinking ? "yes" : "no";
+        newFieldValues.drinking = preferencesData.drinking;
       }
       if (preferencesData.religion) {
         newFieldValues.religion = preferencesData.religion;
       }
       if (preferencesData.zodiac) {
-        newFieldValues.zodiac = preferencesData.zodiac;
+        newFieldValues.starSign = preferencesData.zodiac;
       }
       if (preferencesData.language) {
         newFieldValues.language = preferencesData.language;
@@ -466,11 +466,7 @@ export const useProfileInfoLogic = ({ navigation }: ProfileInfoScreenProps) => {
 
       try {
         const payload: Record<string, any> = { [fieldId]: value };
-        const result = await updatePreference(
-          String(preferencesData.id),
-          user.id,
-          payload,
-        );
+        const result = await updatePreference(user.id, payload);
         if (result) {
           dispatch(setPreferences(result));
         }

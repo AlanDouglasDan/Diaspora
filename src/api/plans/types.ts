@@ -5,5 +5,6 @@ export interface Plan {
   interval: string;
   intervalCount: number;
   product: string;
+  tier: string;
   metadata: Record<string, any>;
 }

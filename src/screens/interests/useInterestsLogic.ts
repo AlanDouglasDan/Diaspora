@@ -18,6 +18,7 @@ export function useInterestsLogic({ navigation }: InterestsScreenProps) {
 
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     if (user?.id) {
@@ -29,8 +30,6 @@ export function useInterestsLogic({ navigation }: InterestsScreenProps) {
     getInterests();
   }, []);
 
-  console.log(selectedInterests);
-
   // Transform API data to match Interest interface with emojis - use useMemo to prevent infinite loops
   const transformedInterests = useMemo(
     () =>
@@ -39,7 +38,7 @@ export function useInterestsLogic({ navigation }: InterestsScreenProps) {
         label: interest.title,
         emoji: ICON_TO_EMOJI[interest.icon] || "📌", // Default emoji if icon not found
       })) || [],
-    [interestsData]
+    [interestsData],
   );
 
   const handleGoBack = () => {
@@ -68,15 +67,9 @@ export function useInterestsLogic({ navigation }: InterestsScreenProps) {
 
     setIsLoading(true);
     try {
-      await updatePreference(String(preferenceData.id), user.id, {
+      await updatePreference(user.id, {
         interests: selectedInterests,
       });
-
-      // Toast.show({
-      //   type: "success",
-      //   text1: "Interests Saved!",
-      //   text2: "Your interests have been updated",
-      // });
 
       navigation.navigate("AddPhotos");
     } catch (error: any) {
@@ -93,6 +86,15 @@ export function useInterestsLogic({ navigation }: InterestsScreenProps) {
     }
   };
 
+  // Filter interests by search query
+  const filteredInterests = useMemo(() => {
+    if (!searchQuery.trim()) return transformedInterests;
+    const query = searchQuery.toLowerCase().trim();
+    return transformedInterests.filter((interest) =>
+      interest.label.toLowerCase().includes(query),
+    );
+  }, [transformedInterests, searchQuery]);
+
   const isValid = selectedInterests.length > 0;
 
   return {
@@ -105,6 +107,8 @@ export function useInterestsLogic({ navigation }: InterestsScreenProps) {
     isValid,
     isLoading,
     interestsLoading,
-    transformedInterests,
+    transformedInterests: filteredInterests,
+    searchQuery,
+    setSearchQuery,
   };
 }

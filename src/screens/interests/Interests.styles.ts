@@ -60,7 +60,7 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 20,
-    paddingBottom: 24
+    paddingBottom: 24,
   },
   skipText: {
     ...typography.text16,
@@ -83,5 +83,17 @@ export const styles = StyleSheet.create({
     borderRadius: 22,
     alignItems: "center",
     justifyContent: "center",
+  },
+  searchInput: {
+    borderWidth: 1,
+    borderColor: `${palette.GREY2}50`,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    marginTop: 16,
+    marginBottom: 8,
+    fontSize: 14,
+    color: palette.TEXT_COLOR,
+    backgroundColor: palette.WHITE,
   },
 });

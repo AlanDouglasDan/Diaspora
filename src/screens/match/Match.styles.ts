@@ -104,6 +104,7 @@ export const styles = StyleSheet.create({
   badgeText: {
     ...typography.text12,
     color: palette.TEXT_COLOR,
+    textTransform: "capitalize",
   },
   scrollIndicatorFixed: {
     position: "absolute",

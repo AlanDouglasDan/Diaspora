@@ -7,7 +7,6 @@ export function useUpdatePreference() {
   const [error, setError] = useState<string | null>(null);
 
   const updatePreference = async (
-    preferenceId: string,
     userId: string,
     payload: UpdatePreferencePayload
   ): Promise<Preference | null> => {
@@ -15,7 +14,7 @@ export function useUpdatePreference() {
     setError(null);
 
     try {
-      const response = await fetchAPI(`/preference/${preferenceId}/${userId}`, {
+      const response = await fetchAPI(`/preference/${userId}`, {
         method: "PATCH",
         body: JSON.stringify(payload),
       });

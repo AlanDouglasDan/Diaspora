@@ -9,8 +9,8 @@ export interface Preference {
   pronouns: string;
   zodiac: string;
   bio: string;
-  smoking: boolean;
-  drinking: boolean;
+  smoking: string;
+  drinking: string;
   religion: string;
   education: string;
   pets: string;

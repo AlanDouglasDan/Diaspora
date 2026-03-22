@@ -105,4 +105,16 @@ export const styles = StyleSheet.create({
     paddingTop: 20,
     paddingBottom: 20,
   },
+  searchInput: {
+    borderWidth: 1,
+    borderColor: `${palette.GREY2}50`,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    marginHorizontal: 20,
+    marginBottom: 12,
+    fontSize: 14,
+    color: palette.TEXT_COLOR,
+    backgroundColor: palette.WHITE,
+  },
 });

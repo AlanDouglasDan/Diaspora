@@ -14,12 +14,14 @@ export interface PlansTabItem {
 
 export interface PlansTabSubscriptionPlan {
   id: string;
+  tier: string;
   logoImage: any;
   backgroundColor: string;
   useGradient?: boolean;
   description: string;
   features: PlansTabFeature[];
   buttonText: string;
+  isActivePlan?: boolean;
 }
 
 export interface PlansTabProps {

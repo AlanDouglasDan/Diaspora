@@ -80,6 +80,8 @@ export function useLikesLogic() {
     [subscriptionType],
   );
 
+  console.log(subscriptionType);
+
   console.log(isSubscribed);
 
   const [activeTab, setActiveTab] = useState<LikesTab>("priority");

@@ -15,7 +15,7 @@ import { useUser } from "@clerk/clerk-expo";
 import Toast from "react-native-toast-message";
 
 import { useGetUsers, UserListItem } from "@/src/api/user";
-import { useLikeUser, useDislikeUser, useGetLikes } from "@/src/api/likes";
+import { useLikeUser, useDislikeUser, useRewindDislike } from "@/src/api/likes";
 import { useCreateProfileView } from "@/src/api/profileViews";
 import { useGetPreference } from "@/src/api/preferences";
 import { useBoostProfile } from "@/src/api/boost";
@@ -47,15 +47,196 @@ const getWhyHereBadge = (whyHere?: string | null): string | null => {
   if (!whyHere) return null;
 
   switch (whyHere) {
-    case "Marriage":
+    case "marriage":
       return `💍 ${whyHere}`;
-    case "Fun":
+    case "fun":
       return `🥳 ${whyHere}`;
-    case "Casual":
+    case "casual":
       return `💕 ${whyHere}`;
     default:
       return whyHere;
   }
+};
+
+// Emoji lookup map: category -> label -> emoji (from provided JSON)
+const CATEGORY_EMOJI_MAP: Record<string, Record<string, string>> = {
+  Languages: {
+    English: "🇬🇧",
+    Spanish: "🇪🇸",
+    French: "🇫🇷",
+    Mandarin: "🇨🇳",
+    Hindi: "🇮🇳",
+    Arabic: "🇸🇦",
+    Portuguese: "🇧🇷",
+    German: "🇩🇪",
+    Japanese: "🇯🇵",
+    Russian: "🇷🇺",
+    Other: "🌍",
+  },
+  Education: {
+    "High School": "🎒",
+    College: "📚",
+    Bachelor: "🎓",
+    Master: "🧠",
+    PhD: "🔬",
+  },
+  Pets: {
+    "Dog lover": "🐶",
+    "Cat lover": "🐱",
+    "Have pets": "🐾",
+    "Want pets": "🏡",
+    "No pets": "🚫",
+    "Allergic to pets": "🤧",
+  },
+  Smoking: {
+    "Non smoker": "🚭",
+    "Social smoker": "🚬",
+    "Regular smoker": "💨",
+    "Trying to quit": "💪",
+  },
+  Drinking: {
+    "Non drinker": "🚱",
+    "Social drinker": "🍸",
+    "Regular drinker": "🍷",
+  },
+  Religion: {
+    Christianity: "✝️",
+    Islam: "☪️",
+    Hinduism: "🕉️",
+    Buddhism: "☸️",
+    Judaism: "✡️",
+    Sikhism: "🪯",
+    Agnostic: "🤔",
+    Atheist: "🧠",
+    Spiritual: "✨",
+    Other: "🌍",
+    "Prefer not to say": "🤐",
+  },
+  Zodiac: {
+    Aries: "♈",
+    Taurus: "♉",
+    Gemini: "♊",
+    Cancer: "♋",
+    Leo: "♌",
+    Virgo: "♍",
+    Libra: "♎",
+    Scorpio: "♏",
+    Sagittarius: "♐",
+    Capricorn: "♑",
+    Aquarius: "♒",
+    Pisces: "♓",
+    "I don't believe in zodiac signs": "🤷",
+  },
+  Ethnicity: {
+    Asian: "🧬",
+    "Black / African": "🧬",
+    "Hispanic / Latino": "🧬",
+    "Middle Eastern": "🧬",
+    "Native American": "🧬",
+    "Pacific Islander": "🧬",
+    "White / Caucasian": "🧬",
+    Mixed: "🧬",
+    Other: "🧬",
+    "Prefer not to say": "🤐",
+  },
+  Height: {
+    "Under 5'0\"": "📏",
+    "5'0\" to 5'3\"": "📏",
+    "5'4\" to 5'7\"": "📏",
+    "5'8\" to 5'11\"": "📏",
+    "6'0\" to 6'3\"": "📏",
+    "Over 6'3\"": "📏",
+  },
+  "Family plans": {
+    "Want children": "👶",
+    "Don't want children": "🙅",
+    "Have children": "👨‍👩‍👧",
+    "Open to children": "🤍",
+    "Not sure yet": "🤔",
+  },
+  Sexuality: {
+    Straight: "❤️",
+    Gay: "🌈",
+    Lesbian: "🌈",
+    Bisexual: "💜",
+    Pansexual: "💖",
+    Asexual: "🖤",
+    Queer: "✨",
+    Questioning: "🤔",
+    "Prefer not to say": "🤐",
+  },
+  "Body type": {
+    Slim: "🧍",
+    Athletic: "🧍",
+    Average: "🧍",
+    Curvy: "🧍",
+    "Plus size": "🧍",
+    Muscular: "🧍",
+    "Prefer not to say": "🤐",
+  },
+  "Dietary preference": {
+    Omnivore: "🍽️",
+    Vegetarian: "🥕",
+    Vegan: "🌱",
+    Pescatarian: "🐟",
+    Keto: "🥩",
+    Halal: "🥙",
+    Kosher: "🥯",
+    "Gluten free": "🌾",
+    "No preference": "😋",
+  },
+  "Sleeping habits": {
+    "Early bird": "🌅",
+    "Night owl": "🦉",
+    Flexible: "🔄",
+    "Light sleeper": "🛏️",
+    "Heavy sleeper": "😴",
+  },
+  "Workout frequency": {
+    "Every day": "🏋️",
+    Often: "🏃",
+    Sometimes: "🚶",
+    Rarely: "🛋️",
+    Never: "🙅",
+  },
+  "Love language": {
+    "Words of affirmation": "💬",
+    "Quality time": "🕰️",
+    "Physical touch": "🤝",
+    "Acts of service": "🤲",
+    "Receiving gifts": "🎁",
+  },
+  "Travel plans": {
+    "Love to travel": "✈️",
+    "Occasional traveler": "🧳",
+    Homebody: "🏠",
+    "Want to travel more": "🌍",
+    "Digital nomad": "💻",
+  },
+  Personality: {
+    Introvert: "🌿",
+    Extrovert: "🎉",
+    Ambivert: "⚖️",
+  },
+  "Relationship status": {
+    Single: "💫",
+    Divorced: "💔",
+    Widowed: "🕊️",
+    Separated: "↔️",
+    "It's complicated": "🌀",
+  },
+  "Willing to relocate": { Yes: "✅", No: "❌", Maybe: "🤔" },
+  "Openness to long distance": { Yes: "✅", No: "❌", Maybe: "🤔" },
+};
+
+const getEmojiForCategory = (
+  category: string,
+  value: string,
+  fallback: string,
+): string => {
+  const categoryMap = CATEGORY_EMOJI_MAP[category];
+  if (!categoryMap) return fallback;
+  return categoryMap[value] || fallback;
 };
 
 const mapUserToProfile = (apiUser: UserListItem): UserProfile => {
@@ -79,18 +260,42 @@ const mapUserToProfile = (apiUser: UserListItem): UserProfile => {
   }
 
   const aboutMe: string[] = [];
-  if (prefs?.height) aboutMe.push(`📏 ${prefs.height}`);
-  if (prefs?.zodiac) aboutMe.push(`⭐ ${prefs.zodiac}`);
-  if (prefs?.education) aboutMe.push(`🎓 ${prefs.education}`);
-  if (prefs?.pets) aboutMe.push(`🐕 ${prefs.pets}`);
+  if (prefs?.height)
+    aboutMe.push(
+      `${getEmojiForCategory("Height", prefs.height, "📏")} ${prefs.height}`,
+    );
+  if (prefs?.zodiac)
+    aboutMe.push(
+      `${getEmojiForCategory("Zodiac", prefs.zodiac, "⭐")} ${prefs.zodiac}`,
+    );
+  if (prefs?.education)
+    aboutMe.push(
+      `${getEmojiForCategory("Education", prefs.education, "🎓")} ${prefs.education}`,
+    );
+  if (prefs?.pets)
+    aboutMe.push(
+      `${getEmojiForCategory("Pets", prefs.pets, "�")} ${prefs.pets}`,
+    );
   if (prefs?.smoking !== null && prefs?.smoking !== undefined) {
-    aboutMe.push(prefs.smoking ? "🚬 Smoker" : "🚬 Non-smoker");
+    const smokingLabel = prefs.smoking ? "Regular smoker" : "Non smoker";
+    aboutMe.push(
+      `${getEmojiForCategory("Smoking", smokingLabel, "🚭")} ${smokingLabel}`,
+    );
   }
   if (prefs?.drinking !== null && prefs?.drinking !== undefined) {
-    aboutMe.push(prefs.drinking ? "🍷 Drinks" : "🍷 Non-drinker");
+    const drinkingLabel = prefs.drinking ? "Regular drinker" : "Non drinker";
+    aboutMe.push(
+      `${getEmojiForCategory("Drinking", drinkingLabel, "🚱")} ${drinkingLabel}`,
+    );
   }
-  if (prefs?.religion) aboutMe.push(`🙏 ${prefs.religion}`);
-  if (prefs?.familyPlans) aboutMe.push(`👨‍👩‍👧 ${prefs.familyPlans}`);
+  if (prefs?.religion)
+    aboutMe.push(
+      `${getEmojiForCategory("Religion", prefs.religion, "🙏")} ${prefs.religion}`,
+    );
+  if (prefs?.familyPlans)
+    aboutMe.push(
+      `${getEmojiForCategory("Family plans", prefs.familyPlans, "👨‍👩‍👧")} ${prefs.familyPlans}`,
+    );
 
   const interests: { name: string; isShared: boolean }[] = (
     prefs?.interests || []
@@ -118,8 +323,11 @@ const mapUserToProfile = (apiUser: UserListItem): UserProfile => {
       : [];
 
   const languages: { name: string; isShared: boolean }[] = languageValues.length
-    ? languageValues.map((language) => ({ name: language, isShared: false }))
-    : [{ name: "English", isShared: false }];
+    ? languageValues.map((language) => ({
+        name: `${getEmojiForCategory("Languages", language, "🌍")} ${language}`,
+        isShared: false,
+      }))
+    : [{ name: "🇬🇧 English", isShared: false }];
 
   const distanceDisplay =
     typeof apiUser.distanceKm === "number"
@@ -170,6 +378,7 @@ export const useMatchLogic = (props: MatchScreenProps) => {
   const { data: usersData, getUsers } = useGetUsers();
   const { likeUser } = useLikeUser();
   const { dislikeUser } = useDislikeUser();
+  const { rewindDislike } = useRewindDislike();
   // const { getPreference, data: preferencesData } = useGetPreference();
   const { boostProfile } = useBoostProfile();
   const { sendLoveLetter, isConnected: isStreamConnected } = useStreamChat();
@@ -186,6 +395,9 @@ export const useMatchLogic = (props: MatchScreenProps) => {
   const [loveLetterText, setLoveLetterText] = useState("");
   const [isSendingLoveLetter, setIsSendingLoveLetter] = useState(false);
   const [isBoosting, setIsBoosting] = useState(false);
+  const [lastDislikedUser, setLastDislikedUser] = useState<UserProfile | null>(
+    null,
+  );
 
   // Build getUsers params from applied filters and user preferences
   const buildGetUsersParams = useCallback(() => {
@@ -318,6 +530,38 @@ export const useMatchLogic = (props: MatchScreenProps) => {
     }
   }, []);
 
+  const handleRewindDislike = useCallback(async () => {
+    if (!lastDislikedUser || !clerkUser?.id) return;
+
+    const userToRewind = lastDislikedUser;
+
+    // Clear the last disliked user immediately so icon hides
+    setLastDislikedUser(null);
+
+    // Remove the user from excluded/viewed sets to bring back their card
+    setExcludedUserIds((prev) => {
+      const next = new Set(prev);
+      next.delete(userToRewind.id);
+      return next;
+    });
+    setViewedUserIds((prev) => {
+      const next = new Set(prev);
+      next.delete(userToRewind.id);
+      return next;
+    });
+
+    // Go back one card index so the rewound user is shown
+    setCardIndex((prev) => Math.max(0, prev - 1));
+
+    // Call the rewind API in the background
+    rewindDislike({
+      dislikerId: clerkUser.id,
+      dislikedId: userToRewind.id,
+    }).catch((error) => {
+      console.error("Failed to rewind dislike:", error);
+    });
+  }, [lastDislikedUser, clerkUser?.id, rewindDislike]);
+
   const handleBoostProfile = useCallback(async () => {
     if (!clerkUser?.id || isBoosting) return;
 
@@ -352,15 +596,16 @@ export const useMatchLogic = (props: MatchScreenProps) => {
           resizeMode="contain"
         />
       ),
-      // headerLeft: () => (
-      //   <TouchableOpacity
-      //     style={styles.headerButton}
-      //     activeOpacity={0.7}
-      //     onPress={handleRefresh}
-      //   >
-      //     <MaterialIcons name="refresh" size={24} color={palette.GREY2} />
-      //   </TouchableOpacity>
-      // ),
+      headerLeft: () =>
+        lastDislikedUser ? (
+          <TouchableOpacity
+            style={styles.headerButton}
+            activeOpacity={0.7}
+            onPress={handleRewindDislike}
+          >
+            <MaterialIcons name="refresh" size={24} color={palette.GREY2} />
+          </TouchableOpacity>
+        ) : null,
       headerRight: () => (
         <View style={styles.flexedRow}>
           <TouchableOpacity
@@ -385,7 +630,13 @@ export const useMatchLogic = (props: MatchScreenProps) => {
         </View>
       ),
     });
-  }, [navigation, handleRefresh, handleBoostProfile, isBoosting]);
+  }, [
+    navigation,
+    lastDislikedUser,
+    handleRewindDislike,
+    handleBoostProfile,
+    isBoosting,
+  ]);
 
   const handleSeePlans = useCallback(() => {
     rootNavigation.navigate("Upgrade");
@@ -460,6 +711,9 @@ export const useMatchLogic = (props: MatchScreenProps) => {
 
   const handleDislikeAction = useCallback(async (): Promise<boolean> => {
     if (!currentUser || !clerkUser?.id) return false;
+
+    // Store the disliked user for potential rewind
+    setLastDislikedUser(currentUser);
 
     // Run API call in background without loading indicator
     excludeUser(currentUser.id);

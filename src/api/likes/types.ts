@@ -30,6 +30,11 @@ export interface Dislike {
   dislikedAt: string;
 }
 
+export interface RewindDislikePayload {
+  dislikerId: string;
+  dislikedId: string;
+}
+
 export interface MutualLikeUser {
   id: string;
   name: string;

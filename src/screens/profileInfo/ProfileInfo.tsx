@@ -206,7 +206,7 @@ const ProfileInfo: FC<ProfileInfoScreenProps> = (props) => {
                 <View>
                   <Text style={styles.sectionTitle}>Why You're Here</Text>
 
-                  <Text style={styles.fieldValue}>
+                  <Text style={styles.text12}>
                     {whyHereDisplayValue || section.fields[0]?.value}
                   </Text>
                 </View>
@@ -315,7 +315,7 @@ const ProfileInfo: FC<ProfileInfoScreenProps> = (props) => {
               </View>
 
               <View style={styles.sectionContent}>
-                <Text style={styles.fieldValue}>
+                <Text style={styles.text12}>
                   {section.fields[0]?.value}
                 </Text>
               </View>

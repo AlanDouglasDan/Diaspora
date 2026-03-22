@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   FlatList,
+  TextInput,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
@@ -28,6 +29,8 @@ const Interests: FC<InterestsScreenProps> = (props) => {
     interestsLoading,
     transformedInterests,
     selectedInterests,
+    searchQuery,
+    setSearchQuery,
   } = useInterestsLogic(props);
 
   const renderInterestChip = useCallback(
@@ -79,9 +82,18 @@ const Interests: FC<InterestsScreenProps> = (props) => {
           What are you passionate about? Pick a few things you enjoy. Potential
           matches want to know!
         </Text>
+
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search interests..."
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          autoCapitalize="none"
+          autoCorrect={false}
+        />
       </View>
     ),
-    [handleGoBack],
+    [handleGoBack, searchQuery, setSearchQuery],
   );
 
   return (

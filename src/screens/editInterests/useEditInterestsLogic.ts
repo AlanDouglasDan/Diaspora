@@ -24,6 +24,7 @@ export const useEditInterestsLogic = ({
   const [selectedInterests, setSelectedInterests] = useState<Interest[]>([]);
   const [showAll, setShowAll] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const hasInitialized = useRef(false);
 
   // Success notification state
@@ -89,13 +90,20 @@ export const useEditInterestsLogic = ({
     setShowAll((prev) => !prev);
   }, []);
 
-  // Filter out already selected interests from the available list
+  // Filter out already selected interests from the available list, then by search query
   const availableInterests = useMemo(() => {
     const selectedIds = selectedInterests.map((i) => i.id);
-    return transformedInterests.filter(
+    let filtered = transformedInterests.filter(
       (interest) => !selectedIds.includes(interest.id),
     );
-  }, [transformedInterests, selectedInterests]);
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      filtered = filtered.filter((interest) =>
+        interest.label.toLowerCase().includes(query),
+      );
+    }
+    return filtered;
+  }, [transformedInterests, selectedInterests, searchQuery]);
 
   const visibleInterests = showAll
     ? availableInterests
@@ -109,7 +117,7 @@ export const useEditInterestsLogic = ({
     setIsLoading(true);
     try {
       const interestIds = selectedInterests.map((interest) => interest.id);
-      await updatePreference(String(preferencesData.id), user.id, {
+      await updatePreference(user.id, {
         interests: interestIds,
       });
 
@@ -159,5 +167,7 @@ export const useEditInterestsLogic = ({
     handleSave,
     successInfo,
     hideSuccess,
+    searchQuery,
+    setSearchQuery,
   };
 };

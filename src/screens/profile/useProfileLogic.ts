@@ -10,6 +10,7 @@ import {
   useBoostProfile,
   useGetPreference,
 } from "@/src/api";
+import { useAppSelector } from "@/src/store";
 import Toast from "react-native-toast-message";
 import { SheetManager } from "react-native-actions-sheet";
 import { images } from "core/images";
@@ -37,6 +38,9 @@ export const useProfileLogic = () => {
   const { data: plansData, isLoading: plansLoading, getPlans } = useGetPlans();
   const { boostProfile } = useBoostProfile();
   const { data: preferencesData, getPreference } = useGetPreference();
+  const subscriptionType = useAppSelector(
+    (state) => state.user.data?.subscription,
+  );
 
   useEffect(() => {
     if (user?.id) {
@@ -63,14 +67,37 @@ export const useProfileLogic = () => {
     setModalVisible(true);
   }, []);
 
-  const getModalFeatures = useCallback(
-    () => [
-      { label: "Status", value: "Subscribed" },
-      { label: "Due date", value: "30 September 2025" },
-      { label: "Plan", value: "$46/month" },
-    ],
-    [],
-  );
+  const getModalFeatures = useCallback(() => {
+    if (!selectedPlan || !plansData) {
+      return [
+        { label: "Status", value: "N/A" },
+        { label: "Plan", value: "N/A" },
+        { label: "Price", value: "N/A" },
+      ];
+    }
+    const plan = plansData.find((p) => p.id === selectedPlan);
+    if (!plan) {
+      return [
+        { label: "Status", value: "N/A" },
+        { label: "Plan", value: "N/A" },
+        { label: "Price", value: "N/A" },
+      ];
+    }
+    const isActive = subscriptionType === plan.tier;
+    return [
+      { label: "Status", value: isActive ? "Active" : "Not subscribed" },
+      { label: "Plan", value: plan.product || plan.nickname || "N/A" },
+      {
+        label: "Price",
+        value: plan.amount === 0 ? "Free" : `$${plan.amount}/${plan.interval}`,
+      },
+      {
+        label: "Billing cycle",
+        value: `Every ${plan.intervalCount} ${plan.interval}(s)`,
+      },
+      { label: "Tier", value: plan.tier },
+    ];
+  }, [selectedPlan, plansData, subscriptionType]);
 
   const handleCloseModal = useCallback(() => {
     setModalVisible(false);
@@ -91,8 +118,11 @@ export const useProfileLogic = () => {
       const isPremium = productName.includes("Premium");
       const isEconomy = productName.includes("Economy");
 
+      const isActivePlan = subscriptionType === plan.tier;
+
       return {
         id: plan.id,
+        tier: plan.tier,
         logoImage: isFirstClass
           ? images.firstClassLogo
           : isPremium
@@ -127,9 +157,10 @@ export const useProfileLogic = () => {
                 { name: "Limited swipes", free: true, included: true },
               ],
         price: plan.amount,
-        buttonText: `Upgrade To ${productName.replace("Diaspora ", "")} from $${
-          plan.amount
-        }`,
+        buttonText: isActivePlan
+          ? "Current Plan"
+          : `Upgrade To ${productName.replace("Diaspora ", "")} from $${plan.amount}`,
+        isActivePlan,
       };
     }) || [];
 
@@ -184,5 +215,6 @@ export const useProfileLogic = () => {
     handleTakeOff,
     isBoosting,
     preferencesData,
+    subscriptionType,
   };
 };

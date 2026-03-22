@@ -106,9 +106,10 @@ const PlansTab: FC<PlansTabProps> = ({
         <Button
           title={plan.buttonText}
           variant="white"
-          style={styles.upgradeButton}
+          style={[styles.upgradeButton, plan.isActivePlan && { opacity: 0.6 }]}
           textStyle={styles.text14}
           onPress={() => navigate("Upgrade")}
+          disabled={plan.isActivePlan}
         />
       </>
     );
